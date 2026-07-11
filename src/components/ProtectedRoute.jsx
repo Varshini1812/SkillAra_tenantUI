@@ -1,8 +1,13 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
+/**
+ * UI route guard only — role checks here are NOT a security boundary.
+ * The API enforces authorization on every request.
+ */
 export default function ProtectedRoute({ children, roles }) {
-  const { user, loading } = useAuth();
+  const { user, sessionClaims, loading } = useAuth();
+  const role = user?.role || sessionClaims?.role;
 
   if (loading) {
     return (
@@ -13,7 +18,7 @@ export default function ProtectedRoute({ children, roles }) {
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  if (roles && !roles.includes(role)) return <Navigate to="/" replace />;
 
   return children;
 }

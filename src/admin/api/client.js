@@ -1,8 +1,12 @@
 import axios from "axios";
+import { getTenantSubdomain } from "../../utils/tenant.js";
 import { getApiErrorMessage } from "../utils/errorMessages.js";
-import { getTenantSubdomain } from "../utils/tenant.js";
-import { clearAccessToken, getAccessToken, setAccessToken } from "../lib/accessTokenMemory.js";
-import { refreshTenantAccessToken } from "./tenantSessionRefresh.js";
+import {
+  clearAccessToken,
+  getAccessToken,
+  setAccessToken,
+} from "../../lib/adminAccessTokenMemory.js";
+import { refreshTenantAccessToken } from "../../api/tenantSessionRefresh.js";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "",
@@ -10,7 +14,7 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-export async function refreshAccessToken() {
+async function refreshAccessToken() {
   return refreshTenantAccessToken();
 }
 
@@ -34,7 +38,6 @@ api.interceptors.response.use(
       !original._retry &&
       !original.url?.includes("/api/auth/refresh") &&
       !original.url?.includes("/api/auth/login") &&
-      !original.url?.includes("/api/auth/register") &&
       !original.url?.includes("/api/auth/logout")
     ) {
       original._retry = true;
@@ -56,10 +59,10 @@ export function getData(res) {
   return res.data?.data ?? res.data;
 }
 
-export function getErrorMessage(error) {
-  return getApiErrorMessage(error);
+export function getErrorMessage(err) {
+  return getApiErrorMessage(err);
 }
 
-export { setAccessToken, clearAccessToken, getAccessToken };
+export { setAccessToken, clearAccessToken, getAccessToken, refreshAccessToken };
 
 export default api;
