@@ -53,13 +53,13 @@ export function buildTenantUrl(subdomain) {
   const port = window.location.port;
   const protocol = window.location.protocol;
 
+  if (import.meta.env.DEV) {
+    return `${protocol}//${subdomain}.localhost${port ? `:${port}` : ""}`;
+  }
+
   if (root) {
     const base = `${protocol}//${subdomain}.${root}`;
     return port && port !== "80" && port !== "443" ? `${base}:${port}` : base;
-  }
-
-  if (import.meta.env.DEV) {
-    return `${protocol}//${subdomain}.localhost${port ? `:${port}` : ""}`;
   }
 
   return `${protocol}//${subdomain}.${window.location.hostname}`;
@@ -105,4 +105,26 @@ export function isRootApp() {
   }
 
   return true;
+}
+
+/** Subdomain used for tenant API calls — always from URL first. */
+export function getActiveTenantSubdomain(devOverride = "") {
+  const fromHost = getTenantFromHostname();
+  if (fromHost) return fromHost;
+  const dev = (devOverride || localStorage.getItem("skillara_admin_tenant") || localStorage.getItem("skillara_dev_tenant") || "").trim().toLowerCase();
+  return dev;
+}
+
+export function getTenantSubdomain() {
+  return getActiveTenantSubdomain();
+}
+
+export function setDevTenantSubdomain(sub) {
+  if (sub) localStorage.setItem("skillara_admin_tenant", sub.trim().toLowerCase());
+  else localStorage.removeItem("skillara_admin_tenant");
+}
+
+export function setDevTenant(sub) {
+  if (sub) localStorage.setItem("skillara_dev_tenant", sub.trim().toLowerCase());
+  else localStorage.removeItem("skillara_dev_tenant");
 }

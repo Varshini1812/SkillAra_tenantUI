@@ -16,6 +16,13 @@ export default defineConfig({
           proxy.on("proxyReq", (proxyReq, req) => {
             if (req.headers.host) {
               proxyReq.setHeader("X-Forwarded-Host", req.headers.host);
+              const host = req.headers.host.split(":")[0].toLowerCase();
+              if (host.endsWith(".localhost")) {
+                const sub = host.slice(0, -".localhost".length);
+                if (sub && !sub.includes(".")) {
+                  proxyReq.setHeader("X-Tenant-Subdomain", sub);
+                }
+              }
             }
             const tenant = req.headers["x-tenant-subdomain"];
             if (tenant) proxyReq.setHeader("X-Tenant-Subdomain", tenant);

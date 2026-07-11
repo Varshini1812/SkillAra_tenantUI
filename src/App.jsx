@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { AdminAuthProvider } from "./admin/context/AdminAuthContext.jsx";
+import { ToastProvider } from "./admin/components/ui/Toast.jsx";
 import TenantGate from "./components/TenantGate.jsx";
 import Layout from "./components/Layout.jsx";
 import Home from "./pages/Home.jsx";
@@ -10,6 +12,13 @@ import Courses from "./pages/Courses.jsx";
 import CourseDetail from "./pages/CourseDetail.jsx";
 import Learn from "./pages/Learn.jsx";
 import MyLearning from "./pages/MyLearning.jsx";
+import AdminLayout from "./admin/components/AdminLayout.jsx";
+import AdminProtectedRoute from "./admin/components/AdminProtectedRoute.jsx";
+import AdminDashboard from "./admin/pages/Dashboard.jsx";
+import UserManagement from "./admin/pages/UserManagement.jsx";
+import TenantRolesPermissions from "./admin/pages/TenantRolesPermissions.jsx";
+import MasterDataManagement from "./admin/pages/MasterDataManagement.jsx";
+import OwnerProfile from "./admin/pages/OwnerProfile.jsx";
 import { isRootApp } from "./utils/tenant.js";
 
 function RootRoutes() {
@@ -26,6 +35,21 @@ function TenantRoutes() {
     <Routes>
       <Route path="/login" element={<TenantLogin />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+      <Route
+        element={
+          <AdminProtectedRoute roles={["tenant_admin", "TENANT_ADMIN", "ORG_ADMIN"]}>
+            <AdminLayout />
+          </AdminProtectedRoute>
+        }
+      >
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/users/new" element={<Navigate to="/admin/users?panel=create" replace />} />
+        <Route path="/admin/roles" element={<TenantRolesPermissions />} />
+        <Route path="/admin/master-data" element={<MasterDataManagement />} />
+        <Route path="/admin/profile" element={<OwnerProfile />} />
+      </Route>
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="courses" element={<Courses />} />
@@ -45,11 +69,15 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <TenantGate>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TenantGate>
+      <AdminAuthProvider>
+        <ToastProvider>
+          <TenantGate>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </TenantGate>
+        </ToastProvider>
+      </AdminAuthProvider>
     </AuthProvider>
   );
 }
