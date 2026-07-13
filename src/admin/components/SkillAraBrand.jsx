@@ -22,12 +22,9 @@ export function SkillAraSidebarBrand({ subtitle = "Super Admin" }) {
 
 export function PoweredBySkillAra() {
   return (
-    <div className="admin-sidebar-powered-by">
-      <span className="text-[11px] text-slate-400">Powered by</span>
-      <div className="mt-1 flex items-center justify-center gap-2">
-        <SkillAraLogo className="h-5 w-5" />
-        <SkillAraWordmark className="text-xs font-semibold text-slate-600" />
-      </div>
+    <div className="flex items-center justify-center gap-2 py-1 text-slate-400">
+      <SkillAraLogo className="h-4 w-4" />
+      <span className="text-xs font-semibold tracking-wide text-slate-400">SkillAra</span>
     </div>
   );
 }

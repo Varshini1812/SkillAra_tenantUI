@@ -22,10 +22,6 @@ const TENANT_NAV = [
       { to: "/admin/master-data", label: "Master data", icon: "master-data" },
     ],
   },
-  {
-    section: "Account",
-    items: [{ to: "/admin/profile", label: "My profile", icon: "profile" }],
-  },
 ];
 
 function NavIcon({ name }) {

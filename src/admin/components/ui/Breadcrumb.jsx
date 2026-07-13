@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Breadcrumb({ items = [] }) {
   return (
-    <nav className="mb-4 flex items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
+    <nav className="mb-4 flex items-center gap-2 text-sm text-slate-900" aria-label="Breadcrumb">
       {items.map((item, i) => (
         <span key={item.label} className="flex items-center gap-2">
           {i > 0 && <span className="text-slate-600">/</span>}
