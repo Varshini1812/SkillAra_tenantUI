@@ -66,6 +66,11 @@ export async function inviteUser(payload) {
   return getData(res);
 }
 
+export async function resendInvite(userId) {
+  const res = await api.post("/api/tenant-admin/resend-invite", { userId });
+  return getData(res);
+}
+
 export async function resolveTenant(subdomain) {
   const sub = (subdomain || getTenantSubdomain() || "").trim().toLowerCase();
   const res = await api.get("/api/tenants/resolve", {

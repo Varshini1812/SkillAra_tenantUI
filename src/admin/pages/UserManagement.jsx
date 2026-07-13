@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { createUser, fetchUsers, updateUser, updateUserStatus as apiUpdateUserStatus } from "../api/admin.js";
+import { createUser, fetchUsers, updateUser, updateUserStatus as apiUpdateUserStatus, inviteUser, resendInvite } from "../api/admin.js";
 import { getErrorMessage } from "../api/client.js";
 import UserFormDrawer, { EMPTY_USER_FORM } from "../components/users/UserFormDrawer.jsx";
 import UserDetailDrawer from "../components/users/UserDetailDrawer.jsx";
@@ -279,22 +279,40 @@ export default function UserManagement() {
         return;
       }
 
-      const payload = {
-        name: `${form.firstName} ${form.lastName}`.trim(),
-        email: form.email.trim(),
-        password: form.sendInvite ? `Temp@${crypto.randomUUID().slice(0, 8)}` : form.password,
-        roleId: form.roleId,
-        phone: form.phone,
-        employeeId: form.employeeId,
-        departmentId: form.departmentId || null,
-        designationId: form.designationId || null,
-        profilePhoto: form.profilePhoto,
-      };
+      let createdUser;
+      let emailSent = false;
+      let emailResult = null;
+
       if (form.sendInvite) {
-        payload.invitationStatus = "PENDING";
+        const payload = {
+          name: `${form.firstName} ${form.lastName}`.trim(),
+          email: form.email.trim(),
+          roleId: form.roleId,
+          phone: form.phone,
+          employeeId: form.employeeId,
+          departmentId: form.departmentId || null,
+          designationId: form.designationId || null,
+          profilePhoto: form.profilePhoto,
+        };
+        const data = await inviteUser(payload);
+        createdUser = data?.user || data;
+        emailSent = Boolean(data?.emailSent);
+        emailResult = data?.emailResult;
+      } else {
+        const payload = {
+          name: `${form.firstName} ${form.lastName}`.trim(),
+          email: form.email.trim(),
+          password: form.password,
+          roleId: form.roleId,
+          phone: form.phone,
+          employeeId: form.employeeId,
+          departmentId: form.departmentId || null,
+          designationId: form.designationId || null,
+          profilePhoto: form.profilePhoto,
+        };
+        const data = await createUser(payload);
+        createdUser = data?.user || data;
       }
-      const data = await createUser(payload);
-      const createdUser = data?.user || data;
 
       saveProfile(createdUser.id, {
         firstName: form.firstName,
@@ -311,12 +329,19 @@ export default function UserManagement() {
         roleId: form.roleId,
       });
 
-      toast(
-        form.sendInvite
-          ? `Invitation sent to ${form.email}`
-          : `${form.firstName} created successfully`,
-        "success"
-      );
+      if (form.sendInvite) {
+        if (emailSent) {
+          toast(`Invitation sent to ${form.email}`, "success");
+        } else {
+          if (emailResult?.mode === "log") {
+            toast(`Invitation created (email logged to console)`, "success");
+          } else {
+            toast(`Invitation created, but failed to send email to ${form.email}`, "info");
+          }
+        }
+      } else {
+        toast(`${form.firstName} created successfully`, "success");
+      }
       closePanel();
       loadUsers();
     } catch (err) {
@@ -400,6 +425,33 @@ export default function UserManagement() {
       audit({ action: status === "ACTIVE" ? "user.activated" : "user.deactivated", userId: user.id, email: user.email });
       toast(`User ${status === "ACTIVE" ? "activated" : "deactivated"}`, "success");
       loadUsers();
+    } catch (err) {
+      toast(getErrorMessage(err), "error");
+    }
+  };
+
+  const handleResendInvite = async (user) => {
+    try {
+      const data = await resendInvite(user.id);
+      saveProfile(user.id, {
+        invitedAt: new Date().toISOString(),
+      });
+      audit({
+        action: "user.invited_resent",
+        userId: user.id,
+        email: user.email,
+        roleId: user.roleId,
+      });
+
+      if (data?.emailSent) {
+        toast(`Invite resent to ${user.email}`, "success");
+      } else {
+        if (data?.emailResult?.mode === "log") {
+          toast(`Invite resent successfully (email logged to console)`, "success");
+        } else {
+          toast(`Invite resent, but failed to send email to ${user.email}`, "info");
+        }
+      }
     } catch (err) {
       toast(getErrorMessage(err), "error");
     }
@@ -645,7 +697,7 @@ export default function UserManagement() {
                             <TableAction variant="success" onClick={() => updateUserStatus(user, "ACTIVE")}>Activate</TableAction>
                           )}
                           {user.status === "PENDING" && (
-                            <TableAction variant="muted" onClick={() => toast(`Invite resent to ${user.email}`, "success")}>Resend invite</TableAction>
+                            <TableAction variant="muted" onClick={() => handleResendInvite(user)}>Resend invite</TableAction>
                           )}
                         </TableActions>
                       </td>

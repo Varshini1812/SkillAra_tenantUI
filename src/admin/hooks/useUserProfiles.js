@@ -20,6 +20,11 @@ export function enrichUser(apiUser, profiles = {}) {
     ? { firstName: profile.firstName, lastName: profile.lastName || "" }
     : splitName(apiUser.name);
 
+  let resolvedStatus = profile.status || apiUser.status || "ACTIVE";
+  if (resolvedStatus === "invited" || resolvedStatus === "INVITED") {
+    resolvedStatus = "PENDING";
+  }
+
   return {
     ...apiUser,
     firstName,
@@ -32,7 +37,7 @@ export function enrichUser(apiUser, profiles = {}) {
     designation: apiUser.designation || profile.designation || "",
     roleId: apiUser.roleId || profile.roleId || mapApiRoleToTenantRoleId(apiUser.role),
     profilePhoto: profile.profilePhoto || "",
-    status: profile.status || apiUser.status || "ACTIVE",
+    status: resolvedStatus,
     invitationStatus: profile.invitationStatus || apiUser.invitationStatus || "ACCEPTED",
     invitedAt: profile.invitedAt || null,
     auditNote: profile.auditNote || "",
