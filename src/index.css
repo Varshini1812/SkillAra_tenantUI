@@ -77,8 +77,8 @@ h1, h2, h3, h4, h5, h6 {
   @apply border-r border-slate-200 bg-white;
   transition: width 0.2s ease;
 }
-.admin-sidebar-collapsed { @apply w-[4.5rem]; }
-.admin-sidebar-expanded { @apply w-60; }
+.admin-sidebar-collapsed { @apply w-[5rem]; }
+.admin-sidebar-expanded { @apply w-[16rem] sm:w-[17rem]; }
 .admin-sidebar-brand { @apply flex h-16 shrink-0 items-center border-b border-slate-200 px-3; background: rgb(255 255 255); }
 .admin-sidebar-toggle {
   @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500;
@@ -138,9 +138,47 @@ h1, h2, h3, h4, h5, h6 {
 .admin-filter-bar .admin-input { @apply w-auto shrink-0; }
 .admin-filter-search { @apply min-w-[200px] flex-1; }
 .admin-filter-select { @apply min-w-[140px]; }
-.admin-pagination { @apply flex flex-col gap-3 border-t border-slate-200 px-5 py-3 sm:flex-row sm:items-center sm:justify-between; }
-.admin-pagination-summary { @apply text-sm text-slate-500; }
-.admin-pagination-controls { @apply ml-auto flex flex-wrap items-center justify-end gap-3; }
-.admin-pagination-btn { @apply rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600; transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out, border-color 0.25s ease-in-out; }
-.admin-pagination-btn:hover:not(:disabled) { @apply border-indigo-200 bg-indigo-50/70 text-indigo-700; }
-.admin-table { @apply overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm; }
+.admin-pagination {
+  @apply flex flex-col gap-3 border-t border-slate-200 px-5 py-3 sm:flex-row sm:items-center sm:justify-between;
+}
+
+.admin-pagination-summary {
+  @apply text-sm text-slate-500;
+}
+
+.admin-pagination-controls {
+  @apply ml-auto flex flex-wrap items-center justify-end gap-3;
+}
+
+.admin-pagination-size {
+  @apply flex items-center gap-2 text-sm text-slate-500;
+}
+
+.admin-pagination-size-label {
+  @apply whitespace-nowrap;
+}
+
+.admin-pagination-select {
+  @apply w-auto min-w-[4.5rem] py-1.5;
+}
+
+.admin-pagination-page {
+  @apply whitespace-nowrap text-sm text-slate-500;
+}
+
+.admin-pagination-buttons {
+  @apply flex items-center gap-1.5;
+}
+
+.admin-pagination-btn {
+  @apply rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600;
+  transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out, border-color 0.25s ease-in-out;
+}
+
+.admin-pagination-btn:hover:not(:disabled) {
+  @apply border-indigo-200 bg-indigo-50/70 text-indigo-700;
+}
+
+.admin-table {
+  @apply overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm;
+}
