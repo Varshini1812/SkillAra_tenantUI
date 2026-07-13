@@ -38,7 +38,7 @@ export default function Courses() {
           placeholder="Search courses..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="rounded-lg border border-slate-300 px-4 py-2 sm:w-72"
+          className="w-full rounded-lg border border-slate-300 px-4 py-2 sm:w-72"
         />
       </div>
 

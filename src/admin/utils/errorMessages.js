@@ -116,3 +116,7 @@ export function getApiErrorMessage(err) {
 
   return ERROR_MESSAGES.GENERAL_UNKNOWN;
 }
+
+export function getApiErrorKey(err) {
+  return err?.response?.data?.message?.errorKey || "";
+}

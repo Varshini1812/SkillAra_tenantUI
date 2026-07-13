@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTenantRoles } from "../hooks/useTenantRoles.js";
 import { enrichUser, useAuditLog, useUserProfiles } from "../hooks/useUserProfiles.js";
-import { validateRoleName } from "../utils/userValidation.js";
+import { validateRoleForm, USER_LIMITS } from "../utils/userValidation.js";
 import PermissionMatrix from "../components/roles/PermissionMatrix.jsx";
 import Drawer from "../components/ui/Drawer.jsx";
 import ConfirmDialog from "../components/ui/ConfirmDialog.jsx";
@@ -58,6 +58,7 @@ export default function TenantRolesPermissions() {
     status: "active",
     permissions: {},
   });
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     fetchUsers()
@@ -118,6 +119,7 @@ export default function TenantRolesPermissions() {
   const activeRole = allRoles.find((r) => r.id === roleId);
 
   const openPanel = (mode, id = null) => {
+    setFormErrors({});
     if (mode === "create") {
       setForm({ name: "", description: "", roleType: "custom", status: "active", permissions: {} });
       setSearchParams({ panel: "create" });
@@ -140,25 +142,34 @@ export default function TenantRolesPermissions() {
 
   const closePanel = () => {
     setCloneSource(null);
+    setFormErrors({});
     setSearchParams({});
   };
 
-  const saveRole = async () => {
-    const err = validateRoleName(form.name, allRoles, panel === "edit" ? roleId : null);
-    if (err) {
-      toast(err, "error");
-      return;
+  const setFormField = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) {
+      setFormErrors((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
     }
-    if (form.description.length > 250) {
-      toast("Description max 250 characters", "error");
+  };
+
+  const saveRole = async () => {
+    const errors = validateRoleForm(form, allRoles, panel === "edit" ? roleId : null);
+    setFormErrors(errors);
+    if (Object.keys(errors).length) {
+      toast("Please fix the highlighted fields", "error");
       return;
     }
 
     try {
       if (panel === "create" || cloneSource) {
         const role = await createRole({
-          name: form.name,
-          description: form.description,
+          name: form.name.trim(),
+          description: form.description.trim(),
           status: form.status,
           permissions: form.permissions,
           createdBy: "Organization Admin",
@@ -175,7 +186,11 @@ export default function TenantRolesPermissions() {
         if (role?.roleType === "system" && role?.protected) {
           await updateRole(roleId, { permissions: form.permissions });
         } else {
-          await updateRole(roleId, form);
+          await updateRole(roleId, {
+            ...form,
+            name: form.name.trim(),
+            description: form.description.trim(),
+          });
         }
         audit({ action: "role.updated", roleId, roleName: form.name });
         toast("Role updated", "success");
@@ -287,7 +302,7 @@ export default function TenantRolesPermissions() {
           <EmptyState title="No roles found" description="Try adjusting your search or filters." />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[960px] text-left text-sm">
+            <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="sticky top-0 bg-white">
                 <tr className="border-b border-slate-200 text-slate-500">
                   <th className="px-5 py-3 font-medium">Role Name</th>
@@ -400,11 +415,46 @@ export default function TenantRolesPermissions() {
           <div className="space-y-4">
             <div>
               <label className="mb-1 block text-sm text-slate-500">Role name *</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} disabled={panel === "edit" && activeRole?.roleType === "system"} className={inputClass} />
+              <input
+                value={form.name}
+                onChange={(e) =>
+                  setFormField("name", e.target.value.slice(0, USER_LIMITS.roleName.max))
+                }
+                disabled={panel === "edit" && activeRole?.roleType === "system"}
+                className={inputClass}
+                aria-invalid={Boolean(formErrors.name)}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                {USER_LIMITS.roleName.min}–{USER_LIMITS.roleName.max} characters
+              </p>
+              {formErrors.name && (
+                <p className="mt-1 text-xs text-red-600" role="alert">
+                  {formErrors.name}
+                </p>
+              )}
             </div>
             <div>
               <label className="mb-1 block text-sm text-slate-500">Description</label>
-              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value.slice(0, 250) })} rows={3} className={inputClass} />
+              <textarea
+                value={form.description}
+                onChange={(e) =>
+                  setFormField(
+                    "description",
+                    e.target.value.slice(0, USER_LIMITS.roleDescription.max)
+                  )
+                }
+                rows={3}
+                className={inputClass}
+                aria-invalid={Boolean(formErrors.description)}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                Optional · max {USER_LIMITS.roleDescription.max} characters
+              </p>
+              {formErrors.description && (
+                <p className="mt-1 text-xs text-red-600" role="alert">
+                  {formErrors.description}
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -413,7 +463,7 @@ export default function TenantRolesPermissions() {
               </div>
               <div>
                 <label className="mb-1 block text-sm text-slate-500">Status</label>
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className={inputClass}>
+                <select value={form.status} onChange={(e) => setFormField("status", e.target.value)} className={inputClass}>
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>

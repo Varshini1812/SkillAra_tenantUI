@@ -73,8 +73,21 @@ h1, h2, h3, h4, h5, h6 {
   background-image: linear-gradient(135deg, rgb(248 250 252) 0%, rgb(241 245 249) 45%, rgb(248 250 252) 100%);
 }
 
-.admin-sidebar { @apply border-r border-slate-200 bg-white; }
-.admin-sidebar-brand { @apply flex h-16 shrink-0 items-center border-b border-slate-200 px-5; background: rgb(255 255 255); }
+.admin-sidebar {
+  @apply border-r border-slate-200 bg-white;
+  transition: width 0.2s ease;
+}
+.admin-sidebar-collapsed { @apply w-[4.5rem]; }
+.admin-sidebar-expanded { @apply w-60; }
+.admin-sidebar-brand { @apply flex h-16 shrink-0 items-center border-b border-slate-200 px-3; background: rgb(255 255 255); }
+.admin-sidebar-toggle {
+  @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.admin-sidebar-toggle:hover { @apply border-slate-300 bg-slate-50 text-slate-800; }
+.admin-mobile-bar {
+  @apply flex h-14 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 lg:hidden;
+}
 .admin-sidebar-powered-by { @apply flex flex-col items-center justify-center rounded-lg bg-slate-50 px-3 py-2.5 text-center; }
 .admin-panel-close { @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500; transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out, border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out; }
 .admin-panel-close:hover { @apply border-slate-300 bg-slate-50 text-slate-800 shadow-sm; }
@@ -84,12 +97,21 @@ h1, h2, h3, h4, h5, h6 {
 .admin-import-menu { @apply absolute right-0 top-[calc(100%+0.5rem)] z-20 w-72 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl shadow-slate-200/70; }
 .admin-import-menu-item { @apply w-full rounded-lg px-3 py-2.5 text-left; transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out, border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out, transform 0.25s ease-in-out; }
 .admin-import-menu-item:hover { @apply bg-indigo-50/90; }
-.admin-data-table { @apply w-full min-w-[920px] border-collapse text-left text-sm; }
-.admin-data-table thead th { @apply border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500; }
-.admin-data-table tbody td { @apply align-middle px-5 py-4 text-slate-600; }
-.admin-data-table .col-user { @apply min-w-[220px]; }
-.admin-data-table .col-email { @apply min-w-[240px] max-w-[320px]; }
-.admin-data-table .col-actions { @apply min-w-[300px] text-right; }
+.admin-data-table { @apply w-full min-w-[640px] border-collapse text-left text-sm; }
+.admin-data-table-fixed { @apply table-fixed; }
+.admin-data-table thead th { @apply border-b border-slate-200 bg-slate-50/80 px-3 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:px-4; }
+.admin-data-table tbody td { @apply align-middle px-3 py-3 text-slate-600 sm:px-4; }
+.admin-data-table-fixed tbody td { @apply whitespace-nowrap; }
+.admin-data-table .col-user { @apply min-w-[180px]; }
+.admin-data-table .col-email { @apply min-w-[200px] max-w-[280px]; }
+.admin-data-table .col-name { @apply w-[22%]; }
+.admin-data-table .col-desc { @apply w-auto max-w-0; }
+.admin-data-table .col-desc > * { @apply block overflow-hidden text-ellipsis whitespace-nowrap; }
+.admin-data-table .col-code { @apply w-[4.5rem]; }
+.admin-data-table .col-count { @apply w-[7rem]; }
+.admin-data-table .col-status { @apply w-[6.5rem] whitespace-nowrap; }
+.admin-data-table .col-actions { @apply w-[9.5rem] whitespace-nowrap text-right; }
+.admin-data-table .col-actions-wide { @apply min-w-[14rem] whitespace-nowrap text-right; }
 .admin-table-action { @apply inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium; transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out, border-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out; }
 .admin-table-action-view { @apply border-indigo-200 bg-indigo-50 text-indigo-700; }
 .admin-table-action-edit { @apply border-violet-200 bg-violet-50 text-violet-700; }
