@@ -29,7 +29,7 @@ function WorkspaceForm() {
     const timer = setTimeout(async () => {
       try {
         const data = await checkWorkspace(sub);
-        if (data?.exists) {
+        if (data?.exists && !data?.inactive) {
           setStatus("valid");
           setTenantName(data.tenant_name);
         } else {

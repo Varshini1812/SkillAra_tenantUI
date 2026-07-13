@@ -10,8 +10,14 @@ import { TableAction, TableActions } from "../components/ui/TableActions.jsx";
 import { useToast } from "../components/ui/Toast.jsx";
 import { usePagination } from "../hooks/usePagination.js";
 import { useMasterCategories, useTenantMasterData } from "../hooks/useTenantMasterData.js";
+import {
+  MASTER_DATA_LIMITS,
+  validateMasterDataForm,
+} from "../utils/masterDataValidation.js";
 
 const inputClass = "admin-input";
+
+const EMPTY_FORM = { name: "", code: "", description: "", status: "active" };
 
 export default function MasterDataManagement() {
   const { toast } = useToast();
@@ -28,7 +34,8 @@ export default function MasterDataManagement() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", code: "", description: "", status: "active" });
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (!searchParams.get("category") && categories[0]?.key) {
@@ -57,61 +64,83 @@ export default function MasterDataManagement() {
     { resetDeps: [search, statusFilter, category] }
   );
 
-  const activeItem = items.find((i) => i.id === itemId);
-
   const setCategory = (key) => {
     setSearch("");
     setStatusFilter("all");
     setSearchParams({ category: key });
   };
 
+  const setField = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
+  };
+
   const openCreate = () => {
-    setForm({ name: "", code: "", description: "", status: "active" });
+    setForm(EMPTY_FORM);
+    setErrors({});
     setSearchParams({ category, panel: "create" });
   };
 
   const openEdit = (item) => {
     setForm({
       name: item.name,
-      code: item.code || "",
+      code: String(item.code || "").toUpperCase(),
       description: item.description || "",
       status: item.status,
     });
+    setErrors({});
     setSearchParams({ category, panel: "edit", id: item.id });
   };
 
-  const closePanel = () => setSearchParams({ category });
+  const closePanel = () => {
+    setErrors({});
+    setSearchParams({ category });
+  };
 
   const saveItem = async (e) => {
     e.preventDefault();
-    const name = form.name.trim();
-    if (name.length < 2) {
-      toast("Name must be at least 2 characters", "error");
+    const nextErrors = validateMasterDataForm(form, {
+      existingItems: items,
+      excludeId: panel === "edit" ? itemId : null,
+    });
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      toast("Please fix the highlighted fields", "error");
       return;
     }
+
+    const name = form.name.trim();
+    const code = form.code.trim().toUpperCase();
+    const description = form.description.trim();
 
     setSubmitting(true);
     try {
       if (panel === "create") {
         await createItem({
           name,
-          code: form.code.trim(),
-          description: form.description.trim(),
+          code,
+          description,
           status: form.status,
         });
         toast(`${activeCategory?.label || "Item"} created`, "success");
       } else if (panel === "edit" && itemId) {
         await updateItem(itemId, {
           name,
-          code: form.code.trim(),
-          description: form.description.trim(),
+          code,
+          description,
           status: form.status,
         });
         toast(`${activeCategory?.label || "Item"} updated`, "success");
       }
       closePanel();
     } catch {
-      toast("Could not save. Check for duplicate names.", "error");
+      toast("Could not save. Check for duplicate names or codes.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -129,6 +158,7 @@ export default function MasterDataManagement() {
   };
 
   const pageLoading = categoriesLoading || loading;
+  const label = activeCategory?.label || "item";
 
   return (
     <div>
@@ -147,7 +177,7 @@ export default function MasterDataManagement() {
           </p>
         </div>
         <button type="button" onClick={openCreate} className="admin-btn-primary">
-          + Add {activeCategory?.label || "item"}
+          + Add {label}
         </button>
       </div>
 
@@ -206,37 +236,39 @@ export default function MasterDataManagement() {
             description={`Create ${activeCategory?.labelPlural?.toLowerCase() || "items"} to use in user forms and across the app.`}
             action={
               <button type="button" onClick={openCreate} className="admin-btn-primary">
-                + Add {activeCategory?.label || "item"}
+                + Add {label}
               </button>
             }
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="admin-data-table">
+            <table className="admin-data-table admin-data-table-fixed">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Code</th>
-                  <th>Status</th>
+                  <th className="col-name">Name</th>
+                  <th className="col-desc">Description</th>
+                  <th className="col-code">Code</th>
+                  <th className="col-status">Status</th>
                   <th className="col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {pagedItems.map((item) => (
                   <tr key={item.id} className="admin-table-row border-b border-slate-100 last:border-0">
-                    <td>
-                      <p className="font-medium text-slate-900">{item.name}</p>
+                    <td className="col-name">
+                      <p className="truncate font-medium text-slate-900" title={item.name}>
+                        {item.name}
+                      </p>
                     </td>
-                    <td>
-                      <span className="block max-w-[280px] truncate text-slate-500" title={item.description || undefined}>
-                        {item.description || "—"}
+                    <td className="col-desc">
+                      <span title={item.description || undefined}>{item.description || "—"}</span>
+                    </td>
+                    <td className="col-code">
+                      <span className="font-mono text-xs uppercase text-slate-600">
+                        {item.code || "—"}
                       </span>
                     </td>
-                    <td>
-                      <span className="font-mono text-xs text-slate-600">{item.code || "—"}</span>
-                    </td>
-                    <td>
+                    <td className="col-status">
                       <OrgStatusBadge status={item.status === "active" ? "ACTIVE" : "INACTIVE"} />
                     </td>
                     <td className="col-actions">
@@ -263,7 +295,7 @@ export default function MasterDataManagement() {
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
-            itemLabel={activeCategory?.label?.toLowerCase() || "item"}
+            itemLabel={label.toLowerCase()}
           />
         )}
       </div>
@@ -271,50 +303,92 @@ export default function MasterDataManagement() {
       <Drawer
         open={panel === "create" || panel === "edit"}
         onClose={closePanel}
-        title={panel === "create" ? `Add ${activeCategory?.label || "item"}` : `Edit ${activeCategory?.label || "item"}`}
+        title={panel === "create" ? `Add ${label}` : `Edit ${label}`}
+        footer={
+          <>
+            <button type="button" onClick={closePanel} className="admin-btn-secondary" disabled={submitting}>
+              Cancel
+            </button>
+            <button type="submit" form="master-data-form" disabled={submitting} className="admin-btn-primary">
+              {submitting ? "Saving..." : "Save"}
+            </button>
+          </>
+        }
       >
-        <form onSubmit={saveItem} className="space-y-4">
+        <form id="master-data-form" onSubmit={saveItem} className="space-y-4" noValidate>
           <div>
             <label className="mb-1 block text-sm text-slate-500">Name *</label>
             <input
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => setField("name", e.target.value.slice(0, MASTER_DATA_LIMITS.name.max))}
               className={inputClass}
-              required
+              aria-invalid={Boolean(errors.name)}
             />
+            <p className="mt-1 text-xs text-slate-500">
+              {MASTER_DATA_LIMITS.name.min}–{MASTER_DATA_LIMITS.name.max} characters
+            </p>
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-600" role="alert">
+                {errors.name}
+              </p>
+            )}
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-500">Code</label>
+            <label className="mb-1 block text-sm text-slate-500">Code *</label>
             <input
               value={form.code}
-              onChange={(e) => setForm({ ...form, code: e.target.value })}
-              placeholder="Optional short code"
-              className={inputClass}
+              onChange={(e) =>
+                setField(
+                  "code",
+                  e.target.value
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "")
+                    .slice(0, MASTER_DATA_LIMITS.code.length)
+                )
+              }
+              placeholder="e.g. ACA"
+              className={`${inputClass} font-mono uppercase`}
+              maxLength={MASTER_DATA_LIMITS.code.length}
+              aria-invalid={Boolean(errors.code)}
             />
+            <p className="mt-1 text-xs text-slate-500">Exactly 3 letters or numbers</p>
+            {errors.code && (
+              <p className="mt-1 text-xs text-red-600" role="alert">
+                {errors.code}
+              </p>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm text-slate-500">Description</label>
             <textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setField("description", e.target.value.slice(0, MASTER_DATA_LIMITS.description.max))
+              }
               rows={3}
               className={inputClass}
+              aria-invalid={Boolean(errors.description)}
             />
+            <p className="mt-1 text-xs text-slate-500">
+              Optional · max {MASTER_DATA_LIMITS.description.max} characters
+            </p>
+            {errors.description && (
+              <p className="mt-1 text-xs text-red-600" role="alert">
+                {errors.description}
+              </p>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm text-slate-500">Status</label>
             <select
               value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              onChange={(e) => setField("status", e.target.value)}
               className={inputClass}
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
           </div>
-          <button type="submit" disabled={submitting} className="admin-btn-primary w-full">
-            {submitting ? "Saving..." : "Save"}
-          </button>
         </form>
       </Drawer>
 

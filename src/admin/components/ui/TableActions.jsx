@@ -20,5 +20,5 @@ export function TableAction({ children, onClick, variant = "muted", disabled = f
 }
 
 export function TableActions({ children }) {
-  return <div className="flex flex-wrap items-center justify-end gap-1.5">{children}</div>;
+  return <div className="inline-flex flex-nowrap items-center justify-end gap-1.5">{children}</div>;
 }

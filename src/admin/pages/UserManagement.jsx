@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { createUser, fetchUsers, updateUser, updateUserStatus as apiUpdateUserStatus, inviteUser, resendInvite } from "../api/admin.js";
 import { getErrorMessage } from "../api/client.js";
+import { getApiErrorKey } from "../utils/errorMessages.js";
 import UserFormDrawer, { EMPTY_USER_FORM } from "../components/users/UserFormDrawer.jsx";
 import UserDetailDrawer from "../components/users/UserDetailDrawer.jsx";
 import Drawer from "../components/ui/Drawer.jsx";
@@ -102,6 +103,7 @@ export default function UserManagement() {
   const userId = searchParams.get("id");
 
   const [users, setUsers] = useState([]);
+  const [usersForEmailCheck, setUsersForEmailCheck] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -120,10 +122,12 @@ export default function UserManagement() {
   const loadUsers = useCallback(() => {
     setLoading(true);
     setError("");
-    fetchUsers()
+    fetchUsers({ limit: 100 })
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.users || [];
-        setUsers(filterManageableUsers(list.map((u) => enrichUser(u, profiles))));
+        const enriched = list.map((u) => enrichUser(u, profiles));
+        setUsersForEmailCheck(enriched);
+        setUsers(filterManageableUsers(enriched));
       })
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
@@ -132,6 +136,24 @@ export default function UserManagement() {
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  const emailUniquenessUsers = useMemo(() => {
+    const byEmail = new Map();
+    for (const u of usersForEmailCheck) {
+      const key = String(u.email || "").trim().toLowerCase();
+      if (key) byEmail.set(key, u);
+    }
+    if (currentUser?.email) {
+      const key = String(currentUser.email).trim().toLowerCase();
+      if (key && !byEmail.has(key)) {
+        byEmail.set(key, {
+          id: currentUser.id || currentUser._id,
+          email: currentUser.email,
+        });
+      }
+    }
+    return [...byEmail.values()];
+  }, [usersForEmailCheck, currentUser]);
 
   useEffect(() => {
     logOwnerAuthContext("UserManagement session", {
@@ -244,9 +266,12 @@ export default function UserManagement() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    const errors = validateUserForm(form, users);
+    const errors = validateUserForm(form, emailUniquenessUsers);
     setFormErrors(errors);
-    if (Object.keys(errors).length) return;
+    if (Object.keys(errors).length) {
+      toast("Please fix the highlighted fields", "error");
+      return;
+    }
 
     const role = allRoles.find((r) => r.id === form.roleId);
     if (role?.status === "inactive") {
@@ -286,7 +311,7 @@ export default function UserManagement() {
       if (form.sendInvite) {
         const payload = {
           name: `${form.firstName} ${form.lastName}`.trim(),
-          email: form.email.trim(),
+          email: form.email.trim().toLowerCase(),
           roleId: form.roleId,
           phone: form.phone,
           employeeId: form.employeeId,
@@ -301,7 +326,7 @@ export default function UserManagement() {
       } else {
         const payload = {
           name: `${form.firstName} ${form.lastName}`.trim(),
-          email: form.email.trim(),
+          email: form.email.trim().toLowerCase(),
           password: form.password,
           roleId: form.roleId,
           phone: form.phone,
@@ -352,6 +377,12 @@ export default function UserManagement() {
         isOwner,
         error: getErrorMessage(err),
       });
+      if (getApiErrorKey(err) === "USER_EMAIL_EXISTS") {
+        setFormErrors((prev) => ({
+          ...prev,
+          email: "Email already exists in this organization",
+        }));
+      }
       toast(getErrorMessage(err), "error");
     } finally {
       setSubmitting(false);
@@ -360,9 +391,12 @@ export default function UserManagement() {
 
   const handleEdit = async (e) => {
     e.preventDefault();
-    const errors = validateUserForm(form, users, userId);
+    const errors = validateUserForm(form, emailUniquenessUsers, userId);
     setFormErrors(errors);
-    if (Object.keys(errors).length) return;
+    if (Object.keys(errors).length) {
+      toast("Please fix the highlighted fields", "error");
+      return;
+    }
 
     const user = users.find((u) => u.id === userId);
     if (!user) return;
@@ -502,7 +536,7 @@ export default function UserManagement() {
 
           const data = await createUser({
             name: `${row.firstName} ${row.lastName}`.trim() || row.email,
-            email: row.email,
+            email: String(row.email || "").trim().toLowerCase(),
             password: row.password,
             roleId: matchedRole.id,
             phone: row.phone || undefined,
@@ -658,7 +692,7 @@ export default function UserManagement() {
                   <th>Department</th>
                   <th>Role</th>
                   <th>Status</th>
-                  <th className="col-actions">Actions</th>
+                  <th className="col-actions-wide">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -687,7 +721,7 @@ export default function UserManagement() {
                         </span>
                       </td>
                       <td><OrgStatusBadge status={user.status} /></td>
-                      <td className="col-actions">
+                      <td className="col-actions-wide">
                         <TableActions>
                           <TableAction variant="view" onClick={() => openView(user)}>View</TableAction>
                           <TableAction variant="edit" onClick={() => openEdit(user)}>Edit</TableAction>
@@ -725,8 +759,30 @@ export default function UserManagement() {
         title="Create user"
         subtitle="Add a new member to your organization"
         width="max-w-xl"
+        footer={
+          <>
+            <button type="button" onClick={closePanel} className="admin-btn-secondary" disabled={submitting}>
+              Cancel
+            </button>
+            <button type="submit" form="create-user-form" disabled={submitting} className="admin-btn-primary">
+              {submitting ? "Saving..." : "Create user"}
+            </button>
+          </>
+        }
       >
-        <UserFormDrawer mode="create" form={form} setForm={setForm} errors={formErrors} roles={assignableRoles} departments={departments} designations={designations} onSubmit={handleCreate} loading={submitting} />
+        <UserFormDrawer
+          mode="create"
+          formId="create-user-form"
+          hideActions
+          form={form}
+          setForm={setForm}
+          errors={formErrors}
+          roles={assignableRoles}
+          departments={departments}
+          designations={designations}
+          onSubmit={handleCreate}
+          loading={submitting}
+        />
       </Drawer>
 
       <Drawer
@@ -735,8 +791,30 @@ export default function UserManagement() {
         title="Edit user"
         subtitle={activeUser?.email}
         width="max-w-xl"
+        footer={
+          <>
+            <button type="button" onClick={closePanel} className="admin-btn-secondary" disabled={submitting}>
+              Cancel
+            </button>
+            <button type="submit" form="edit-user-form" disabled={submitting} className="admin-btn-primary">
+              {submitting ? "Saving..." : "Save changes"}
+            </button>
+          </>
+        }
       >
-        <UserFormDrawer mode="edit" form={form} setForm={setForm} errors={formErrors} roles={assignableRoles} departments={departments} designations={designations} onSubmit={handleEdit} loading={submitting} />
+        <UserFormDrawer
+          mode="edit"
+          formId="edit-user-form"
+          hideActions
+          form={form}
+          setForm={setForm}
+          errors={formErrors}
+          roles={assignableRoles}
+          departments={departments}
+          designations={designations}
+          onSubmit={handleEdit}
+          loading={submitting}
+        />
       </Drawer>
 
       <Drawer

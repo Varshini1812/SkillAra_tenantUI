@@ -162,8 +162,8 @@ function LearnContent() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">{course.title}</h1>
-        <div className="mt-2 flex items-center gap-3">
-          <div className="h-2 flex-1 max-w-xs overflow-hidden rounded-full bg-slate-100">
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <div className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
             <div
               className="h-full rounded-full bg-indigo-600"
               style={{ width: `${progress?.mastery || 0}%` }}
@@ -200,7 +200,7 @@ function LearnContent() {
           </ul>
         </aside>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6 lg:col-span-2">
+        <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 lg:col-span-2">
           {activeLesson ? (
             <>
               <div className="flex items-center gap-2 text-xs text-slate-400">

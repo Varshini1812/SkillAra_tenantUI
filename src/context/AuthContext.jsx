@@ -68,7 +68,7 @@ export function AuthProvider({ children }) {
 
     try {
       const check = await checkWorkspace(sub);
-      if (check?.exists) {
+      if (check?.exists && !check?.inactive) {
         const data = await resolveTenant(sub);
         if (data?.tenant) {
           setTenantInfo(data.tenant);

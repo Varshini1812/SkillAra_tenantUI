@@ -1,4 +1,5 @@
 import { mapTenantRoleToApiRole } from "../../data/tenantRolesPermissions.js";
+import { USER_LIMITS } from "../../utils/userValidation.js";
 
 const inputClass = "admin-input";
 const labelClass = "mb-1 block text-sm text-slate-500";
@@ -13,6 +14,8 @@ export default function UserFormDrawer({
   designations = [],
   onSubmit,
   loading,
+  formId = "user-form",
+  hideActions = false,
 }) {
   const activeRoles = roles.filter((r) => r.status === "active");
   const assignableRoles = activeRoles.filter(
@@ -21,8 +24,10 @@ export default function UserFormDrawer({
   const activeDepartments = departments.filter((d) => d.status === "active" || !d.status);
   const activeDesignations = designations.filter((d) => d.status === "active" || !d.status);
 
+  const setField = (key, value) => setForm({ ...form, [key]: value });
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form id={formId} onSubmit={onSubmit} className="space-y-4" noValidate>
       <div className="flex items-center gap-4">
         <div className="flex h-16 w-16 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-2xl text-slate-500">
           {form.profilePhoto ? (
@@ -35,41 +40,86 @@ export default function UserFormDrawer({
           <label className={labelClass}>Profile photo URL</label>
           <input
             value={form.profilePhoto}
-            onChange={(e) => setForm({ ...form, profilePhoto: e.target.value })}
+            onChange={(e) => setField("profilePhoto", e.target.value)}
             placeholder="https://..."
             className={inputClass}
+            aria-invalid={Boolean(errors.profilePhoto)}
           />
+          <p className="mt-1 text-xs text-slate-500">Optional · must be a valid http(s) URL</p>
+          {errors.profilePhoto && <p className="mt-1 text-xs text-red-600">{errors.profilePhoto}</p>}
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className={labelClass}>First name *</label>
-          <input value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className={inputClass} />
+          <input
+            value={form.firstName}
+            onChange={(e) => setField("firstName", e.target.value.slice(0, USER_LIMITS.firstName.max))}
+            className={inputClass}
+            aria-invalid={Boolean(errors.firstName)}
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            {USER_LIMITS.firstName.min}–{USER_LIMITS.firstName.max} characters
+          </p>
           {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>}
         </div>
         <div>
           <label className={labelClass}>Last name *</label>
-          <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className={inputClass} />
+          <input
+            value={form.lastName}
+            onChange={(e) => setField("lastName", e.target.value.slice(0, USER_LIMITS.lastName.max))}
+            className={inputClass}
+            aria-invalid={Boolean(errors.lastName)}
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            At least {USER_LIMITS.lastName.min} character · max {USER_LIMITS.lastName.max}
+          </p>
           {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>}
         </div>
       </div>
 
       <div>
         <label className={labelClass}>Email *</label>
-        <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} disabled={mode === "edit"} className={`${inputClass} disabled:opacity-60`} />
+        <input
+          type="email"
+          value={form.email}
+          onChange={(e) => setField("email", e.target.value.slice(0, USER_LIMITS.email.max))}
+          disabled={mode === "edit"}
+          className={`${inputClass} disabled:opacity-60`}
+          aria-invalid={Boolean(errors.email)}
+        />
         {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className={labelClass}>Phone</label>
-          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
+          <input
+            value={form.phone}
+            onChange={(e) => setField("phone", e.target.value)}
+            className={inputClass}
+            aria-invalid={Boolean(errors.phone)}
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            Optional · {USER_LIMITS.phone.minDigits}–{USER_LIMITS.phone.maxDigits} digits
+          </p>
           {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
         </div>
         <div>
           <label className={labelClass}>Employee ID</label>
-          <input value={form.employeeId} onChange={(e) => setForm({ ...form, employeeId: e.target.value })} className={inputClass} />
+          <input
+            value={form.employeeId}
+            onChange={(e) =>
+              setField("employeeId", e.target.value.slice(0, USER_LIMITS.employeeId.max))
+            }
+            className={inputClass}
+            aria-invalid={Boolean(errors.employeeId)}
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            Optional · letters, numbers, hyphens, underscores
+          </p>
+          {errors.employeeId && <p className="mt-1 text-xs text-red-600">{errors.employeeId}</p>}
         </div>
       </div>
 
@@ -78,7 +128,7 @@ export default function UserFormDrawer({
           <label className={labelClass}>Department</label>
           <select
             value={form.departmentId}
-            onChange={(e) => setForm({ ...form, departmentId: e.target.value })}
+            onChange={(e) => setField("departmentId", e.target.value)}
             className={inputClass}
           >
             <option value="">Select department</option>
@@ -96,7 +146,7 @@ export default function UserFormDrawer({
           <label className={labelClass}>Designation</label>
           <select
             value={form.designationId}
-            onChange={(e) => setForm({ ...form, designationId: e.target.value })}
+            onChange={(e) => setField("designationId", e.target.value)}
             className={inputClass}
           >
             <option value="">Select designation</option>
@@ -114,7 +164,12 @@ export default function UserFormDrawer({
 
       <div>
         <label className={labelClass}>Assign role *</label>
-        <select value={form.roleId} onChange={(e) => setForm({ ...form, roleId: e.target.value })} className={inputClass}>
+        <select
+          value={form.roleId}
+          onChange={(e) => setField("roleId", e.target.value)}
+          className={inputClass}
+          aria-invalid={Boolean(errors.roleId)}
+        >
           <option value="">Select role</option>
           {assignableRoles.map((r) => (
             <option key={r.id} value={r.id}>{r.name}</option>
@@ -130,7 +185,11 @@ export default function UserFormDrawer({
 
       <div>
         <label className={labelClass}>Status</label>
-        <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className={inputClass}>
+        <select
+          value={form.status}
+          onChange={(e) => setField("status", e.target.value)}
+          className={inputClass}
+        >
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
           <option value="PENDING">Pending invitation</option>
@@ -144,7 +203,7 @@ export default function UserFormDrawer({
             <input
               type="checkbox"
               checked={form.sendInvite}
-              onChange={(e) => setForm({ ...form, sendInvite: e.target.checked })}
+              onChange={(e) => setField("sendInvite", e.target.checked)}
               className="mt-0.5 rounded"
             />
             <span>
@@ -158,22 +217,44 @@ export default function UserFormDrawer({
           {!form.sendInvite && (
             <div>
               <label className={labelClass}>Password *</label>
-              <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={inputClass} />
+              <input
+                type="password"
+                value={form.password}
+                onChange={(e) =>
+                  setField("password", e.target.value.slice(0, USER_LIMITS.password.max))
+                }
+                className={inputClass}
+                aria-invalid={Boolean(errors.password)}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                At least {USER_LIMITS.password.min} characters
+              </p>
               {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
             </div>
           )}
           {form.sendInvite && (
             <label className="flex items-center gap-2 text-sm text-slate-700">
-              <input type="checkbox" checked={form.generateTempPassword} onChange={(e) => setForm({ ...form, generateTempPassword: e.target.checked })} className="rounded" />
+              <input
+                type="checkbox"
+                checked={form.generateTempPassword}
+                onChange={(e) => setField("generateTempPassword", e.target.checked)}
+                className="rounded"
+              />
               Generate temporary password
             </label>
           )}
         </>
       )}
 
-      <button type="submit" disabled={loading} className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
-        {loading ? "Saving..." : mode === "create" ? "Create user" : "Save changes"}
-      </button>
+      {!hideActions && (
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+        >
+          {loading ? "Saving..." : mode === "create" ? "Create user" : "Save changes"}
+        </button>
+      )}
     </form>
   );
 }
