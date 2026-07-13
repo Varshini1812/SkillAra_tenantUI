@@ -84,15 +84,17 @@ function navClass({ isActive }, compact) {
 }
 
 function BrandMark({ tenantName, logoUrl, primaryColor, compact }) {
+  if (compact) {
+    return null;
+  }
+
   if (logoUrl) {
     return (
       <>
         <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" />
-        {!compact && (
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-slate-900">{tenantName}</p>
-          </div>
-        )}
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-slate-900">{tenantName}</p>
+        </div>
       </>
     );
   }
