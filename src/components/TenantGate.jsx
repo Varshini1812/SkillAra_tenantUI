@@ -1,8 +1,18 @@
 import { useAuth } from "../context/AuthContext.jsx";
 import { isRootApp } from "../utils/tenant.js";
+import { useDocumentTitle } from "../hooks/useDocumentTitle.js";
 
 export default function TenantGate({ children }) {
   const { tenantSubdomain, tenantInfo, tenantError, loading } = useAuth();
+
+  const tenantName = tenantInfo?.tenant_name || tenantSubdomain;
+  useDocumentTitle(
+    isRootApp()
+      ? "Find workspace · SkillAra"
+      : tenantName
+        ? `${tenantName} · SkillAra`
+        : "SkillAra — Learn Smarter"
+  );
 
   // Root domain only shows workspace finder — no tenant validation needed
   if (isRootApp()) return children;
@@ -33,6 +43,11 @@ export default function TenantGate({ children }) {
           <h1 className="text-xl font-bold">Workspace not found</h1>
           <p className="mt-2 text-slate-400">
             <strong>{tenantSubdomain}</strong> doesn&apos;t exist. Check the URL or ask your admin.
+          </p>
+          <p className="mt-4 text-sm text-slate-500">
+            Make sure the API server is running and{" "}
+            <code className="rounded bg-white/10 px-1">VITE_API_URL</code> is empty in the client{" "}
+            <code className="rounded bg-white/10 px-1">.env</code> (uses the dev proxy).
           </p>
         </div>
       </div>

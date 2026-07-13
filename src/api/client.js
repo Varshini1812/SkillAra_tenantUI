@@ -1,32 +1,8 @@
 import axios from "axios";
+import { getApiErrorMessage } from "../utils/errorMessages.js";
 import { getTenantSubdomain } from "../utils/tenant.js";
-
-const ACCESS_KEY = "skillara_access";
-const REFRESH_KEY = "skillara_refresh";
-
-export function setAuthTokens(accessToken, refreshToken) {
-  if (accessToken) sessionStorage.setItem(ACCESS_KEY, accessToken);
-  else sessionStorage.removeItem(ACCESS_KEY);
-  if (refreshToken) sessionStorage.setItem(REFRESH_KEY, refreshToken);
-  else sessionStorage.removeItem(REFRESH_KEY);
-}
-
-export function clearAuthTokens() {
-  sessionStorage.removeItem(ACCESS_KEY);
-  sessionStorage.removeItem(REFRESH_KEY);
-}
-
-function getAccessToken() {
-  return sessionStorage.getItem(ACCESS_KEY);
-}
-
-function getRefreshToken() {
-  return sessionStorage.getItem(REFRESH_KEY);
-}
-
-export function getStoredRefreshToken() {
-  return getRefreshToken();
-}
+import { clearAccessToken, getAccessToken, setAccessToken } from "../lib/accessTokenMemory.js";
+import { refreshTenantAccessToken } from "./tenantSessionRefresh.js";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "",
@@ -34,11 +10,13 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+export async function refreshAccessToken() {
+  return refreshTenantAccessToken();
+}
+
 api.interceptors.request.use((config) => {
   const tenant = getTenantSubdomain();
-  if (tenant) {
-    config.headers["X-Tenant-Subdomain"] = tenant;
-  }
+  if (tenant) config.headers["X-Tenant-Subdomain"] = tenant;
 
   const token = getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -52,26 +30,22 @@ api.interceptors.response.use(
     const original = error.config;
     if (
       error.response?.status === 401 &&
+      original &&
       !original._retry &&
-      !original.url?.includes("/auth/refresh") &&
-      !original.url?.includes("/auth/login") &&
-      !original.url?.includes("/auth/register") &&
-      !original.url?.includes("/auth/logout")
+      !original.url?.includes("/api/auth/refresh") &&
+      !original.url?.includes("/api/auth/login") &&
+      !original.url?.includes("/api/auth/register") &&
+      !original.url?.includes("/api/auth/logout")
     ) {
-      const refreshToken = getRefreshToken();
-      if (!refreshToken) return Promise.reject(error);
-
       original._retry = true;
       try {
-        const res = await api.post("/api/auth/refresh", { refreshToken });
-        const data = getData(res);
+        const data = await refreshAccessToken();
         if (data?.accessToken) {
-          setAuthTokens(data.accessToken, data.refreshToken || refreshToken);
           original.headers.Authorization = `Bearer ${data.accessToken}`;
           return api(original);
         }
       } catch {
-        clearAuthTokens();
+        clearAccessToken();
       }
     }
     return Promise.reject(error);
@@ -83,12 +57,9 @@ export function getData(res) {
 }
 
 export function getErrorMessage(error) {
-  return (
-    error.response?.data?.message?.errorMessage ||
-    error.response?.data?.message?.message ||
-    error.message ||
-    "Something went wrong"
-  );
+  return getApiErrorMessage(error);
 }
+
+export { setAccessToken, clearAccessToken, getAccessToken };
 
 export default api;

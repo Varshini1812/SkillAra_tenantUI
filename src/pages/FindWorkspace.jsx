@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 import { checkWorkspace } from "../api/auth.js";
 import PlatformShowcase from "../components/workspace/PlatformShowcase.jsx";
 import WorkspaceBackground from "../components/workspace/WorkspaceBackground.jsx";
-import {
-  buildTenantUrl,
-  getRootDomain,
-  getTenantDisplayHost,
-} from "../utils/tenant.js";
+import { buildTenantUrl, setDevTenant } from "../utils/tenant.js";
 
 const SUBDOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
 
@@ -33,7 +29,7 @@ function WorkspaceForm() {
     const timer = setTimeout(async () => {
       try {
         const data = await checkWorkspace(sub);
-        if (data?.exists) {
+        if (data?.exists && !data?.inactive) {
           setStatus("valid");
           setTenantName(data.tenant_name);
         } else {
@@ -53,6 +49,7 @@ function WorkspaceForm() {
     e.preventDefault();
     const sub = workspace.trim().toLowerCase();
     if (status !== "valid" || !sub) return;
+    setDevTenant(sub);
     window.location.href = `${buildTenantUrl(sub)}/login`;
   };
 
