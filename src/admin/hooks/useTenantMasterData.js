@@ -55,6 +55,7 @@ export function useTenantMasterData(category) {
 
   const deleteItem = useCallback(
     async (id) => {
+      setItems((current) => current.filter((item) => String(item.id) !== String(id)));
       await deleteMasterDataItem(id);
       await reload();
     },

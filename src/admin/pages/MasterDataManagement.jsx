@@ -6,7 +6,7 @@ import ConfirmDialog from "../components/ui/ConfirmDialog.jsx";
 import FilterBar from "../components/ui/FilterBar.jsx";
 import Pagination from "../components/ui/Pagination.jsx";
 import { EmptyState, OrgStatusBadge, TableSkeleton } from "../components/ui/OrgBadges.jsx";
-import { TableAction, TableActions } from "../components/ui/TableActions.jsx";
+import { TableAction, TableActions, EditIcon, DeleteIcon } from "../components/ui/TableActions.jsx";
 import { useToast } from "../components/ui/Toast.jsx";
 import { usePagination } from "../hooks/usePagination.js";
 import { useMasterCategories, useTenantMasterData } from "../hooks/useTenantMasterData.js";
@@ -33,6 +33,7 @@ export default function MasterDataManagement() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
@@ -148,13 +149,32 @@ export default function MasterDataManagement() {
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
+    setDeleting(true);
+    console.log("[ui:master-data:delete] requested", {
+      category,
+      id: deleteTarget.id,
+      name: deleteTarget.name,
+      code: deleteTarget.code,
+    });
     try {
       await deleteItem(deleteTarget.id);
+      console.log("[ui:master-data:delete] completed", {
+        category,
+        id: deleteTarget.id,
+        name: deleteTarget.name,
+      });
       toast("Deleted successfully", "success");
     } catch {
+      console.warn("[ui:master-data:delete] failed", {
+        category,
+        id: deleteTarget.id,
+        name: deleteTarget.name,
+      });
       toast("Cannot delete — item may be assigned to users", "error");
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
     }
-    setDeleteTarget(null);
   };
 
   const pageLoading = categoriesLoading || loading;
@@ -273,12 +293,8 @@ export default function MasterDataManagement() {
                     </td>
                     <td className="col-actions">
                       <TableActions>
-                        <TableAction variant="edit" onClick={() => openEdit(item)}>
-                          Edit
-                        </TableAction>
-                        <TableAction variant="warn" onClick={() => setDeleteTarget(item)}>
-                          Delete
-                        </TableAction>
+                        <TableAction variant="edit" onClick={() => openEdit(item)} title="Edit"><EditIcon /></TableAction>
+                        <TableAction variant="warn" onClick={() => setDeleteTarget(item)} title="Delete"><DeleteIcon /></TableAction>
                       </TableActions>
                     </td>
                   </tr>
@@ -397,6 +413,7 @@ export default function MasterDataManagement() {
         title={`Delete ${deleteTarget?.name}?`}
         message="This cannot be undone. Items assigned to users cannot be deleted."
         confirmLabel="Delete"
+        loading={deleting}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

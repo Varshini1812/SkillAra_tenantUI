@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { createUser, fetchUsers, updateUser, updateUserStatus as apiUpdateUserStatus, inviteUser, resendInvite } from "../api/admin.js";
+import { createUser, deleteUser, fetchUsers, updateUser, updateUserStatus as apiUpdateUserStatus, inviteUser, resendInvite } from "../api/admin.js";
 import { getErrorMessage } from "../api/client.js";
 import { getApiErrorKey } from "../utils/errorMessages.js";
 import UserFormDrawer, { EMPTY_USER_FORM } from "../components/users/UserFormDrawer.jsx";
@@ -10,7 +10,8 @@ import Breadcrumb from "../components/ui/Breadcrumb.jsx";
 import FilterBar from "../components/ui/FilterBar.jsx";
 import ImportMenu from "../components/ui/ImportMenu.jsx";
 import Pagination from "../components/ui/Pagination.jsx";
-import { TableAction, TableActions } from "../components/ui/TableActions.jsx";
+import { TableAction, TableActions, ViewIcon, EditIcon, ToggleOffIcon, ToggleOnIcon, SendIcon, DeleteIcon } from "../components/ui/TableActions.jsx";
+import ConfirmDialog from "../components/ui/ConfirmDialog.jsx";
 import { EmptyState, OrgStatusBadge, TableSkeleton } from "../components/ui/OrgBadges.jsx";
 import { useToast } from "../components/ui/Toast.jsx";
 import { usePagination } from "../hooks/usePagination.js";
@@ -95,7 +96,7 @@ export default function UserManagement() {
   const { allRoles, assignableRoles } = useTenantRoles();
   const { activeItems: departments } = useTenantMasterData("department");
   const { activeItems: designations } = useTenantMasterData("designation");
-  const { profiles, saveProfile } = useUserProfiles();
+  const { profiles, saveProfile, removeProfile } = useUserProfiles();
   const { append: audit, getForUser } = useAuditLog();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -464,6 +465,22 @@ export default function UserManagement() {
     }
   };
 
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteUser(deleteTarget.id);
+      removeProfile(deleteTarget.id);
+      audit({ action: "user.deleted", userId: deleteTarget.id, email: deleteTarget.email });
+      toast("User deleted successfully", "success");
+      setDeleteTarget(null);
+      loadUsers();
+    } catch (err) {
+      toast(getErrorMessage(err), "error");
+    }
+  };
+
   const handleResendInvite = async (user) => {
     try {
       const data = await resendInvite(user.id);
@@ -723,16 +740,17 @@ export default function UserManagement() {
                       <td><OrgStatusBadge status={user.status} /></td>
                       <td className="col-actions-wide">
                         <TableActions>
-                          <TableAction variant="view" onClick={() => openView(user)}>View</TableAction>
-                          <TableAction variant="edit" onClick={() => openEdit(user)}>Edit</TableAction>
+                          <TableAction variant="view" onClick={() => openView(user)} title="View"><ViewIcon /></TableAction>
+                          <TableAction variant="edit" onClick={() => openEdit(user)} title="Edit"><EditIcon /></TableAction>
                           {user.status === "ACTIVE" ? (
-                            <TableAction variant="warn" onClick={() => updateUserStatus(user, "INACTIVE")}>Deactivate</TableAction>
+                            <TableAction variant="warn" onClick={() => updateUserStatus(user, "DISABLED")} title="Deactivate"><ToggleOffIcon /></TableAction>
                           ) : (
-                            <TableAction variant="success" onClick={() => updateUserStatus(user, "ACTIVE")}>Activate</TableAction>
+                            <TableAction variant="success" onClick={() => updateUserStatus(user, "ACTIVE")} title="Activate"><ToggleOnIcon /></TableAction>
                           )}
                           {user.status === "PENDING" && (
-                            <TableAction variant="muted" onClick={() => handleResendInvite(user)}>Resend invite</TableAction>
+                            <TableAction variant="muted" onClick={() => handleResendInvite(user)} title="Resend invite"><SendIcon /></TableAction>
                           )}
+                          <TableAction variant="warn" onClick={() => setDeleteTarget(user)} title="Delete"><DeleteIcon /></TableAction>
                         </TableActions>
                       </td>
                     </tr>
@@ -825,6 +843,16 @@ export default function UserManagement() {
       >
         <UserDetailDrawer user={activeUser} role={activeRole} auditLogs={getForUser(userId)} />
       </Drawer>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete user"
+        message={`Are you sure you want to delete ${deleteTarget?.firstName} ${deleteTarget?.lastName}? This will disable their access.`}
+        confirmLabel="Delete"
+        danger
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

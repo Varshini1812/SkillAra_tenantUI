@@ -4,28 +4,10 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useAdminAuth } from "../admin/context/AdminAuthContext.jsx";
 import { getErrorMessage } from "../api/client.js";
 import { setInitialPassword, workspaceLogin } from "../api/workspaceAuth.js";
-import AdminLoginBackground from "../admin/components/login/AdminLoginBackground.jsx";
-import AdminLoginShowcase from "../admin/components/login/AdminLoginShowcase.jsx";
 import { getTenantLogoUrl } from "../admin/utils/tenantLogo.js";
 import { useDocumentTitle } from "../admin/hooks/useDocumentTitle.js";
 import { buildRootUrl } from "../utils/tenant.js";
 import { loadRememberedLogin, saveRememberedLogin } from "../lib/rememberLogin.js";
-
-function TenantAvatar({ logoUrl, name, primaryColor }) {
-  if (logoUrl) {
-    return (
-      <img src={logoUrl} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" />
-    );
-  }
-  return (
-    <span
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[20px] font-semibold text-white"
-      style={{ backgroundColor: primaryColor || "#4F46E5" }}
-    >
-      {name?.[0]?.toUpperCase() || "O"}
-    </span>
-  );
-}
 
 function InputField({ label, type, value, onChange, placeholder, autoComplete }) {
   const [show, setShow] = useState(false);
@@ -34,7 +16,7 @@ function InputField({ label, type, value, onChange, placeholder, autoComplete })
   return (
     <div>
       {label ? (
-        <label className="mb-1.5 block text-[17px] font-medium text-slate-700">{label}</label>
+        <label className="mb-1.5 block text-sm font-medium text-gray-700">{label}</label>
       ) : null}
       <div className="relative">
         <input
@@ -44,13 +26,13 @@ function InputField({ label, type, value, onChange, placeholder, autoComplete })
           onChange={onChange}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 pr-10 text-[18px] text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+          className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
         />
         {isPassword && (
           <button
             type="button"
             onClick={() => setShow(!show)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[16px] text-slate-500 hover:text-slate-700"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400 hover:text-gray-600"
           >
             {show ? "Hide" : "Show"}
           </button>
@@ -70,10 +52,6 @@ export default function TenantLogin() {
   const tenantName = tenantInfo?.tenant_name || tenantSubdomain || "Your Workspace";
   const tenantLogoUrl = getTenantLogoUrl(tenantInfo?.logo);
   const tenantPrimaryColor = tenantInfo?.branding?.primary_color || "#4F46E5";
-  const tenantWelcomeMessage =
-    tenantInfo?.branding?.welcome_message ||
-    `Welcome to ${tenantName}! Sign in to continue.`;
-
   const [email, setEmail] = useState(() => loadRememberedLogin(tenantSubdomain).email);
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(() => loadRememberedLogin(tenantSubdomain).rememberMe);
@@ -151,74 +129,150 @@ export default function TenantLogin() {
   };
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden">
-      <AdminLoginBackground variant="tenant" />
-
-      <header className="relative z-10 flex shrink-0 items-center gap-2.5 px-6 py-5 lg:px-10">
-        {tenantLogoUrl ? (
-          <>
-            <img src={tenantLogoUrl} alt="" className="h-9 w-9 rounded-lg object-cover ring-1 ring-slate-200" />
-            <span className="text-[20px] font-semibold text-slate-900">{tenantName}</span>
-          </>
-        ) : (
-          <>
-            <span
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white"
-              style={{ backgroundColor: tenantPrimaryColor }}
-            >
-              {tenantName?.[0]?.toUpperCase()}
-            </span>
-            <span className="text-[20px] font-semibold text-slate-900">{tenantName}</span>
-          </>
-        )}
-      </header>
-
-      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-5xl flex-1 items-center gap-10 px-6 pb-6 lg:gap-16 lg:px-10">
-        <div className="hidden min-w-0 flex-1 lg:block">
-          <AdminLoginShowcase
-            superAdmin={false}
-            tenantName={tenantName}
-            tenantHost={tenantHost}
-            tenantLogoUrl={tenantLogoUrl}
-            welcomeMessage={tenantWelcomeMessage}
-            primaryColor={tenantPrimaryColor}
+    <div className="flex min-h-screen bg-white">
+      {/* Left: branded panel */}
+      <div className="relative hidden w-[45%] flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 px-10 py-10 lg:flex">
+        {/* Background decoration */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
+          <div className="absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-violet-400/10 blur-3xl" />
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(255,255,255,1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)
+              `,
+              backgroundSize: "40px 40px",
+            }}
           />
         </div>
 
-        <div className="mx-auto w-full max-w-[460px] shrink-0 lg:mx-0">
-          <div className="admin-login-card rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/50">
-            <div className="mb-6 flex items-center gap-3">
-              <TenantAvatar logoUrl={tenantLogoUrl} name={tenantName} primaryColor={tenantPrimaryColor} />
-              <div>
-                <h1 className="text-[20px] font-semibold text-slate-900">
-                  {mustChangePassword ? "Set a new password" : "Sign in"}
-                </h1>
-                <p className="text-[17px] text-slate-500">
-                  {mustChangePassword ? "Finish setting up your account" : "Admins and learners"}
-                </p>
-              </div>
-            </div>
+        {/* Top: brand */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3">
+            {tenantLogoUrl ? (
+              <img src={tenantLogoUrl} alt="" className="h-10 w-10 rounded-xl object-cover shadow-lg" />
+            ) : (
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-lg font-bold text-white backdrop-blur-sm">
+                {tenantName?.[0]?.toUpperCase()}
+              </span>
+            )}
+            <span className="text-lg font-bold text-white">{tenantName}</span>
+          </div>
+        </div>
 
+        {/* Middle: content */}
+        <div className="relative z-10 flex flex-col justify-center">
+          <p className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium text-indigo-100 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            Active workspace
+          </p>
+          <h1 className="text-4xl font-bold leading-tight tracking-tight text-white">
+            Welcome back to
+            <br />
+            <span className="text-indigo-200">{tenantName}</span>
+          </h1>
+          <p className="mt-4 max-w-md text-base leading-relaxed text-indigo-200/80">
+            {tenantInfo?.branding?.welcome_message || `Sign in to access your courses, track progress, and learn smarter.`}
+          </p>
+
+          {/* Feature cards */}
+          <div className="mt-10 space-y-3">
+            {[
+              { icon: "users", title: "User management", desc: "Create students and tutor accounts" },
+              { icon: "book", title: "Course oversight", desc: "Manage your organization's content" },
+              { icon: "chart", title: "Enrollment stats", desc: "Track learners and progress" },
+            ].map((f) => (
+              <div
+                key={f.title}
+                className="flex items-center gap-3.5 rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3 backdrop-blur-sm transition hover:bg-white/[0.12]"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
+                  {f.icon === "users" && (
+                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                      <path d="M16 3.13a4 4 0 010 7.75" />
+                    </svg>
+                  )}
+                  {f.icon === "book" && (
+                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+                      <line x1="8" y1="7" x2="16" y2="7" />
+                      <line x1="8" y1="11" x2="14" y2="11" />
+                    </svg>
+                  )}
+                  {f.icon === "chart" && (
+                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="20" x2="18" y2="10" />
+                      <line x1="12" y1="20" x2="12" y2="4" />
+                      <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                  )}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-white">{f.title}</p>
+                  <p className="text-xs text-indigo-200/70">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom: tagline */}
+        <div className="relative z-10">
+          <p className="text-xs text-indigo-300/60">
+            Courses &middot; AI Tutoring &middot; Mock Tests &middot; Progress Tracking
+          </p>
+        </div>
+      </div>
+
+      {/* Right: login form */}
+      <div className="flex w-full flex-col justify-center bg-white px-8 lg:w-[55%]">
+        <div className="mx-auto w-full max-w-sm">
+          <div className="text-center lg:text-left">
+            {tenantLogoUrl ? (
+              <img src={tenantLogoUrl} alt="" className="mx-auto h-12 w-12 rounded-2xl object-cover shadow-sm lg:mx-0" />
+            ) : (
+              <span
+                className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold text-white shadow-sm lg:mx-0"
+                style={{ backgroundColor: tenantPrimaryColor }}
+              >
+                {tenantName?.[0]?.toUpperCase()}
+              </span>
+            )}
+            <h1 className="mt-5 text-2xl font-semibold tracking-tight text-gray-900">
+              {mustChangePassword ? "Set a new password" : "Sign in"}
+            </h1>
+            <p className="mt-1.5 text-sm text-gray-500">
+              {mustChangePassword ? "Finish setting up your account" : "Enter your credentials to continue"}
+            </p>
+          </div>
+
+          <div className="mt-8">
             {tenantHost && !mustChangePassword && (
-              <div className="mb-5 rounded-lg bg-emerald-50 px-3 py-2 text-[16px] text-emerald-800">
-                Workspace: <span className="font-mono font-medium">{tenantHost}</span>
+              <div className="mb-5 rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-2.5 text-sm text-gray-500">
+                <span className="font-medium text-gray-700">Workspace:</span>{" "}
+                <span className="font-mono font-medium text-gray-900">{tenantHost}</span>
               </div>
             )}
 
-            <form onSubmit={mustChangePassword ? handleSetPassword : handleSubmit} className="space-y-4">
+            <form onSubmit={mustChangePassword ? handleSetPassword : handleSubmit} className="space-y-5">
               {successMsg && (
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[17px] text-emerald-800">
+                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
                   {successMsg}
                 </div>
               )}
               {mustChangePassword && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[16px] text-amber-900">
-                  Choose a new password to finish signing in. Your temporary password from the welcome
-                  email was used to authenticate this step.
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  Choose a new password to finish signing in. Your temporary password was used to authenticate this step.
                 </div>
               )}
               {error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[17px] text-red-700">
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
                   {error}
                 </div>
               )}
@@ -238,25 +292,27 @@ export default function TenantLogin() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="Enter your password"
                     autoComplete="current-password"
                   />
-                  <label className="flex cursor-pointer items-center gap-2.5">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/30"
-                    />
-                    <span className="text-[16px] text-slate-600">Remember me</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="flex cursor-pointer items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                      />
+                      <span className="text-sm text-gray-500">Remember me</span>
+                    </label>
+                  </div>
                   <button
                     type="submit"
                     disabled={loading}
                     style={{ backgroundColor: tenantPrimaryColor }}
-                    className="w-full rounded-lg py-2.5 text-[18px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                    className="w-full rounded-xl py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md disabled:opacity-50 disabled:shadow-none"
                   >
-                    {loading ? "Signing in..." : "Log in"}
+                    {loading ? "Signing in..." : "Sign in"}
                   </button>
                 </>
               ) : (
@@ -280,29 +336,29 @@ export default function TenantLogin() {
                     type="submit"
                     disabled={loading}
                     style={{ backgroundColor: tenantPrimaryColor }}
-                    className="w-full rounded-lg py-2.5 text-[18px] font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                    className="w-full rounded-xl py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md disabled:opacity-50 disabled:shadow-none"
                   >
                     {loading ? "Saving..." : "Set password & continue"}
                   </button>
                 </>
               )}
             </form>
-
-            <p className="mt-5 text-center text-[15px] text-slate-400">
-              Accounts are created when an organization is set up.
-            </p>
-
-            <p className="mt-3 text-center text-[15px]">
-              <a
-                href={buildRootUrl("/login")}
-                className="font-medium text-slate-500 transition hover:text-slate-700"
-              >
-                ← Not your workspace? Switch workspace
-              </a>
-            </p>
           </div>
+
+          <p className="mt-8 text-center text-xs text-gray-400">
+            Accounts are created when an organization is set up.
+          </p>
+
+          <p className="mt-3 text-center text-xs">
+            <a
+              href={buildRootUrl("/login")}
+              className="font-medium text-gray-400 transition hover:text-gray-600"
+            >
+              Not your workspace? Switch workspace
+            </a>
+          </p>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
