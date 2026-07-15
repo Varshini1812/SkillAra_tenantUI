@@ -10,6 +10,7 @@ import Breadcrumb from "../components/ui/Breadcrumb.jsx";
 import FilterBar from "../components/ui/FilterBar.jsx";
 import Pagination from "../components/ui/Pagination.jsx";
 import { EmptyState, OrgStatusBadge, RoleTypeBadge, TableSkeleton } from "../components/ui/OrgBadges.jsx";
+import { TableAction, TableActions, ViewIcon, EditIcon, CloneIcon, ToggleOffIcon, ToggleOnIcon, DeleteIcon } from "../components/ui/TableActions.jsx";
 import { useToast } from "../components/ui/Toast.jsx";
 import { usePagination } from "../hooks/usePagination.js";
 import { fetchUsers } from "../api/admin.js";
@@ -328,19 +329,23 @@ export default function TenantRolesPermissions() {
                     </td>
                     <td className="px-5 py-4"><OrgStatusBadge status={role.status} /></td>
                     <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        <ActionBtn onClick={() => openPanel("view", role.id)}>View</ActionBtn>
-                        <ActionBtn onClick={() => openPanel("edit", role.id)}>Edit</ActionBtn>
-                        <ActionBtn onClick={() => {
+                      <TableActions>
+                        <TableAction variant="view" onClick={() => openPanel("view", role.id)} title="View"><ViewIcon /></TableAction>
+                        <TableAction variant="edit" onClick={() => openPanel("edit", role.id)} title="Edit"><EditIcon /></TableAction>
+                        <TableAction variant="muted" onClick={() => {
                           setCloneSource(role);
                           setForm({ name: `${role.name} Copy`, description: role.description, roleType: "custom", status: "active", permissions: { ...role.permissions } });
                           setSearchParams({ panel: "create" });
-                        }}>Clone</ActionBtn>
-                        <ActionBtn onClick={() => handleToggleStatus(role)}>{role.status === "active" ? "Disable" : "Enable"}</ActionBtn>
-                        {role.roleType === "custom" && (
-                          <ActionBtn danger onClick={() => setDeleteTarget(role)}>Delete</ActionBtn>
+                        }} title="Clone"><CloneIcon /></TableAction>
+                        {role.status === "active" ? (
+                          <TableAction variant="warn" onClick={() => handleToggleStatus(role)} title="Disable"><ToggleOffIcon /></TableAction>
+                        ) : (
+                          <TableAction variant="success" onClick={() => handleToggleStatus(role)} title="Enable"><ToggleOnIcon /></TableAction>
                         )}
-                      </div>
+                        {role.roleType === "custom" && (
+                          <TableAction variant="warn" onClick={() => setDeleteTarget(role)} title="Delete"><DeleteIcon /></TableAction>
+                        )}
+                      </TableActions>
                     </td>
                   </tr>
                 ))}
@@ -494,14 +499,4 @@ export default function TenantRolesPermissions() {
   );
 }
 
-function ActionBtn({ children, onClick, danger }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={danger ? "admin-btn-ghost-danger" : "admin-btn-ghost"}
-    >
-      {children}
-    </button>
-  );
-}
+

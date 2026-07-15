@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { checkWorkspace } from "../api/auth.js";
 import PlatformShowcase from "../components/workspace/PlatformShowcase.jsx";
 import WorkspaceBackground from "../components/workspace/WorkspaceBackground.jsx";
-import { buildTenantUrl, setDevTenant } from "../utils/tenant.js";
+import { buildTenantUrl, getRootDomain, getTenantDisplayHost, setDevTenant } from "../utils/tenant.js";
 
 const SUBDOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
 

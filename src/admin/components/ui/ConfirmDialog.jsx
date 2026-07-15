@@ -1,4 +1,13 @@
-export default function ConfirmDialog({ open, title, message, confirmLabel = "Confirm", danger, onConfirm, onCancel }) {
+export default function ConfirmDialog({
+  open,
+  title,
+  message,
+  confirmLabel = "Confirm",
+  danger,
+  loading = false,
+  onConfirm,
+  onCancel,
+}) {
   if (!open) return null;
 
   return (
@@ -10,6 +19,7 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = "Co
           <button
             type="button"
             onClick={onCancel}
+            disabled={loading}
             className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-100"
           >
             Cancel
@@ -17,11 +27,12 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = "Co
           <button
             type="button"
             onClick={onConfirm}
+            disabled={loading}
             className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${
-              danger ? "bg-red-600 hover:bg-red-500" : "bg-indigo-600 hover:bg-indigo-500"
+              danger ? "bg-red-600 hover:bg-red-500 disabled:bg-red-300" : "bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-300"
             }`}
           >
-            {confirmLabel}
+            {loading ? "Deleting..." : confirmLabel}
           </button>
         </div>
       </div>
