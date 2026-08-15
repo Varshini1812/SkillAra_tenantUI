@@ -60,3 +60,17 @@ export async function checkWorkspace(subdomain) {
 }
 
 export { refreshAccessToken, setAccessToken, clearAccessToken };
+
+/** Self-service profile update. Returns the refreshed session user (with permissions). */
+export async function updateMyProfile(payload) {
+  const res = await api.patch("/api/users/me/profile", payload);
+  return getData(res);
+}
+
+/** Open learner self-registration. Signs the new student straight in. */
+export async function signUp({ name, email, password }) {
+  const res = await api.post("/api/auth/signup", { name, email, password });
+  const data = getData(res);
+  if (data?.accessToken) applyTenantAccessToken(data.accessToken);
+  return data;
+}

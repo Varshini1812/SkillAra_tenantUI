@@ -5,6 +5,7 @@ import { fetchCourseProgress, markLessonComplete } from "../api/progress.js";
 import { fetchQuizByLesson, submitQuiz } from "../api/quizzes.js";
 import { getErrorMessage } from "../api/client.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import LessonPlayer, { LessonAttachments } from "../components/LessonPlayer.jsx";
 
 function QuizPanel({ lessonId, onComplete }) {
   const [quiz, setQuiz] = useState(null);
@@ -139,16 +140,17 @@ function LearnContent() {
   const handleComplete = async () => {
     if (!activeLesson) return;
     try {
-      const data = await markLessonComplete(activeLesson._id);
+      const data = await markLessonComplete(activeLesson.id);
       setProgress((prev) => ({
         ...prev,
         completedLessons: [
           ...(prev?.completedLessons || []),
-          { lessonId: activeLesson._id },
+          { lessonId: activeLesson.id },
         ],
         mastery: data.mastery,
         completedCount: data.completedCount,
         totalLessons: data.totalLessons,
+        isPreview: data.isPreview ?? prev?.isPreview,
       }));
     } catch (err) {
       setError(getErrorMessage(err));
@@ -176,6 +178,13 @@ function LearnContent() {
         </div>
       </div>
 
+      {progress?.isPreview && (
+        <div className="mb-4 rounded-lg bg-indigo-50 p-3 text-sm text-indigo-800">
+          Preview mode — you are viewing this course as its instructor. Completions are
+          saved to your own record and are not counted as a learner enrolment.
+        </div>
+      )}
+
       {error && <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -183,16 +192,16 @@ function LearnContent() {
           <h2 className="font-semibold">Lessons</h2>
           <ul className="mt-3 space-y-1">
             {lessons.map((lesson, i) => (
-              <li key={lesson._id}>
+              <li key={lesson.id}>
                 <button
                   onClick={() => setActiveLesson(lesson)}
                   className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${
-                    activeLesson?._id === lesson._id
+                    activeLesson?.id === lesson.id
                       ? "bg-indigo-50 text-indigo-700"
                       : "hover:bg-slate-50"
                   }`}
                 >
-                  <span className="text-slate-400">{completedIds.has(lesson._id) ? "✓" : i + 1}</span>
+                  <span className="text-slate-400">{completedIds.has(lesson.id) ? "✓" : i + 1}</span>
                   <span className="flex-1 truncate">{lesson.title}</span>
                 </button>
               </li>
@@ -210,7 +219,9 @@ function LearnContent() {
               </div>
               <h2 className="mt-1 text-xl font-semibold">{activeLesson.title}</h2>
 
-              {activeLesson.videoUrl && (
+              <LessonPlayer lesson={activeLesson} />
+
+              {activeLesson.videoUrl && !activeLesson.hasContent && (
                 <div className="mt-4 aspect-video overflow-hidden rounded-lg bg-black">
                   <video src={activeLesson.videoUrl} controls className="h-full w-full" />
                 </div>
@@ -222,10 +233,12 @@ function LearnContent() {
                 </div>
               )}
 
+              <LessonAttachments lesson={activeLesson} />
+
               {activeLesson.type === "QUIZ" ? (
-                <QuizPanel lessonId={activeLesson._id} onComplete={handleComplete} />
+                <QuizPanel lessonId={activeLesson.id} onComplete={handleComplete} />
               ) : (
-                !completedIds.has(activeLesson._id) && (
+                !completedIds.has(activeLesson.id) && (
                   <button
                     onClick={handleComplete}
                     className="mt-6 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"

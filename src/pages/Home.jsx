@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import MyAccessPanel from "../components/MyAccessPanel.jsx";
 
 export default function Home() {
-  const { tenantInfo, tenantHost } = useAuth();
+  const { tenantInfo, tenantHost, user } = useAuth();
   const orgName = tenantInfo?.tenant_name || tenantHost || "SkillAra";
 
   return (
@@ -31,6 +32,12 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {user && (
+        <section className="mt-8">
+          <MyAccessPanel compact />
+        </section>
+      )}
 
       <section className="mt-12 grid gap-6 sm:grid-cols-3">
         {[
