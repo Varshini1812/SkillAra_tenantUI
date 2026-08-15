@@ -3,29 +3,11 @@ import { NavLink, Link } from "react-router-dom";
 import { useAdminAuth } from "../context/AdminAuthContext.jsx";
 import { useTenantBranding } from "../hooks/useTenantBranding.js";
 import { getRoleLabel } from "../utils/roles.js";
+import { getAdminNav } from "../../utils/permissions.js";
 import { PoweredBySkillAra } from "./SkillAraBrand.jsx";
 
 const STORAGE_KEY = "skillara-tenant-admin-sidebar-collapsed";
 
-const TENANT_NAV = [
-  {
-    section: "Overview",
-    items: [{ to: "/admin", label: "Dashboard", icon: "dashboard", end: true }],
-  },
-  {
-    section: "People",
-    items: [
-      { to: "/admin/users", label: "Users", icon: "users" },
-      { to: "/admin/roles", label: "Roles & permissions", icon: "roles" },
-    ],
-  },
-  {
-    section: "Organization",
-    items: [
-      { to: "/admin/master-data", label: "Master data", icon: "master-data" },
-    ],
-  },
-];
 
 function NavIcon({ name }) {
   const className = "h-4 w-4 shrink-0 transition-colors";
@@ -52,6 +34,14 @@ function NavIcon({ name }) {
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "courses":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M9 7h7M9 11h7" strokeLinecap="round" />
         </svg>
       );
     case "master-data":
@@ -127,6 +117,10 @@ export default function Sidebar({
   const roleLabel = getRoleLabel(user);
   const compact = collapsed && !mobileOpen;
 
+  // Navigation follows the user's role permissions, so a custom role created in
+  // Roles & Permissions gets the right menu without changing this file.
+  const navGroups = getAdminNav(user);
+
   useEffect(() => {
     if (!mobileOpen) return undefined;
     const onKey = (e) => {
@@ -181,7 +175,7 @@ export default function Sidebar({
         </div>
 
         <nav className={`flex-1 space-y-6 overflow-y-auto py-4 ${compact ? "px-2" : "px-3"}`}>
-          {TENANT_NAV.map((group) => (
+          {navGroups.map((group) => (
             <div key={group.section}>
               {!compact && (
                 <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
