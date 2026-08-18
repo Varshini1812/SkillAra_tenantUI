@@ -107,6 +107,14 @@ const APP_NAV = [
     ],
   },
   {
+    section: "Community",
+    items: [
+      { to: "/sessions", label: "Sessions", icon: "sessions" },
+      { to: "/mentors", label: "Mentorship", icon: "mentors" },
+      { to: "/forum", label: "Forum", icon: "forum" },
+    ],
+  },
+  {
     section: "Teach",
     items: [
       { to: "/teach", label: "My courses", icon: "teach", requires: ["courses", "create"] },
@@ -162,6 +170,7 @@ const ADMIN_NAV = [
     section: "Learning",
     items: [
       { to: "/admin/courses", label: "Courses", icon: "courses", requires: ["courses", "view"] },
+      { to: "/admin/monitoring", label: "Community monitoring", icon: "monitoring", requires: ["community", "view"] },
     ],
   },
   {

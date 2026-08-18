@@ -9,6 +9,7 @@ const PAGE_TITLES = {
   "/admin/users": "User management",
   "/admin/roles": "Roles and permissions",
   "/admin/master-data": "Master data",
+  "/admin/monitoring": "Community monitoring",
   "/admin/profile": "My profile",
 };
 

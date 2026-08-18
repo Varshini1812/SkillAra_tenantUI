@@ -14,6 +14,8 @@ import {
 import { getErrorMessage } from "../../api/client.js";
 import ModuleCard from "../../components/teach/ModuleCard.jsx";
 import CourseStudents from "../../components/teach/CourseStudents.jsx";
+import CourseMockTests from "../../components/teach/CourseMockTests.jsx";
+import CourseLiveSessions from "../../components/teach/CourseLiveSessions.jsx";
 
 const LEVELS = ["ALL_LEVELS", "BEGINNER", "INTERMEDIATE", "ADVANCED"];
 
@@ -425,6 +427,10 @@ export default function CourseEditor() {
               Add module
             </button>
           </form>
+
+          <CourseMockTests courseId={id} />
+
+          <CourseLiveSessions courseId={id} />
 
           <CourseStudents courseId={id} />
         </div>
