@@ -6,6 +6,8 @@ import { fetchQuizByLesson, submitQuiz } from "../api/quizzes.js";
 import { getErrorMessage } from "../api/client.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import LessonPlayer, { LessonAttachments } from "../components/LessonPlayer.jsx";
+import MockTestPanel from "../components/MockTestPanel.jsx";
+import CourseLiveSessionsPanel from "../components/CourseLiveSessionsPanel.jsx";
 
 function QuizPanel({ lessonId, onComplete }) {
   const [quiz, setQuiz] = useState(null);
@@ -252,6 +254,11 @@ function LearnContent() {
             <p className="text-slate-400">Select a lesson to begin.</p>
           )}
         </section>
+      </div>
+
+      <div className="mt-6 space-y-4">
+        <CourseLiveSessionsPanel courseId={courseId} />
+        <MockTestPanel courseId={courseId} />
       </div>
     </div>
   );

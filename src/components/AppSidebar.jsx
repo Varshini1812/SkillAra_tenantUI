@@ -34,6 +34,27 @@ function NavIcon({ name }) {
           <path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5" {...cap} />
         </svg>
       );
+    case "sessions":
+      return (
+        <svg {...common}>
+          <rect x="3" y="4" width="18" height="16" rx="2" {...cap} />
+          <path d="M16 2v4M8 2v4M3 10h18" {...cap} />
+        </svg>
+      );
+    case "mentors":
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="8" r="3" {...cap} />
+          <path d="M3 20a6 6 0 0 1 12 0" {...cap} />
+          <path d="M16 8a3 3 0 1 1 4 2.83M21 20a5 5 0 0 0-4.5-5" {...cap} />
+        </svg>
+      );
+    case "forum":
+      return (
+        <svg {...common}>
+          <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" {...cap} />
+        </svg>
+      );
     case "teach":
       return (
         <svg {...common}>
