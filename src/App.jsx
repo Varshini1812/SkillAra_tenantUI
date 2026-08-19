@@ -10,6 +10,7 @@ import TenantLogin from "./pages/TenantLogin.jsx";
 import Register from "./pages/Register.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import Courses from "./pages/Courses.jsx";
+import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CourseDetail from "./pages/CourseDetail.jsx";
 import Learn from "./pages/Learn.jsx";
 import MyLearning from "./pages/MyLearning.jsx";
@@ -105,6 +106,7 @@ function TenantRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="dashboard" element={<StudentDashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
