@@ -5,7 +5,7 @@ import { clearAccessToken, getAccessToken, setAccessToken } from "../lib/accessT
 import { refreshTenantAccessToken } from "./tenantSessionRefresh.js";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "",
+  baseURL: "",
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
