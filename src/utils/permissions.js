@@ -101,6 +101,7 @@ const APP_NAV = [
   {
     section: "Learn",
     items: [
+      { to: "/dashboard", label: "My Dashboard", icon: "home" },
       { to: "/", label: "Home", icon: "home", end: true },
       { to: "/courses", label: "Browse courses", icon: "courses" },
       { to: "/my-learning", label: "My learning", icon: "learning", requires: ["courses", "view"] },

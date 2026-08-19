@@ -25,6 +25,8 @@ export function AuthProvider({ children }) {
   const [tenantInfo, setTenantInfo] = useState(null);
   const [tenantError, setTenantError] = useState(null);
   const [loading, setLoading] = useState(true);
+  // expose raw access token for components that need it directly
+  const accessToken = getAccessToken();
 
   const syncClaimsFromToken = useCallback(() => {
     setSessionClaims(decodeJwtClaims(getAccessToken()));
@@ -157,6 +159,7 @@ export function AuthProvider({ children }) {
       hasTenantSubdomain: Boolean(tenantSubdomain),
       loading,
       isAuthenticated: Boolean(user),
+      accessToken,
       login,
       register,
       logout,
@@ -165,7 +168,7 @@ export function AuthProvider({ children }) {
       updateDevTenant,
       resolveTenantContext,
     }),
-    [user, sessionClaims, tenantSubdomain, tenantInfo, tenantError, loading, resolveTenantContext, refreshUser, establishSession]
+    [user, sessionClaims, tenantSubdomain, tenantInfo, tenantError, loading, accessToken, resolveTenantContext, refreshUser, establishSession]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
