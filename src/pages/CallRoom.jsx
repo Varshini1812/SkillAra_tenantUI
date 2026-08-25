@@ -7,7 +7,7 @@ function CallRoomContent() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const returnTo = location.state?.returnTo || "/sessions";
+  const returnTo = location.state?.returnTo || "/mock-interviews";
 
   return (
     <div className="h-[calc(100vh-8rem)]">

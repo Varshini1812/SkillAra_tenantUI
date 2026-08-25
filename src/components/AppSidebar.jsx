@@ -55,6 +55,27 @@ function NavIcon({ name }) {
           <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" {...cap} />
         </svg>
       );
+    case "ai":
+      return (
+        <svg {...common}>
+          <path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" {...cap} />
+          <circle cx="12" cy="12" r="3.5" {...cap} />
+        </svg>
+      );
+    case "quiz":
+      return (
+        <svg {...common}>
+          <path d="M9 11l3 3L22 4" {...cap} />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" {...cap} />
+        </svg>
+      );
+    case "live":
+      return (
+        <svg {...common}>
+          <rect x="2" y="6" width="14" height="12" rx="2" {...cap} />
+          <path d="m22 8-6 4 6 4z" {...cap} />
+        </svg>
+      );
     case "teach":
       return (
         <svg {...common}>
@@ -247,20 +268,12 @@ export default function AppSidebar({ collapsed, onToggleCollapse, mobileOpen, on
             </div>
           ) : (
             !compact && (
-              <div className="flex gap-2">
-                <Link
-                  to="/login"
-                  className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-center text-sm font-medium"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="flex-1 rounded-lg bg-indigo-600 px-3 py-2 text-center text-sm font-medium text-white"
-                >
-                  Sign up
-                </Link>
-              </div>
+              <Link
+                to="/login"
+                className="block rounded-lg bg-indigo-600 px-3 py-2 text-center text-sm font-medium text-white"
+              >
+                Login
+              </Link>
             )
           )}
         </div>

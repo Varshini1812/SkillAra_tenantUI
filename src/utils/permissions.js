@@ -110,8 +110,11 @@ const APP_NAV = [
   {
     section: "Community",
     items: [
-      { to: "/sessions", label: "Sessions", icon: "sessions" },
-      { to: "/mentors", label: "Mentorship", icon: "mentors" },
+      { to: "/ai-tools", label: "AI Tools", icon: "ai" },
+      { to: "/mentorship", label: "Mentorship", icon: "mentors", requires: ["mentorship", "view"] },
+      { to: "/mock-interviews", label: "Mock Interviews", icon: "sessions", requires: ["mock-interviews", "view"] },
+      { to: "/mock-tests", label: "Mock Tests", icon: "quiz", requires: ["mock-tests", "view"] },
+      { to: "/live-sessions", label: "Live Sessions", icon: "live", requires: ["live-sessions", "view"] },
       { to: "/forum", label: "Forum", icon: "forum" },
     ],
   },
@@ -172,6 +175,7 @@ const ADMIN_NAV = [
     items: [
       { to: "/admin/courses", label: "Courses", icon: "courses", requires: ["courses", "view"] },
       { to: "/admin/monitoring", label: "Community monitoring", icon: "monitoring", requires: ["community", "view"] },
+      { to: "/admin/mentorship", label: "Mentorship queue", icon: "mentors", requires: ["mentorship", "view"] },
     ],
   },
   {
@@ -224,6 +228,8 @@ export const MODULE_LABELS = {
   "question-bank": "Question Bank",
   quizzes: "Quizzes",
   "mock-tests": "Mock Tests",
+  "mock-interviews": "Mock Interviews",
+  "live-sessions": "Live Sessions",
   certificates: "Certificates",
   mentorship: "Mentorship",
   students: "Students",
