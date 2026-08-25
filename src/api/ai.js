@@ -11,3 +11,8 @@ export async function fetchModuleAiSummary(moduleId, { regenerate = false } = {}
   const res = await api.post("/api/ai/module-summary", { moduleId, regenerate });
   return getData(res);
 }
+
+export async function fetchAiTutorResponse(lessonId, query) {
+  const res = await api.post("/api/ai/tutor", { lessonId, query });
+  return getData(res);
+}

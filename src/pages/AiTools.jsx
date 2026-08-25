@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchCourses } from "../api/courses.js";
 import { fetchMyEnrollments } from "../api/enrollments.js";
 import { fetchCourseAiSummary } from "../api/ai.js";
@@ -90,6 +90,7 @@ function MockTestGenerator({ courseId, courseTitle }) {
   const [error, setError] = useState("");
   const [created, setCreated] = useState(null);
 
+  const navigate = useNavigate();
   const submit = async (e) => {
     e.preventDefault();
     setGenerating(true);
@@ -104,6 +105,7 @@ function MockTestGenerator({ courseId, courseTitle }) {
       });
       setCreated(test);
       setTitle("");
+      setTimeout(() => navigate(`/teach/${courseId}`), 1500);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -121,10 +123,7 @@ function MockTestGenerator({ courseId, courseTitle }) {
       {error && <div className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
       {created && (
         <div className="mt-3 rounded-lg bg-green-50 p-2 text-sm text-green-700">
-          "{created.title}" created with {created.questions?.length || questionCount} questions.{" "}
-          <Link to="/mock-tests" className="font-medium underline">
-            View in Mock Tests
-          </Link>
+          "{created.title}" saved as a draft with {created.questions?.length || questionCount} questions. Redirecting to course editor...
         </div>
       )}
 

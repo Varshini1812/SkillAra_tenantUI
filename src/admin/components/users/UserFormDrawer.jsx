@@ -209,8 +209,7 @@ export default function UserFormDrawer({
             <span>
               <span className="font-medium">Send invitation email</span>
               <span className="mt-1 block text-xs text-slate-500">
-                User is created as pending. They sign in with the invite link or a temporary password;
-                their invitation is marked accepted on first successful login.
+                User is created as pending. They receive an invitation link to set up their account password on first sign-in.
               </span>
             </span>
           </label>
@@ -231,17 +230,6 @@ export default function UserFormDrawer({
               </p>
               {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
             </div>
-          )}
-          {form.sendInvite && (
-            <label className="flex items-center gap-2 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                checked={form.generateTempPassword}
-                onChange={(e) => setField("generateTempPassword", e.target.checked)}
-                className="rounded"
-              />
-              Generate temporary password
-            </label>
           )}
         </>
       )}
@@ -277,5 +265,4 @@ export const EMPTY_USER_FORM = {
   password: "",
   profilePhoto: "",
   sendInvite: true,
-  generateTempPassword: true,
 };
