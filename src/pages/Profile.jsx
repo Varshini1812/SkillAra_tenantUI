@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import { updateMyProfile } from "../api/auth.js";
+import { uploadUserAvatarFile } from "../api/storage.js";
 import { getErrorMessage } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePermissions } from "../hooks/usePermissions.js";
@@ -24,12 +25,14 @@ function Field({ label, value }) {
 export default function Profile() {
   const { user, tenantInfo, tenantHost, refreshUser } = useAuth();
   const { roleLabel } = usePermissions();
+  const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
     name: user?.name || "",
     phone: user?.phone || "",
   });
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -37,6 +40,23 @@ export default function Profile() {
 
   const role = getUserRole(user);
   const dirty = form.name !== (user.name || "") || form.phone !== (user.phone || "");
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    setError("");
+    setNotice("");
+    try {
+      await uploadUserAvatarFile(file);
+      await refreshUser();
+      setNotice("Profile picture updated in Backblaze B2 storage.");
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const save = async (e) => {
     e.preventDefault();
@@ -63,18 +83,41 @@ export default function Profile() {
 
       <div className="rounded-xl border border-slate-200 bg-white p-5">
         <div className="flex items-center gap-4">
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 text-xl font-bold text-indigo-600 ring-1 ring-indigo-100">
-            {user.profilePhoto ? (
-              <img src={user.profilePhoto} alt="" className="h-full w-full object-cover" />
-            ) : (
-              (user.name?.[0] || user.email?.[0] || "?").toUpperCase()
-            )}
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-lg font-semibold text-slate-900">
-              {user.name || user.email}
-            </p>
-            <p className="truncate text-sm text-slate-500">{user.email}</p>
+          <div className="relative group">
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 text-xl font-bold text-indigo-600 ring-1 ring-indigo-100">
+              {user.profilePhoto ? (
+                <img src={user.profilePhoto} alt="" className="h-full w-full object-cover" />
+              ) : (
+                (user.name?.[0] || user.email?.[0] || "?").toUpperCase()
+              )}
+            </span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="truncate text-lg font-semibold text-slate-900">
+                  {user.name || user.email}
+                </p>
+                <p className="truncate text-sm text-slate-500">{user.email}</p>
+              </div>
+              <div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePhotoUpload}
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  {uploadingPhoto ? "Uploading to B2..." : "Change photo"}
+                </button>
+              </div>
+            </div>
             <span
               className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${getRoleBadgeClass(user)}`}
             >
