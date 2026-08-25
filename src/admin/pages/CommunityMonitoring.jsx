@@ -12,7 +12,7 @@ import Breadcrumb from "../components/ui/Breadcrumb.jsx";
 const TABS = [
   { key: "mock-tests", label: "Mock tests" },
   { key: "sessions", label: "Sessions" },
-  { key: "mentorship", label: "Mentorship" },
+  { key: "mentorship", label: "Support tickets" },
   { key: "live-sessions", label: "Live sessions" },
   { key: "forum", label: "Forum" },
 ];
@@ -77,6 +77,7 @@ function MockTestsTab() {
           <th className="py-2">Course</th>
           <th className="py-2">Questions</th>
           <th className="py-2">Duration</th>
+          <th className="py-2">Published By</th>
           <th className="py-2">Status</th>
         </tr>
       </thead>
@@ -88,6 +89,7 @@ function MockTestsTab() {
             <td className="py-2 text-slate-500">{t.courseId?.title || "—"}</td>
             <td className="py-2 text-slate-500">{t.questions?.length ?? "—"}</td>
             <td className="py-2 text-slate-500">{t.durationMinutes} min</td>
+            <td className="py-2 text-slate-500">{t.createdBy?.name || t.createdBy?.email || "—"}</td>
             <td className="py-2">
               <Badge status={t.status} />
             </td>
@@ -174,7 +176,7 @@ function MentorshipTab() {
     <div>
       <div className="mb-3 flex justify-end">
         <Link to="/admin/mentorship" className="text-xs font-medium text-indigo-600 hover:underline">
-          Open mentorship queue →
+          Open ticket dispatch →
         </Link>
       </div>
       <table className="w-full text-left text-sm">
