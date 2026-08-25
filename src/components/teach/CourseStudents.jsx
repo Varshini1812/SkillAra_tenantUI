@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { bulkEnroll, fetchCourseEnrollments } from "../../api/enrollments.js";
-import { fetchUsers } from "../../admin/api/admin.js";
+import { bulkEnroll, dropEnrollment, fetchCourseEnrollments, fetchStudentDirectory } from "../../api/enrollments.js";
 import { getErrorMessage } from "../../api/client.js";
 
 /**
@@ -42,14 +41,9 @@ export default function CourseStudents({ courseId }) {
     setPickerOpen(true);
     setError("");
     try {
-      const data = await fetchUsers();
-      const list = Array.isArray(data) ? data : data?.users || [];
-      setCandidates(list);
+      setCandidates(await fetchStudentDirectory());
     } catch (err) {
-      // Instructors cannot list tenant users; only staff can. Say so plainly.
-      setError(
-        `${getErrorMessage(err)} — only organization admins can browse the full user list.`
-      );
+      setError(getErrorMessage(err));
     }
   };
 
@@ -96,6 +90,20 @@ export default function CourseStudents({ courseId }) {
       setError(getErrorMessage(err));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const remove = async (enrollment) => {
+    const name = enrollment.user?.name || enrollment.user?.email || "this student";
+    if (!window.confirm(`Remove ${name} from this course?`)) return;
+    setError("");
+    setNotice("");
+    try {
+      await dropEnrollment(enrollment.id);
+      setNotice(`${name} removed from the course.`);
+      await load();
+    } catch (err) {
+      setError(getErrorMessage(err));
     }
   };
 
@@ -153,6 +161,13 @@ export default function CourseStudents({ courseId }) {
               >
                 {e.status}
               </span>
+              <button
+                type="button"
+                onClick={() => remove(e)}
+                className="shrink-0 rounded border border-rose-200 px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50"
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>
@@ -207,7 +222,6 @@ export default function CourseStudents({ courseId }) {
                         </span>
                         <span className="block truncate text-xs text-slate-400">{u.email}</span>
                       </span>
-                      <span className="shrink-0 text-[11px] text-slate-400">{u.role}</span>
                     </label>
                   );
                 })

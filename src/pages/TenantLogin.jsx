@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useAdminAuth } from "../admin/context/AdminAuthContext.jsx";
 import { getErrorMessage } from "../api/client.js";
@@ -345,19 +345,8 @@ export default function TenantLogin() {
             </form>
           </div>
 
-          <p className="mt-8 text-center text-sm text-gray-500">
-            New here?{" "}
-            <Link
-              to="/signup"
-              className="font-semibold transition hover:opacity-80"
-              style={{ color: tenantPrimaryColor }}
-            >
-              Create a student account
-            </Link>
-          </p>
-
-          <p className="mt-2 text-center text-xs text-gray-400">
-            Staff accounts are created by your organization admin.
+          <p className="mt-8 text-center text-xs text-gray-400">
+            Accounts are created by your organization admin.
           </p>
 
           <p className="mt-3 text-center text-xs">

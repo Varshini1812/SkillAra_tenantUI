@@ -57,6 +57,14 @@ function NavIcon({ name }) {
           <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
+    case "mentors":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+          <circle cx="9" cy="8" r="3" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M3 20a6 6 0 0 1 12 0" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M16 8a3 3 0 1 1 4 2.83M21 20a5 5 0 0 0-4.5-5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
     default:
       return null;
   }

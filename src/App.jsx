@@ -8,17 +8,20 @@ import Home from "./pages/Home.jsx";
 import FindWorkspace from "./pages/FindWorkspace.jsx";
 import TenantLogin from "./pages/TenantLogin.jsx";
 import Register from "./pages/Register.jsx";
-import SignUp from "./pages/SignUp.jsx";
 import Courses from "./pages/Courses.jsx";
-import StudentDashboard from "./pages/StudentDashboard.jsx";
 import CourseDetail from "./pages/CourseDetail.jsx";
 import Learn from "./pages/Learn.jsx";
 import MyLearning from "./pages/MyLearning.jsx";
 import Profile from "./pages/Profile.jsx";
 import MyCourses from "./pages/instructor/MyCourses.jsx";
 import CourseEditor from "./pages/instructor/CourseEditor.jsx";
-import Sessions from "./pages/Sessions.jsx";
-import Mentors from "./pages/Mentors.jsx";
+import MockInterviews from "./pages/MockInterviews.jsx";
+import Mentorship from "./pages/Mentorship.jsx";
+import MentorshipTicket from "./pages/MentorshipTicket.jsx";
+import MockTests from "./pages/MockTests.jsx";
+import LiveSessions from "./pages/LiveSessions.jsx";
+import AiTools from "./pages/AiTools.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 import Forum from "./pages/Forum.jsx";
 import ForumQuestion from "./pages/ForumQuestion.jsx";
 import CallRoom from "./pages/CallRoom.jsx";
@@ -30,6 +33,7 @@ import TenantRolesPermissions from "./admin/pages/TenantRolesPermissions.jsx";
 import MasterDataManagement from "./admin/pages/MasterDataManagement.jsx";
 import CourseModeration from "./admin/pages/CourseModeration.jsx";
 import CommunityMonitoring from "./admin/pages/CommunityMonitoring.jsx";
+import MentorshipQueue from "./admin/pages/MentorshipQueue.jsx";
 import OwnerProfile from "./admin/pages/OwnerProfile.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { isRootApp } from "./utils/tenant.js";
@@ -48,7 +52,6 @@ function TenantRoutes() {
     <Routes>
       <Route path="/login" element={<TenantLogin />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/signup" element={<SignUp />} />
       <Route path="/admin/login" element={<Navigate to="/login" replace />} />
       <Route
         element={
@@ -69,6 +72,7 @@ function TenantRoutes() {
         />
         <Route path="/admin/roles" element={<TenantRolesPermissions />} />
         <Route path="/admin/master-data" element={<MasterDataManagement />} />
+        <Route path="/admin/mentorship" element={<MentorshipQueue />} />
         <Route path="/admin/profile" element={<OwnerProfile />} />
       </Route>
       <Route element={<Layout />}>
@@ -77,8 +81,12 @@ function TenantRoutes() {
         <Route path="courses/:id" element={<CourseDetail />} />
         <Route path="learn/:courseId" element={<Learn />} />
         <Route path="my-learning" element={<MyLearning />} />
-        <Route path="sessions" element={<Sessions />} />
-        <Route path="mentors" element={<Mentors />} />
+        <Route path="mock-interviews" element={<MockInterviews />} />
+        <Route path="mentorship" element={<Mentorship />} />
+        <Route path="mentorship/:id" element={<MentorshipTicket />} />
+        <Route path="mock-tests" element={<MockTests />} />
+        <Route path="live-sessions" element={<LiveSessions />} />
+        <Route path="ai-tools" element={<AiTools />} />
         <Route path="forum" element={<Forum />} />
         <Route path="forum/:id" element={<ForumQuestion />} />
         <Route path="call/:roomId" element={<CallRoom />} />
@@ -106,7 +114,7 @@ function TenantRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="dashboard" element={<StudentDashboard />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

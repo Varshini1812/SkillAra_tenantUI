@@ -1,6 +1,42 @@
 import { useEffect, useRef, useState } from "react";
 import { useWebRTCCall } from "../hooks/useWebRTCCall.js";
 
+const PRESENCE_TOAST_MS = 4000;
+
+function PresenceToasts({ events }) {
+  const [visible, setVisible] = useState([]);
+  const seenRef = useRef(new Set());
+
+  useEffect(() => {
+    const fresh = events.filter((e) => !seenRef.current.has(e.id));
+    if (fresh.length === 0) return;
+    fresh.forEach((e) => seenRef.current.add(e.id));
+    setVisible((prev) => [...prev, ...fresh]);
+    fresh.forEach((e) => {
+      setTimeout(() => {
+        setVisible((prev) => prev.filter((v) => v.id !== e.id));
+      }, PRESENCE_TOAST_MS);
+    });
+  }, [events]);
+
+  if (visible.length === 0) return null;
+
+  return (
+    <div className="pointer-events-none absolute left-1/2 top-3 z-10 flex -translate-x-1/2 flex-col items-center gap-1.5">
+      {visible.map((e) => (
+        <div
+          key={e.id}
+          className={`rounded-full px-3 py-1 text-xs font-medium shadow-sm ${
+            e.type === "joined" ? "bg-emerald-600 text-white" : "bg-slate-800 text-white"
+          }`}
+        >
+          {e.type === "joined" ? "Participant joined the call" : "Participant left the call"}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Icon({ name, className = "h-5 w-5" }) {
   const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, className };
   const cap = { strokeLinecap: "round", strokeLinejoin: "round" };
@@ -178,6 +214,7 @@ export default function VideoCall({ roomId, jitsiFallbackUrl, title, onLeave }) 
     toggleCam,
     messages,
     sendChatMessage,
+    presenceEvents,
   } = useWebRTCCall(roomId);
   const [useFallback, setUseFallback] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -228,7 +265,8 @@ export default function VideoCall({ roomId, jitsiFallbackUrl, title, onLeave }) 
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <PresenceToasts events={presenceEvents} />
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
         <div>
           <h3 className="font-semibold text-slate-900">{title || "Session"}</h3>

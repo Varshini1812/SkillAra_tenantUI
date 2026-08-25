@@ -20,3 +20,16 @@ export async function fetchCourseEnrollments(courseId) {
   const res = await api.get(`/api/enrollments/course/${courseId}`);
   return getData(res);
 }
+
+/** Remove a student from a course. Allowed for the enrolled student themself, the
+ *  course's instructor, or staff. */
+export async function dropEnrollment(enrollmentId) {
+  const res = await api.delete(`/api/enrollments/${enrollmentId}`);
+  return getData(res);
+}
+
+/** Instructor-safe roster picker — students only, minimal fields (id/name/email). */
+export async function fetchStudentDirectory(params = {}) {
+  const res = await api.get("/api/users/students", { params });
+  return getData(res);
+}

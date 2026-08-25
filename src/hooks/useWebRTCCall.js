@@ -40,6 +40,7 @@ export function useWebRTCCall(roomId) {
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [messages, setMessages] = useState([]);
+  const [presenceEvents, setPresenceEvents] = useState([]);
 
   const socketRef = useRef(null);
   const peersRef = useRef({});
@@ -181,7 +182,11 @@ export function useWebRTCCall(roomId) {
         }
       });
 
-      socket.on("peer-joined", ({ peerId }) => connectToPeer(peerId));
+      socket.on("peer-joined", ({ peerId }) => {
+        connectToPeer(peerId);
+        if (!mountedRef.current) return;
+        setPresenceEvents((prev) => [...prev, { id: `${peerId}-joined-${Date.now()}`, type: "joined", peerId }]);
+      });
 
       socket.on("signal", async ({ from, data }) => {
         try {
@@ -203,7 +208,11 @@ export function useWebRTCCall(roomId) {
         }
       });
 
-      socket.on("peer-left", ({ peerId }) => cleanupPeer(peerId));
+      socket.on("peer-left", ({ peerId }) => {
+        cleanupPeer(peerId);
+        if (!mountedRef.current) return;
+        setPresenceEvents((prev) => [...prev, { id: `${peerId}-left-${Date.now()}`, type: "left", peerId }]);
+      });
 
       socket.on("chat-message", ({ from, text, at }) => {
         if (!mountedRef.current) return;
@@ -267,5 +276,6 @@ export function useWebRTCCall(roomId) {
     toggleCam,
     messages,
     sendChatMessage,
+    presenceEvents,
   };
 }

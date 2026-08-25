@@ -10,7 +10,8 @@ export async function fetchCourseLiveSessions(courseId) {
   return getData(res);
 }
 
-/** Staff oversight — every live session in the tenant, across all courses. */
+/** Role-scoped: staff see every session, instructors see their own courses', students
+ *  see sessions on courses they're enrolled in. Backs the Live Sessions hub. */
 export async function fetchAllLiveSessions(params = {}) {
   const res = await api.get("/api/live-sessions", { params });
   return getData(res);
