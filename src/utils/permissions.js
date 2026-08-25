@@ -104,7 +104,7 @@ const APP_NAV = [
       { to: "/dashboard", label: "My Dashboard", icon: "home" },
       { to: "/", label: "Home", icon: "home", end: true },
       { to: "/courses", label: "Browse courses", icon: "courses" },
-      { to: "/my-learning", label: "My learning", icon: "learning", requires: ["courses", "view"] },
+      { to: "/my-learning", label: "My learning", icon: "learning", requires: ["courses", "view"], roles: [ROLE.STUDENT, ROLE.ORG_ADMIN, ROLE.TENANT_ADMIN] },
     ],
   },
   {

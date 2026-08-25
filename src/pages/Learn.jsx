@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { fetchCourse } from "../api/courses.js";
 import { fetchCourseProgress, markLessonComplete } from "../api/progress.js";
 import { fetchQuizByLesson, submitQuiz } from "../api/quizzes.js";
-import { fetchModuleAiSummary } from "../api/ai.js";
+import { fetchModuleAiSummary, fetchAiTutorResponse } from "../api/ai.js";
 import { getErrorMessage } from "../api/client.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import LessonPlayer, { LessonAttachments } from "../components/LessonPlayer.jsx";
@@ -72,6 +72,88 @@ function ModuleSummaryPanel({ module }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function AiTutorPanel({ lessonId }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    
+    const userMessage = { role: "user", content: query };
+    setMessages((prev) => [...prev, userMessage]);
+    setQuery("");
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await fetchAiTutorResponse(lessonId, userMessage.content);
+      setMessages((prev) => [...prev, { role: "assistant", content: data.response }]);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <button 
+        onClick={() => setOpen(true)}
+        className="mt-6 flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 w-full justify-center"
+      >
+        <span aria-hidden="true">🤖</span> Ask AI Tutor about this lesson
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-6 rounded-xl border border-indigo-200 bg-indigo-50/30 overflow-hidden">
+      <div className="flex items-center justify-between bg-indigo-50 px-4 py-2 border-b border-indigo-100">
+        <h3 className="text-sm font-semibold text-indigo-900 flex items-center gap-2">
+          <span aria-hidden="true">🤖</span> AI Tutor
+        </h3>
+        <button onClick={() => setOpen(false)} className="text-xs text-slate-500 hover:text-slate-700">Close</button>
+      </div>
+      <div className="p-4">
+        <div className="space-y-4 max-h-60 overflow-y-auto mb-4">
+          {messages.length === 0 ? (
+            <p className="text-sm text-slate-500 italic">Hi! I'm your AI tutor. Ask me anything about this lesson.</p>
+          ) : (
+            messages.map((m, i) => (
+              <div key={i} className={`rounded-lg p-3 text-sm ${m.role === 'user' ? 'bg-white border border-slate-200 ml-8' : 'bg-indigo-100 mr-8 whitespace-pre-wrap'}`}>
+                {m.content}
+              </div>
+            ))
+          )}
+          {loading && <p className="text-sm text-slate-500 italic">Thinking...</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+        </div>
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Ask a question..."
+            disabled={loading}
+            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            disabled={loading || !query.trim()}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Ask
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
@@ -329,6 +411,8 @@ function LearnContent() {
                   </button>
                 )
               )}
+
+              <AiTutorPanel lessonId={activeLesson.id} />
             </>
           ) : (
             <p className="text-slate-400">Select a lesson to begin.</p>
