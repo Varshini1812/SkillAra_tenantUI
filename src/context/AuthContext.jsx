@@ -141,6 +141,7 @@ export function AuthProvider({ children }) {
     await apiLogout();
     setUser(null);
     setSessionClaims(null);
+    window.location.href = "/login";
   };
 
   const updateDevTenant = (subdomain) => {

@@ -86,7 +86,7 @@ export default function TenantLogin() {
         navigate("/admin");
       } else {
         establishUserSession(data);
-        navigate("/courses");
+        navigate("/dashboard");
       }
     } catch (err) {
       setError(getErrorMessage(err));
