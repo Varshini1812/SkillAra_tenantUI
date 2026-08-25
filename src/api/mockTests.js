@@ -5,7 +5,8 @@ export async function fetchMockTestsByCourse(courseId) {
   return getData(res);
 }
 
-/** Staff oversight — every mock test in the tenant, across all courses. */
+/** Role-scoped: staff see every test, instructors see their own courses', students see
+ *  published tests on courses they're enrolled in. Backs the Mock Tests hub. */
 export async function fetchAllMockTests(params = {}) {
   const res = await api.get("/api/mock-tests", { params });
   return getData(res);

@@ -3,11 +3,78 @@ import { useParams } from "react-router-dom";
 import { fetchCourse } from "../api/courses.js";
 import { fetchCourseProgress, markLessonComplete } from "../api/progress.js";
 import { fetchQuizByLesson, submitQuiz } from "../api/quizzes.js";
+import { fetchModuleAiSummary } from "../api/ai.js";
 import { getErrorMessage } from "../api/client.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import LessonPlayer, { LessonAttachments } from "../components/LessonPlayer.jsx";
 import MockTestPanel from "../components/MockTestPanel.jsx";
 import CourseLiveSessionsPanel from "../components/CourseLiveSessionsPanel.jsx";
+
+function ModuleSummaryPanel({ module }) {
+  const [open, setOpen] = useState(false);
+  const [summary, setSummary] = useState(module.aiSummary || "");
+  const [generatedAt, setGeneratedAt] = useState(module.aiSummaryGeneratedAt || null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const generate = async (regenerate = false) => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await fetchModuleAiSummary(module.id, { regenerate });
+      setSummary(data.summary);
+      setGeneratedAt(data.generatedAt);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="mb-1">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-1 px-3 py-1 text-left text-[11px] font-medium text-indigo-500 hover:text-indigo-700"
+      >
+        <span aria-hidden="true">✨</span> {open ? "Hide" : "AI"} summary
+      </button>
+      {open && (
+        <div className="mx-3 mb-2 rounded-lg bg-indigo-50/70 p-2 text-xs text-slate-600">
+          {error && <p className="text-red-600">{error}</p>}
+          {summary ? (
+            <>
+              <p className="whitespace-pre-wrap">{summary}</p>
+              <button
+                type="button"
+                onClick={() => generate(true)}
+                disabled={loading}
+                className="mt-1 text-[10px] font-medium text-indigo-600 hover:underline disabled:opacity-50"
+              >
+                {loading ? "Regenerating…" : "Regenerate"}
+              </button>
+              {generatedAt && (
+                <span className="ml-2 text-[10px] text-slate-400">
+                  {new Date(generatedAt).toLocaleDateString()}
+                </span>
+              )}
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => generate(false)}
+              disabled={loading}
+              className="font-medium text-indigo-600 hover:underline disabled:opacity-50"
+            >
+              {loading ? "Generating…" : "Generate summary for this module"}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function QuizPanel({ lessonId, onComplete }) {
   const [quiz, setQuiz] = useState(null);
@@ -132,7 +199,7 @@ function LearnContent() {
       .then(([c, p]) => {
         setCourse(c);
         setProgress(p);
-        const flat = c.modules?.flatMap((m) => m.lessons || []) || [];
+        const flat = c.modules?.flatMap((m) => (m.lessons || []).map((l) => ({ ...l, moduleTitle: m.title }))) || [];
         if (flat.length) setActiveLesson(flat[0]);
       })
       .catch((err) => setError(getErrorMessage(err)))
@@ -192,23 +259,36 @@ function LearnContent() {
       <div className="grid gap-6 lg:grid-cols-3">
         <aside className="rounded-xl border border-slate-200 bg-white p-4 lg:col-span-1">
           <h2 className="font-semibold">Lessons</h2>
-          <ul className="mt-3 space-y-1">
-            {lessons.map((lesson, i) => (
-              <li key={lesson.id}>
-                <button
-                  onClick={() => setActiveLesson(lesson)}
-                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${
-                    activeLesson?.id === lesson.id
-                      ? "bg-indigo-50 text-indigo-700"
-                      : "hover:bg-slate-50"
-                  }`}
-                >
-                  <span className="text-slate-400">{completedIds.has(lesson.id) ? "✓" : i + 1}</span>
-                  <span className="flex-1 truncate">{lesson.title}</span>
-                </button>
-              </li>
+          <div className="mt-3 space-y-3">
+            {(course.modules || []).map((mod) => (
+              <div key={mod.id}>
+                <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{mod.title}</p>
+                <ModuleSummaryPanel module={mod} />
+                <ul className="space-y-1">
+                  {(mod.lessons || []).map((lesson) => {
+                    const globalIndex = lessons.findIndex((l) => l.id === lesson.id);
+                    return (
+                      <li key={lesson.id}>
+                        <button
+                          onClick={() => setActiveLesson({ ...lesson, moduleTitle: mod.title })}
+                          className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${
+                            activeLesson?.id === lesson.id
+                              ? "bg-indigo-50 text-indigo-700"
+                              : "hover:bg-slate-50"
+                          }`}
+                        >
+                          <span className="text-slate-400">
+                            {completedIds.has(lesson.id) ? "✓" : globalIndex + 1}
+                          </span>
+                          <span className="flex-1 truncate">{lesson.title}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         </aside>
 
         <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 lg:col-span-2">

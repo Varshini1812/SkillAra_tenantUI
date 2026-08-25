@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { fetchAllMockTests } from "../../api/mockTests.js";
 import { fetchAllSlots } from "../../api/sessionSlots.js";
-import { fetchAllMentorshipRequests } from "../../api/mentorship.js";
+import { fetchAllTickets } from "../../api/mentorshipTickets.js";
 import { fetchAllLiveSessions } from "../../api/liveSessions.js";
 import { fetchQuestions } from "../../api/forum.js";
 import { getErrorMessage } from "../../api/client.js";
@@ -25,9 +25,8 @@ function Badge({ status }) {
     BOOKED: "bg-indigo-100 text-indigo-700",
     COMPLETED: "bg-emerald-100 text-emerald-700",
     CANCELLED: "bg-rose-100 text-rose-700",
-    PENDING: "bg-amber-100 text-amber-700",
-    ACCEPTED: "bg-emerald-100 text-emerald-700",
-    REJECTED: "bg-rose-100 text-rose-700",
+    ASSIGNED: "bg-indigo-100 text-indigo-700",
+    CLOSED: "bg-emerald-100 text-emerald-700",
     SCHEDULED: "bg-slate-100 text-slate-600",
     LIVE: "bg-emerald-100 text-emerald-700",
     ENDED: "bg-slate-100 text-slate-600",
@@ -165,38 +164,45 @@ function MentorshipTab() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchAllMentorshipRequests().then(setRows).catch((err) => setError(getErrorMessage(err)));
+    fetchAllTickets().then(setRows).catch((err) => setError(getErrorMessage(err)));
   }, []);
 
   if (error) return <p className="text-sm text-red-600">{error}</p>;
   if (!rows) return <p className="text-sm text-slate-400">Loading…</p>;
 
   return (
-    <table className="w-full text-left text-sm">
-      <thead>
-        <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
-          <th className="py-2">Student</th>
-          <th className="py-2">Mentor</th>
-          <th className="py-2">Message</th>
-          <th className="py-2">Requested</th>
-          <th className="py-2">Status</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-slate-100">
-        {rows.length === 0 && <EmptyRow>No mentorship requests yet.</EmptyRow>}
-        {rows.map((r) => (
-          <tr key={r.id}>
-            <td className="py-2 font-medium text-slate-800">{r.studentId?.name || r.studentId?.email}</td>
-            <td className="py-2 text-slate-500">{r.mentorId?.name || r.mentorId?.email}</td>
-            <td className="max-w-xs truncate py-2 text-slate-500">{r.message || "—"}</td>
-            <td className="py-2 text-slate-500">{fmt(r.created_on)}</td>
-            <td className="py-2">
-              <Badge status={r.status} />
-            </td>
+    <div>
+      <div className="mb-3 flex justify-end">
+        <Link to="/admin/mentorship" className="text-xs font-medium text-indigo-600 hover:underline">
+          Open mentorship queue →
+        </Link>
+      </div>
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+            <th className="py-2">Student</th>
+            <th className="py-2">Mentor</th>
+            <th className="py-2">Subject</th>
+            <th className="py-2">Raised</th>
+            <th className="py-2">Status</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {rows.length === 0 && <EmptyRow>No mentorship tickets yet.</EmptyRow>}
+          {rows.map((t) => (
+            <tr key={t.id}>
+              <td className="py-2 font-medium text-slate-800">{t.studentId?.name || t.studentId?.email}</td>
+              <td className="py-2 text-slate-500">{t.mentorId?.name || t.mentorId?.email || "—"}</td>
+              <td className="max-w-xs truncate py-2 text-slate-500">{t.subject}</td>
+              <td className="py-2 text-slate-500">{fmt(t.created_on)}</td>
+              <td className="py-2">
+                <Badge status={t.status} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

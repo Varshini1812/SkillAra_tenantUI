@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { fetchCourse } from "../api/courses.js";
 import { enroll } from "../api/enrollments.js";
+import { fetchCourseAiSummary } from "../api/ai.js";
 import { getErrorMessage } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -18,6 +19,72 @@ function formatPrice(course) {
   } catch {
     return `${currency} ${course.price}`;
   }
+}
+
+function AiSummaryCard({ courseId, initialSummary, initialGeneratedAt, canManage }) {
+  const [summary, setSummary] = useState(initialSummary || "");
+  const [generatedAt, setGeneratedAt] = useState(initialGeneratedAt || null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const generate = async (regenerate = false) => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await fetchCourseAiSummary(courseId, { regenerate });
+      setSummary(data.summary);
+      setGeneratedAt(data.generatedAt);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="mt-8 rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-1.5 font-semibold text-slate-900">
+          <span aria-hidden="true">✨</span> AI summary
+        </h2>
+        {summary && canManage && (
+          <button
+            type="button"
+            onClick={() => generate(true)}
+            disabled={loading}
+            className="text-xs font-medium text-indigo-600 hover:underline disabled:opacity-50"
+          >
+            {loading ? "Regenerating…" : "Regenerate"}
+          </button>
+        )}
+      </div>
+
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+
+      {summary ? (
+        <>
+          <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">{summary}</p>
+          {generatedAt && (
+            <p className="mt-2 text-[11px] text-slate-400">
+              Generated {new Date(generatedAt).toLocaleDateString()} — AI-generated, may not be fully accurate.
+            </p>
+          )}
+        </>
+      ) : (
+        <div className="mt-2">
+          <p className="text-sm text-slate-500">Get a quick AI-written overview of what this course covers.</p>
+          <button
+            type="button"
+            onClick={() => generate(false)}
+            disabled={loading}
+            className="mt-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {loading ? "Generating…" : "Generate summary"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function LessonRow({ lesson, index }) {
@@ -164,6 +231,14 @@ export default function CourseDetail() {
           </Link>
         )}
       </div>
+
+      <AiSummaryCard
+        key={id}
+        courseId={id}
+        initialSummary={course.aiSummary}
+        initialGeneratedAt={course.aiSummaryGeneratedAt}
+        canManage={course.canManage}
+      />
 
       {(course.outcomes?.length > 0 || course.requirements?.length > 0) && (
         <div className="mt-8 grid gap-6 sm:grid-cols-2">
