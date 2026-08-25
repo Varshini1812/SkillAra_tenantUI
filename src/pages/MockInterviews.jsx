@@ -14,7 +14,6 @@ import { getErrorMessage } from "../api/client.js";
 import { usePermissions } from "../hooks/usePermissions.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 
-const TYPE_LABEL = { MOCK_INTERVIEW: "Mock interview", MENTORSHIP: "Mentorship" };
 const STATUS_STYLE = {
   OPEN: "bg-slate-100 text-slate-600",
   BOOKED: "bg-indigo-100 text-indigo-700",
@@ -42,7 +41,6 @@ function toLocalInputValue(date) {
 function NewSlotForm({ courses, onCreated }) {
   const inHour = new Date(Date.now() + 60 * 60 * 1000);
   const inHourHalf = new Date(Date.now() + 90 * 60 * 1000);
-  const [sessionType, setSessionType] = useState("MOCK_INTERVIEW");
   const [courseId, setCourseId] = useState("");
   const [title, setTitle] = useState("");
   const [startTime, setStartTime] = useState(toLocalInputValue(inHour));
@@ -56,7 +54,7 @@ function NewSlotForm({ courses, onCreated }) {
     setError("");
     try {
       await createSlot({
-        sessionType,
+        sessionType: "MOCK_INTERVIEW",
         courseId: courseId || undefined,
         title: title.trim(),
         startTime: new Date(startTime).toISOString(),
@@ -76,17 +74,6 @@ function NewSlotForm({ courses, onCreated }) {
       {error && <div className="rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="block text-xs font-medium text-slate-600">
-          Type
-          <select
-            value={sessionType}
-            onChange={(e) => setSessionType(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-          >
-            <option value="MOCK_INTERVIEW">Mock interview</option>
-            <option value="MENTORSHIP">Mentorship</option>
-          </select>
-        </label>
-        <label className="block text-xs font-medium text-slate-600">
           Course (optional)
           <select
             value={courseId}
@@ -101,7 +88,7 @@ function NewSlotForm({ courses, onCreated }) {
             ))}
           </select>
         </label>
-        <label className="block text-xs font-medium text-slate-600 sm:col-span-2">
+        <label className="block text-xs font-medium text-slate-600">
           Title
           <input
             value={title}
@@ -151,12 +138,7 @@ function SlotCard({ slot, mode, currentUserId, onBook, onCancel, onComplete, onD
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-800">
-              {slot.title || TYPE_LABEL[slot.sessionType]}
-            </span>
-            <span className="rounded bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
-              {TYPE_LABEL[slot.sessionType]}
-            </span>
+            <span className="text-sm font-medium text-slate-800">{slot.title || "Mock interview"}</span>
             <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${STATUS_STYLE[slot.status]}`}>
               {slot.status}
             </span>
@@ -222,13 +204,12 @@ function SlotCard({ slot, mode, currentUserId, onBook, onCancel, onComplete, onD
   );
 }
 
-function SessionsContent() {
+function MockInterviewsContent() {
   const { isInstructor, isStaff, user } = usePermissions();
   const canHost = isInstructor || isStaff;
   const navigate = useNavigate();
 
   const [tab, setTab] = useState("browse");
-  const [typeFilter, setTypeFilter] = useState("");
   const [openSlots, setOpenSlots] = useState([]);
   const [mySlots, setMySlots] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -239,17 +220,14 @@ function SessionsContent() {
   const loadAll = useCallback(() => {
     setLoading(true);
     setError("");
-    Promise.all([
-      fetchOpenSlots(typeFilter ? { sessionType: typeFilter } : {}),
-      fetchMySlots(),
-    ])
+    Promise.all([fetchOpenSlots({ sessionType: "MOCK_INTERVIEW" }), fetchMySlots({ sessionType: "MOCK_INTERVIEW" })])
       .then(([open, mine]) => {
         setOpenSlots(open);
         setMySlots(mine);
       })
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
-  }, [typeFilter]);
+  }, []);
 
   useEffect(() => {
     loadAll();
@@ -284,8 +262,8 @@ function SessionsContent() {
     navigate(`/call/${slot.meeting.roomId}`, {
       state: {
         jitsiFallbackUrl: slot.meeting.jitsiFallbackUrl,
-        title: slot.title || TYPE_LABEL[slot.sessionType],
-        returnTo: "/sessions",
+        title: slot.title || "Mock interview",
+        returnTo: "/mock-interviews",
       },
     });
   };
@@ -293,10 +271,8 @@ function SessionsContent() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Sessions</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Mock interviews and mentorship — book open time, or publish your own.
-        </p>
+        <h1 className="text-2xl font-bold">Mock Interviews</h1>
+        <p className="mt-1 text-sm text-slate-500">Book open interview practice time, or publish your own.</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -321,18 +297,7 @@ function SessionsContent() {
 
       {tab === "browse" && (
         <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-semibold">Open slots</h2>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="rounded border border-slate-300 px-2 py-1 text-xs"
-            >
-              <option value="">All types</option>
-              <option value="MOCK_INTERVIEW">Mock interview</option>
-              <option value="MENTORSHIP">Mentorship</option>
-            </select>
-          </div>
+          <h2 className="mb-3 font-semibold">Open slots</h2>
           {loading ? (
             <p className="text-sm text-slate-400">Loading…</p>
           ) : openSlots.length === 0 ? (
@@ -380,10 +345,10 @@ function SessionsContent() {
   );
 }
 
-export default function Sessions() {
+export default function MockInterviews() {
   return (
     <ProtectedRoute>
-      <SessionsContent />
+      <MockInterviewsContent />
     </ProtectedRoute>
   );
 }

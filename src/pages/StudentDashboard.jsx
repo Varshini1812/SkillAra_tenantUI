@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import api, { getData } from "../api/client.js";
+
+const SESSION_LINK = { MOCK_INTERVIEW: "/mock-interviews", MENTORSHIP: "/mentorship", LIVE_SESSION: "/live-sessions" };
+
+function fmtSessionAt(iso) {
+  return new Date(iso).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
 
 export default function StudentDashboard() {
   const { accessToken, loading, isAuthenticated } = useAuth();
@@ -111,6 +118,40 @@ export default function StudentDashboard() {
             </div>
           ) : (
             <p className="mt-8 rounded-xl bg-emerald-50 px-4 py-8 text-center text-sm text-emerald-700">No weak topics yet. Keep learning!</p>
+          )}
+        </article>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-3">
+        <Link to="/mentorship" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-indigo-200 hover:shadow-md">
+          <p className="text-sm font-medium text-slate-500">Mentorship</p>
+          <p className="mt-2 text-3xl font-bold text-slate-900">{dashboard.openTicketsCount || 0}</p>
+          <p className="mt-1 text-xs text-slate-400">
+            {dashboard.openTicketsCount ? "open ticket" + (dashboard.openTicketsCount === 1 ? "" : "s") : "No open tickets"}
+          </p>
+        </Link>
+
+        <Link to="/mock-tests" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-indigo-200 hover:shadow-md">
+          <p className="text-sm font-medium text-slate-500">Mock tests</p>
+          <p className="mt-2 text-3xl font-bold text-slate-900">{dashboard.unattemptedMockTestsCount || 0}</p>
+          <p className="mt-1 text-xs text-slate-400">not yet attempted</p>
+        </Link>
+
+        <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm xl:col-span-1">
+          <p className="text-sm font-medium text-slate-500">Upcoming sessions</p>
+          {dashboard.upcomingSessions?.length ? (
+            <ul className="mt-3 space-y-2">
+              {dashboard.upcomingSessions.map((s) => (
+                <li key={s.id}>
+                  <Link to={SESSION_LINK[s.type] || "/live-sessions"} className="block rounded-lg px-2 py-1.5 -mx-2 text-sm hover:bg-slate-50">
+                    <span className="font-medium text-slate-800">{s.title}</span>
+                    <span className="block text-xs text-slate-400">{fmtSessionAt(s.at)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-slate-400">Nothing scheduled.</p>
           )}
         </article>
       </div>
