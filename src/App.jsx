@@ -76,7 +76,7 @@ function TenantRoutes() {
         <Route path="/admin/profile" element={<OwnerProfile />} />
       </Route>
       <Route element={<Layout />}>
-        <Route index element={<Home />} />
+        <Route index element={<Navigate to="/login" replace />} />
         <Route path="courses" element={<Courses />} />
         <Route path="courses/:id" element={<CourseDetail />} />
         <Route path="learn/:courseId" element={<Learn />} />

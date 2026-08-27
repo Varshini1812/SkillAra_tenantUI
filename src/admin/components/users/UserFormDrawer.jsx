@@ -11,7 +11,6 @@ export default function UserFormDrawer({
   errors,
   roles,
   departments = [],
-  designations = [],
   onSubmit,
   loading,
   formId = "user-form",
@@ -22,7 +21,6 @@ export default function UserFormDrawer({
     (r) => !r.isOwnerRole && r.slug !== "organization-owner"
   );
   const activeDepartments = departments.filter((d) => d.status === "active" || !d.status);
-  const activeDesignations = designations.filter((d) => d.status === "active" || !d.status);
 
   const setField = (key, value) => setForm({ ...form, [key]: value });
 
@@ -142,24 +140,6 @@ export default function UserFormDrawer({
             </p>
           )}
         </div>
-        <div>
-          <label className={labelClass}>Designation</label>
-          <select
-            value={form.designationId}
-            onChange={(e) => setField("designationId", e.target.value)}
-            className={inputClass}
-          >
-            <option value="">Select designation</option>
-            {activeDesignations.map((d) => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
-          {activeDesignations.length === 0 && (
-            <p className="mt-1 text-xs text-slate-500">
-              No designations yet. Add them under Master data.
-            </p>
-          )}
-        </div>
       </div>
 
       <div>
@@ -259,7 +239,6 @@ export const EMPTY_USER_FORM = {
   phone: "",
   employeeId: "",
   departmentId: "",
-  designationId: "",
   roleId: "",
   status: "ACTIVE",
   password: "",

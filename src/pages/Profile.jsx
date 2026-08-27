@@ -188,7 +188,6 @@ export default function Profile() {
             <Field label="Organization" value={tenantInfo?.tenant_name || tenantHost} />
             <Field label="Role" value={roleLabel} />
             <Field label="Department" value={user.department} />
-            <Field label="Designation" value={user.designation} />
             <Field label="Employee ID" value={user.employeeId} />
             <Field label="Status" value={user.status} />
           </div>

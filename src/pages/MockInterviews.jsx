@@ -11,8 +11,10 @@ import {
 } from "../api/sessionSlots.js";
 import { fetchCourses } from "../api/courses.js";
 import { getErrorMessage } from "../api/client.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import { usePermissions } from "../hooks/usePermissions.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import LockedFeature from "../components/common/LockedFeature.jsx";
 
 const STATUS_STYLE = {
   OPEN: "bg-slate-100 text-slate-600",
@@ -267,6 +269,15 @@ function MockInterviewsContent() {
       },
     });
   };
+
+  if (tenantInfo?.planFeatures && tenantInfo.planFeatures.mockInterviewsEnabled === false && tenantInfo.planFeatures.mentorshipEnabled === false) {
+    return (
+      <LockedFeature 
+        title="Mentorship & Mock Interviews" 
+        description="Offer 1-on-1 coaching, track booking requests, and provide direct feedback to learners." 
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

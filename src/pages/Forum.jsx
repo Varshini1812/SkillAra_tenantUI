@@ -2,7 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchQuestions, createQuestion } from "../api/forum.js";
 import { getErrorMessage } from "../api/client.js";
+import { usePermissions } from "../hooks/usePermissions.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import LockedFeature from "../components/common/LockedFeature.jsx";
 
 function AskForm({ onCreated }) {
   const [open, setOpen] = useState(false);
@@ -178,8 +181,19 @@ function ForumContent() {
 }
 
 export default function Forum() {
+  const { tenantInfo } = useAuth();
+  
+  if (tenantInfo?.planFeatures && tenantInfo.planFeatures.communityEnabled === false) {
+    return (
+      <LockedFeature 
+        title="Community Forum" 
+        description="Build an active community by allowing learners and instructors to ask questions, post answers, and share knowledge." 
+      />
+    );
+  }
+
   return (
-    <ProtectedRoute>
+    <ProtectedRoute module="forum" actions={["view"]}>
       <ForumContent />
     </ProtectedRoute>
   );
