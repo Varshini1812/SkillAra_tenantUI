@@ -10,7 +10,9 @@ import {
 import { fetchCourses } from "../api/courses.js";
 import { getErrorMessage } from "../api/client.js";
 import { usePermissions } from "../hooks/usePermissions.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import LockedFeature from "../components/common/LockedFeature.jsx";
 
 const STATUS_STYLE = {
   SCHEDULED: "bg-slate-100 text-slate-600",
@@ -161,6 +163,7 @@ function LiveSessionsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const { tenantInfo } = useAuth();
 
   const load = useCallback(() => {
     setLoading(true);
@@ -216,6 +219,15 @@ function LiveSessionsContent() {
 
   const upcoming = sessions.filter((s) => s.status === "SCHEDULED" || s.status === "LIVE");
   const past = sessions.filter((s) => s.status === "ENDED" || s.status === "CANCELLED");
+
+  if (tenantInfo?.planFeatures && tenantInfo.planFeatures.liveClassesEnabled === false) {
+    return (
+      <LockedFeature 
+        title="Live Sessions" 
+        description="Host interactive virtual classrooms directly in SkillAra. Schedule events and manage attendance all in one place." 
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -261,7 +261,7 @@ function MentorshipTicketContent() {
 
   const isAssignedMentor = ticket.mentorId && String(ticket.mentorId._id || ticket.mentorId) === String(user?.id);
   const isMyTicket = String(ticket.studentId._id || ticket.studentId) === String(user?.id);
-  const isStudentView = isMyTicket && !isAssignedMentor;
+  const isLearnerView = isMyTicket && !isAssignedMentor;
 
   const handleClose = async () => {
     const closeNote = window.prompt("Closing note (optional)?") || "";
@@ -373,7 +373,7 @@ function MentorshipTicketContent() {
         />
       </div>
 
-      {isStudentView && ticket.status === "OPEN" && (
+      {isLearnerView && ticket.status === "OPEN" && (
         <p className="text-sm text-slate-400">Waiting for a mentor to pick this up — you'll be able to chat here once claimed.</p>
       )}
     </div>

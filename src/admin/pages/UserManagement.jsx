@@ -80,7 +80,6 @@ function parseUserImportRows(text) {
       email,
       phone: record.phone || "",
       department: record.department || "",
-      designation: record.designation || "",
       roleName: record.role || "",
       password: record.password || `Import@${crypto.randomUUID().slice(0, 8)}`,
     });
@@ -95,7 +94,6 @@ export default function UserManagement() {
   const isOwner = isOrganizationOwner(currentUser, sessionClaims);
   const { allRoles, assignableRoles } = useTenantRoles();
   const { activeItems: departments } = useTenantMasterData("department");
-  const { activeItems: designations } = useTenantMasterData("designation");
   const { profiles, saveProfile, removeProfile } = useUserProfiles();
   const { append: audit, getForUser } = useAuditLog();
 
@@ -180,8 +178,7 @@ export default function UserManagement() {
           `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) ||
           u.email.toLowerCase().includes(q) ||
           (u.phone || "").includes(q) ||
-          (u.department || "").toLowerCase().includes(q) ||
-          (u.designation || "").toLowerCase().includes(q)
+          (u.department || "").toLowerCase().includes(q)
       );
     }
     if (roleFilter !== "all") list = list.filter((u) => u.roleId === roleFilter);
@@ -247,7 +244,6 @@ export default function UserManagement() {
       phone: user.phone,
       employeeId: user.employeeId,
       departmentId: user.departmentId || "",
-      designationId: user.designationId || "",
       roleId: user.roleId,
       status: user.status,
       profilePhoto: user.profilePhoto,
@@ -317,7 +313,6 @@ export default function UserManagement() {
           phone: form.phone,
           employeeId: form.employeeId,
           departmentId: form.departmentId || null,
-          designationId: form.designationId || null,
           profilePhoto: form.profilePhoto,
         };
         const data = await inviteUser(payload);
@@ -333,7 +328,6 @@ export default function UserManagement() {
           phone: form.phone,
           employeeId: form.employeeId,
           departmentId: form.departmentId || null,
-          designationId: form.designationId || null,
           profilePhoto: form.profilePhoto,
         };
         const data = await createUser(payload);
@@ -427,7 +421,6 @@ export default function UserManagement() {
         phone: form.phone,
         employeeId: form.employeeId,
         departmentId: form.departmentId || null,
-        designationId: form.designationId || null,
         profilePhoto: form.profilePhoto,
       });
 
@@ -512,7 +505,6 @@ export default function UserManagement() {
     downloadUserImportSample({
       roleName: assignableRoles[0]?.name || "",
       departmentName: departments[0]?.name || "",
-      designationName: designations[0]?.name || "",
     });
   };
 
@@ -549,7 +541,6 @@ export default function UserManagement() {
           }
 
           const department = findMasterItemByName(departments, row.department);
-          const designation = findMasterItemByName(designations, row.designation);
 
           const data = await createUser({
             name: `${row.firstName} ${row.lastName}`.trim() || row.email,
@@ -558,7 +549,6 @@ export default function UserManagement() {
             roleId: matchedRole.id,
             phone: row.phone || undefined,
             departmentId: department?.id || null,
-            designationId: designation?.id || null,
             invitationStatus: "PENDING",
           });
 
@@ -569,7 +559,6 @@ export default function UserManagement() {
               lastName: row.lastName,
               phone: row.phone,
               departmentId: department?.id || "",
-              designationId: designation?.id || "",
               roleId: matchedRole.id,
               status: "PENDING",
             });
@@ -724,7 +713,6 @@ export default function UserManagement() {
                           </div>
                           <div className="min-w-0">
                             <p className="truncate font-medium text-slate-900">{user.firstName} {user.lastName}</p>
-                            {user.designation && <p className="truncate text-xs text-slate-500">{user.designation}</p>}
                           </div>
                         </div>
                       </td>
@@ -797,7 +785,6 @@ export default function UserManagement() {
           errors={formErrors}
           roles={assignableRoles}
           departments={departments}
-          designations={designations}
           onSubmit={handleCreate}
           loading={submitting}
         />
@@ -829,7 +816,6 @@ export default function UserManagement() {
           errors={formErrors}
           roles={assignableRoles}
           departments={departments}
-          designations={designations}
           onSubmit={handleEdit}
           loading={submitting}
         />

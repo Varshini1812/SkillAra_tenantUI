@@ -8,7 +8,7 @@ export const MASTER_DATA_LIMITS = {
 };
 
 /**
- * Validate department / designation create-edit form.
+ * Validate department create-edit form.
  * @returns {{ name?: string, code?: string, description?: string }}
  */
 export function validateMasterDataForm(form, { existingItems = [], excludeId = null } = {}) {

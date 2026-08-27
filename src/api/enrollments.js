@@ -33,3 +33,8 @@ export async function fetchStudentDirectory(params = {}) {
   const res = await api.get("/api/users/students", { params });
   return getData(res);
 }
+
+export async function fetchCourseEnrollableUsers(courseId) {
+  const res = await api.get(`/api/courses/${courseId}/enrollable-users`);
+  return getData(res);
+}
