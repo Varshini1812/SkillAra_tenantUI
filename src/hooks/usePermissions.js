@@ -11,7 +11,7 @@ import {
   getUserRole,
   isInstructor,
   isStaff,
-  isStudent,
+  isLearner,
 } from "../utils/permissions.js";
 
 /**
@@ -28,7 +28,7 @@ export function usePermissions() {
       roleLabel: getRoleLabel(user),
       isStaff: isStaff(user),
       isInstructor: isInstructor(user),
-      isStudent: isStudent(user),
+      isLearner: isLearner(user),
       canAuthorCourses: canAuthorCourses(user),
       nav: getAppNav(user),
       permissionRows: describePermissions(user),

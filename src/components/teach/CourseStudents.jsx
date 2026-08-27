@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { bulkEnroll, dropEnrollment, fetchCourseEnrollments, fetchStudentDirectory } from "../../api/enrollments.js";
+import { bulkEnroll, dropEnrollment, fetchCourseEnrollments, fetchCourseEnrollableUsers } from "../../api/enrollments.js";
 import { getErrorMessage } from "../../api/client.js";
 
 /**
@@ -41,7 +41,7 @@ export default function CourseStudents({ courseId }) {
     setPickerOpen(true);
     setError("");
     try {
-      setCandidates(await fetchStudentDirectory());
+      setCandidates(await fetchCourseEnrollableUsers(courseId));
     } catch (err) {
       setError(getErrorMessage(err));
     }

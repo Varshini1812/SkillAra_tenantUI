@@ -13,7 +13,9 @@ import {
 } from "../api/mentorship.js";
 import { getErrorMessage } from "../api/client.js";
 import { usePermissions } from "../hooks/usePermissions.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import LockedFeature from "../components/common/LockedFeature.jsx";
 
 const STATUS_STYLE = {
   OPEN: "bg-slate-100 text-slate-600",
@@ -30,9 +32,9 @@ function fmt(iso) {
   });
 }
 
-function hasUnread(ticket, isStudent) {
+function hasUnread(ticket, isLearner) {
   if (!ticket.lastMessageAt) return false;
-  const readAt = isStudent ? ticket.studentLastReadAt : ticket.mentorLastReadAt;
+  const readAt = isLearner ? ticket.studentLastReadAt : ticket.mentorLastReadAt;
   return !readAt || new Date(ticket.lastMessageAt) > new Date(readAt);
 }
 
@@ -111,7 +113,7 @@ function NewTicketDialog({ onClose, onCreated }) {
   );
 }
 
-function TicketList({ tickets, isStudent, emptyText, onOpen }) {
+function TicketList({ tickets, isLearner, emptyText, onOpen }) {
   if (tickets.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
@@ -131,10 +133,10 @@ function TicketList({ tickets, isStudent, emptyText, onOpen }) {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="truncate text-sm font-medium text-slate-800">{t.subject}</span>
-                {hasUnread(t, isStudent) && <span className="h-2 w-2 shrink-0 rounded-full bg-indigo-600" />}
+                {hasUnread(t, isLearner) && <span className="h-2 w-2 shrink-0 rounded-full bg-indigo-600" />}
               </div>
               <p className="mt-1 text-xs text-slate-400">
-                {isStudent
+                {isLearner
                   ? t.mentorId
                     ? `Mentor: ${t.mentorId.name || t.mentorId.email}`
                     : "Unclaimed"
@@ -232,7 +234,7 @@ function QueueTab({ onClaimed }) {
   );
 }
 
-function MyTicketsTab({ isStudent, onOpen, reloadKey }) {
+function MyTicketsTab({ isLearner, onOpen, reloadKey }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -255,8 +257,8 @@ function MyTicketsTab({ isStudent, onOpen, reloadKey }) {
         ) : (
           <TicketList
             tickets={tickets}
-            isStudent={isStudent}
-            emptyText={isStudent ? "You haven't raised a ticket yet." : "No tickets assigned to you yet."}
+            isLearner={isLearner}
+            emptyText={isLearner ? "You haven't raised a ticket yet." : "No tickets assigned to you yet."}
             onOpen={onOpen}
           />
         )}
@@ -440,7 +442,7 @@ function MentorshipContent() {
       </div>
 
       {tab === "queue" && canMentor && <QueueTab onClaimed={() => setReloadKey((k) => k + 1)} />}
-      {tab === "mine" && <MyTicketsTab isStudent={!canMentor} onOpen={openTicket} reloadKey={reloadKey} />}
+      {tab === "mine" && <MyTicketsTab isLearner={!canMentor} onOpen={openTicket} reloadKey={reloadKey} />}
       {tab === "mentors" && <MentorsTab />}
 
       {showNewTicket && (
@@ -457,8 +459,19 @@ function MentorshipContent() {
 }
 
 export default function Mentorship() {
+  const { tenantInfo } = useAuth();
+  
+  if (tenantInfo?.planFeatures && tenantInfo.planFeatures.mentorshipEnabled === false) {
+    return (
+      <LockedFeature 
+        title="Mentorship" 
+        description="Enable learners to create mentorship tickets, get assigned to mentors, and communicate seamlessly." 
+      />
+    );
+  }
+
   return (
-    <ProtectedRoute>
+    <ProtectedRoute module="mentorship" actions={["view"]}>
       <MentorshipContent />
     </ProtectedRoute>
   );

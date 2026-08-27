@@ -28,9 +28,7 @@ export default function Dashboard() {
       .finally(() => setLoadingUsers(false));
   }, []);
 
-  // Fetch categories and designations
   const { activeItems: departments, loading: loadingDepts } = useTenantMasterData("department");
-  const { activeItems: designations, loading: loadingDesigs } = useTenantMasterData("designation");
 
   // Load audit logs
   const auditLogs = useMemo(() => {
@@ -178,22 +176,6 @@ export default function Dashboard() {
                 <p className="text-xs text-slate-500 mt-1">Active categorizations</p>
               </div>
             </div>
-
-            {/* Designations */}
-            <div className="admin-card p-5 relative overflow-hidden flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Designations</span>
-                <div className="rounded-lg bg-rose-50 p-2 text-rose-600">
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                  </svg>
-                </div>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-2xl font-bold text-black">{loadingDesigs ? "..." : designations.length}</h3>
-                <p className="text-xs text-slate-500 mt-1">Corporate assignments</p>
-              </div>
-            </div>
           </div>
 
           {/* Quick Info Grid */}
@@ -296,7 +278,6 @@ export default function Dashboard() {
               </div>
               <h3 className="font-bold text-black text-lg mt-4">Master Data</h3>
               <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-                Manage corporate department lists and job designation categories.
               </p>
             </div>
             <span className="text-xs font-semibold text-amber-600 mt-6 inline-flex items-center gap-1 group-hover:translate-x-1 transition-all duration-300">

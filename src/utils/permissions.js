@@ -14,6 +14,7 @@ export const ROLE = {
   ORG_ADMIN: "ORG_ADMIN",
   TUTOR: "TUTOR",
   STUDENT: "STUDENT",
+  LEARNER: "LEARNER",
 };
 
 /** Roles that manage the organization rather than consume it. */
@@ -33,10 +34,9 @@ export function isInstructor(user) {
   return getUserRole(user) === ROLE.TUTOR;
 }
 
-export function isStudent(user) {
+export function isLearner(user) {
   const role = getUserRole(user);
-  // Treat an unknown/absent role as a learner — the least-privileged default.
-  return !role || role === ROLE.STUDENT;
+  return !role || role === ROLE.STUDENT || role === ROLE.LEARNER;
 }
 
 /** Anyone who can author course content. */

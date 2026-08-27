@@ -36,7 +36,6 @@ export default function UserDetailDrawer({ user, role, auditLogs = [] }) {
           <Info label="Phone" value={user.phone || "—"} />
           <Info label="Employee ID" value={user.employeeId || "—"} />
           <Info label="Department" value={user.department || "—"} />
-          <Info label="Designation" value={user.designation || "—"} />
           <Info label="Last login" value={formatDate(user.lastLoginAt)} />
           <Info label="Created" value={formatDate(user.created_on)} />
         </dl>
