@@ -8,6 +8,8 @@ import { fetchAllLiveSessions } from "../../api/liveSessions.js";
 import { fetchQuestions } from "../../api/forum.js";
 import { getErrorMessage } from "../../api/client.js";
 import Breadcrumb from "../components/ui/Breadcrumb.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
+import LockedFeature from "../../components/common/LockedFeature.jsx";
 
 const TABS = [
   { key: "mock-tests", label: "Mock tests" },
@@ -306,6 +308,7 @@ function ForumTab() {
  */
 export default function CommunityMonitoring() {
   const [tab, setTab] = useState("mock-tests");
+  const { tenantInfo } = useAuth();
 
   return (
     <div>
@@ -332,11 +335,31 @@ export default function CommunityMonitoring() {
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white p-4">
-        {tab === "mock-tests" && <MockTestsTab />}
-        {tab === "sessions" && <SessionsTab />}
-        {tab === "mentorship" && <MentorshipTab />}
-        {tab === "live-sessions" && <LiveSessionsTab />}
-        {tab === "forum" && <ForumTab />}
+        {tab === "mock-tests" && (
+          tenantInfo?.planFeatures?.mockInterviewsEnabled === false ? 
+          <LockedFeature title="Mock Tests" description="Evaluate learners via interactive mock tests." /> : 
+          <MockTestsTab />
+        )}
+        {tab === "sessions" && (
+          tenantInfo?.planFeatures?.mentorshipEnabled === false && tenantInfo?.planFeatures?.mockInterviewsEnabled === false ? 
+          <LockedFeature title="Sessions" description="Enable 1-on-1 mentorship and mock interview sessions." /> : 
+          <SessionsTab />
+        )}
+        {tab === "mentorship" && (
+          tenantInfo?.planFeatures?.mentorshipEnabled === false ? 
+          <LockedFeature title="Support Tickets" description="Provide learners with direct mentorship ticket support." /> : 
+          <MentorshipTab />
+        )}
+        {tab === "live-sessions" && (
+          tenantInfo?.planFeatures?.liveClassesEnabled === false ? 
+          <LockedFeature title="Live Sessions" description="Host interactive virtual classrooms directly in SkillAra." /> : 
+          <LiveSessionsTab />
+        )}
+        {tab === "forum" && (
+          tenantInfo?.planFeatures?.communityEnabled === false ? 
+          <LockedFeature title="Community Forum" description="Build an active community by allowing learners and instructors to ask questions." /> : 
+          <ForumTab />
+        )}
       </div>
     </div>
   );

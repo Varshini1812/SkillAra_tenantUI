@@ -142,8 +142,13 @@ export default function CourseDetail() {
     setEnrolling(true);
     setError("");
     try {
-      await enroll(id);
-      setMessage("Enrolled successfully.");
+      const res = await enroll(id);
+      if (res?.paymentUrl) {
+        setMessage("Payment required. Redirecting to checkout...");
+        window.location.href = res.paymentUrl;
+      } else {
+        setMessage("Enrolled successfully.");
+      }
       await load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -218,7 +223,7 @@ export default function CourseDetail() {
             disabled={enrolling}
             className="rounded-lg bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {enrolling ? "Enrolling..." : course.price > 0 ? "Purchase (coming soon)" : "Enroll free"}
+            {enrolling ? "Processing..." : course.requiresPayment ? `Buy — ${course.currency} ${course.price}` : "Enroll free"}
           </button>
         )}
 
