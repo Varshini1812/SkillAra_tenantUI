@@ -19,14 +19,26 @@ export default function MentorDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [forbidden, setForbidden] = useState(false);
+
   useEffect(() => {
     fetchMentorDashboard()
       .then(setData)
-      .catch((err) => setError(getErrorMessage(err)))
+      .catch((err) => {
+        if (err?.response?.status === 403) setForbidden(true);
+        else setError(getErrorMessage(err));
+      })
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <p className="text-gray-600">Loading dashboard…</p>;
+  if (forbidden) {
+    return (
+      <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
+        Your role doesn&apos;t include the mentorship queue.
+      </p>
+    );
+  }
   if (error) return <p className="text-red-600">Error loading dashboard: {error}</p>;
 
   const stats = [

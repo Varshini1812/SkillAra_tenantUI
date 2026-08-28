@@ -39,9 +39,14 @@ export function isLearner(user) {
   return !role || role === ROLE.STUDENT || role === ROLE.LEARNER;
 }
 
-/** Anyone who can author course content. */
+/**
+ * Anyone who can author course content.
+ *
+ * Asks the permission rather than the role tier: Instructor, Mentor, Teaching Assistant,
+ * Support and Content Reviewer all report TUTOR, and only some of them author anything.
+ */
 export function canAuthorCourses(user) {
-  return isStaff(user) || isInstructor(user);
+  return can(user, "courses", "create");
 }
 
 /**
@@ -102,9 +107,8 @@ const APP_NAV = [
     section: "Learn",
     items: [
       { to: "/dashboard", label: "My Dashboard", icon: "home" },
-      { to: "/", label: "Home", icon: "home", end: true },
       { to: "/courses", label: "Browse courses", icon: "courses" },
-      { to: "/my-learning", label: "My learning", icon: "learning", requires: ["courses", "view"], roles: [ROLE.STUDENT, ROLE.ORG_ADMIN, ROLE.TENANT_ADMIN] },
+      { to: "/my-learning", label: "My learning", icon: "learning", requires: ["courses", "view"] },
     ],
   },
   {
@@ -122,24 +126,29 @@ const APP_NAV = [
     section: "Teach",
     items: [
       { to: "/teach", label: "My courses", icon: "teach", requires: ["courses", "create"] },
+      { to: "/review-queue", label: "Review queue", icon: "moderate", requires: ["courses", "approve"] },
     ],
   },
   {
     section: "Manage",
     items: [
-      { to: "/admin", label: "Admin panel", icon: "admin", roles: [ROLE.TENANT_ADMIN, ROLE.ORG_ADMIN] },
-      { to: "/admin/courses", label: "Moderate courses", icon: "moderate", roles: [ROLE.TENANT_ADMIN, ROLE.ORG_ADMIN] },
+      { to: "/admin", label: "Admin panel", icon: "admin", gate: "admin" },
+      { to: "/admin/courses", label: "Moderate courses", icon: "moderate", requires: ["courses", "moderate"] },
     ],
   },
   {
     section: "Account",
-    items: [{ to: "/profile", label: "My profile", icon: "profile" }],
+    items: [
+      { to: "/notifications", label: "Notifications", icon: "notifications" },
+      { to: "/profile", label: "My profile", icon: "profile" },
+    ],
   },
 ];
 
 function itemVisible(user, item) {
   const role = getUserRole(user);
   if (item.roles && !item.roles.includes(role)) return false;
+  if (item.gate === "admin" && !canAccessAdminPanel(user)) return false;
   if (item.requires && !can(user, item.requires[0], item.requires[1])) return false;
   return true;
 }
@@ -173,9 +182,11 @@ const ADMIN_NAV = [
   {
     section: "Learning",
     items: [
-      { to: "/admin/courses", label: "Courses", icon: "courses", requires: ["courses", "view"] },
-      { to: "/admin/monitoring", label: "Community monitoring", icon: "monitoring", requires: ["community", "view"] },
-      { to: "/admin/mentorship", label: "Mentorship queue", icon: "mentors", requires: ["mentorship", "view"] },
+      { to: "/admin/courses", label: "Courses", icon: "courses", requires: ["courses", "moderate"] },
+      { to: "/admin/enrollment-requests", label: "Access requests", icon: "enrollments", requires: ["learners", "assign"] },
+      { to: "/admin/content-reviews", label: "Content reviews", icon: "review", requires: ["courses", "approve"] },
+      { to: "/admin/monitoring", label: "Community monitoring", icon: "monitoring", requires: ["community", "moderate"] },
+      { to: "/admin/mentorship", label: "Mentorship queue", icon: "mentors", requires: ["mentorship", "manage"] },
     ],
   },
   {
@@ -192,6 +203,27 @@ const ADMIN_NAV = [
     ],
   },
 ];
+
+/**
+ * Permissions that admit someone to the admin panel. Every one is administrative — none is
+ * part of the baseline every colleague holds — so the gate cannot be satisfied just by being
+ * signed in. The organization owner always passes.
+ */
+const ADMIN_GATE = [
+  ["users", "view"],
+  ["roles", "view"],
+  ["org-settings", "view"],
+  ["courses", "moderate"],
+  ["community", "moderate"],
+  ["mentorship", "manage"],
+  ["audit-logs", "view"],
+];
+
+export function canAccessAdminPanel(user) {
+  if (!user) return false;
+  if (user.isTenantAdmin || getUserRole(user) === ROLE.TENANT_ADMIN) return true;
+  return ADMIN_GATE.some(([moduleId, action]) => can(user, moduleId, action));
+}
 
 export function getAdminNav(user) {
   return ADMIN_NAV.map((group) => ({
@@ -232,7 +264,7 @@ export const MODULE_LABELS = {
   "live-sessions": "Live Sessions",
   certificates: "Certificates",
   mentorship: "Mentorship",
-  students: "Students",
+  learners: "Learners",
   instructors: "Instructors",
   mentors: "Mentors",
   community: "Community",

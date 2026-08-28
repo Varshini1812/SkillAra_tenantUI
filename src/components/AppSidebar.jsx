@@ -13,6 +13,15 @@ function NavIcon({ name }) {
   const cap = { strokeLinecap: "round", strokeLinejoin: "round" };
 
   switch (name) {
+    case "notifications":
+      return (
+        <svg {...common}>
+          <path
+            d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9"
+            {...cap}
+          />
+        </svg>
+      );
     case "home":
       return (
         <svg {...common}>

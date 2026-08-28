@@ -32,7 +32,8 @@ function VoteButtons({ score, onVote }) {
 function ForumQuestionContent() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, isStaff } = usePermissions();
+  const { user, can } = usePermissions();
+  const canModerate = can("forum", "moderate");
 
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
@@ -165,12 +166,12 @@ function ForumQuestionContent() {
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
             <span>Asked by {question.userId?.name || question.userId?.email}</span>
-            {(isOwner || isStaff) && (
+            {(isOwner || canModerate) && (
               <button type="button" onClick={handleDeleteQuestion} className="text-rose-600 hover:underline">
                 Delete
               </button>
             )}
-            {isStaff && (
+            {canModerate && (
               <button type="button" onClick={handleModerateQuestion} className="text-amber-600 hover:underline">
                 {question.moderation?.isHidden ? "Unhide" : "Hide"}
               </button>
@@ -204,12 +205,12 @@ function ForumQuestionContent() {
                       Accept answer
                     </button>
                   )}
-                  {(String(a.userId?._id || a.userId) === String(user?.id) || isStaff) && (
+                  {(String(a.userId?._id || a.userId) === String(user?.id) || canModerate) && (
                     <button type="button" onClick={() => handleDeleteAnswer(a.id)} className="text-rose-600 hover:underline">
                       Delete
                     </button>
                   )}
-                  {isStaff && (
+                  {canModerate && (
                     <button
                       type="button"
                       onClick={() => handleModerateAnswer(a.id, a.moderation?.isHidden)}

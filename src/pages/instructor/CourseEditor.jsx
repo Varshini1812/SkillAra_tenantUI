@@ -13,7 +13,8 @@ import {
 } from "../../api/courses.js";
 import { getErrorMessage } from "../../api/client.js";
 import ModuleCard from "../../components/teach/ModuleCard.jsx";
-import CourseStudents from "../../components/teach/CourseStudents.jsx";
+import CourseReviewPanel from "../../components/teach/CourseReviewPanel.jsx";
+import { usePermissions } from "../../hooks/usePermissions.js";
 import CourseMockTests from "../../components/teach/CourseMockTests.jsx";
 import CourseLiveSessions from "../../components/teach/CourseLiveSessions.jsx";
 
@@ -30,6 +31,7 @@ export default function CourseEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const thumbInput = useRef(null);
+  const { user, can } = usePermissions();
 
   const [course, setCourse] = useState(null);
   const [form, setForm] = useState(null);
@@ -168,6 +170,17 @@ export default function CourseEditor() {
 
   const isPublished = course.status === "PUBLISHED";
   const blocked = course.moderation?.isBlocked;
+  const review = course.review || null;
+  const canEdit = can("courses", "edit");
+  const canPublish = can("courses", "publish");
+  const canArchive = can("courses", "delete");
+  // Publishing is gated on a current content-review approval; the API enforces the same rule.
+  const approved = review?.status === "APPROVED";
+  const publishBlockedReason = blocked
+    ? "An administrator has blocked this course"
+    : !approved
+      ? "A content reviewer has to approve this course before it can be published"
+      : undefined;
 
   return (
     <div className="space-y-6">
@@ -203,17 +216,19 @@ export default function CourseEditor() {
           >
             Preview
           </Link>
+          {canPublish && (
           <button
             type="button"
             onClick={togglePublish}
-            disabled={blocked}
-            title={blocked ? "An administrator has blocked this course" : undefined}
+            disabled={blocked || (!isPublished && !approved)}
+            title={isPublished ? undefined : publishBlockedReason}
             className={`rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
               isPublished ? "bg-slate-600 hover:bg-slate-700" : "bg-indigo-600 hover:bg-indigo-700"
             }`}
           >
             {isPublished ? "Unpublish" : "Publish"}
           </button>
+          )}
         </div>
       </div>
 
@@ -226,6 +241,15 @@ export default function CourseEditor() {
       )}
       {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
       {notice && <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</div>}
+
+      {!isPublished && (
+        <CourseReviewPanel
+          courseId={id}
+          user={user}
+          review={review}
+          onReviewChange={(next) => setCourse((prev) => ({ ...prev, review: next }))}
+        />
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* ---------------- details ---------------- */}
@@ -355,20 +379,26 @@ export default function CourseEditor() {
           </label>
 
           <div className="flex items-center justify-between pt-2">
-            <button
-              type="button"
-              onClick={archive}
-              className="text-xs font-medium text-rose-600 hover:underline"
-            >
-              Archive course
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {saving ? "Saving…" : "Save details"}
-            </button>
+            {canArchive ? (
+              <button
+                type="button"
+                onClick={archive}
+                className="text-xs font-medium text-rose-600 hover:underline"
+              >
+                Archive course
+              </button>
+            ) : (
+              <span />
+            )}
+            {canEdit && (
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {saving ? "Saving…" : "Save details"}
+              </button>
+            )}
           </div>
         </form>
 
@@ -432,7 +462,6 @@ export default function CourseEditor() {
 
           <CourseLiveSessions courseId={id} />
 
-          <CourseStudents courseId={id} />
         </div>
       </div>
     </div>

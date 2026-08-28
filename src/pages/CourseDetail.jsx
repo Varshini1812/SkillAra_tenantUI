@@ -142,13 +142,12 @@ export default function CourseDetail() {
     setEnrolling(true);
     setError("");
     try {
-      const res = await enroll(id);
-      if (res?.paymentUrl) {
-        setMessage("Payment required. Redirecting to checkout...");
-        window.location.href = res.paymentUrl;
-      } else {
-        setMessage("Enrolled successfully.");
-      }
+      await enroll(id);
+      setMessage(
+        course.needsApproval
+          ? "Access requested. An admin will review it and you'll get a notification."
+          : "Enrolled successfully."
+      );
       await load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -160,6 +159,9 @@ export default function CourseDetail() {
   if (loading) return <div className="text-center text-slate-400">Loading...</div>;
   if (!course) return <div className="text-center text-red-500">{error || "Course not found"}</div>;
 
+  // A paid course is not entered by paying here — the learner asks and staff decide.
+  const pending = ["PENDING_APPROVAL", "PENDING_PAYMENT"].includes(course.myEnrollment?.status);
+  const declined = course.myEnrollment?.status === "REJECTED";
   const moduleCount = course.modules?.length || 0;
   const lessonCount = course.stats?.lessonCount || 0;
 
@@ -203,6 +205,14 @@ export default function CourseDetail() {
         </div>
       )}
 
+      {declined && (
+        <div className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
+          Your access request was declined
+          {course.myEnrollment.decisionNote ? `: ${course.myEnrollment.decisionNote}` : "."} You can
+          ask again if something has changed.
+        </div>
+      )}
+
       {error && <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
       {message && (
         <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-600">{message}</div>
@@ -216,6 +226,10 @@ export default function CourseDetail() {
           >
             Continue learning
           </Link>
+        ) : pending ? (
+          <div className="rounded-lg bg-indigo-50 px-5 py-2.5 text-sm font-medium text-indigo-700">
+            Access requested — waiting for approval
+          </div>
         ) : (
           <button
             type="button"
@@ -223,7 +237,11 @@ export default function CourseDetail() {
             disabled={enrolling}
             className="rounded-lg bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {enrolling ? "Processing..." : course.requiresPayment ? `Buy — ${course.currency} ${course.price}` : "Enroll free"}
+            {enrolling
+              ? "Processing…"
+              : course.needsApproval
+                ? `Request access — ${course.currency} ${course.price}`
+                : "Enroll free"}
           </button>
         )}
 

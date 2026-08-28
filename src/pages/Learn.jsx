@@ -430,7 +430,7 @@ function LearnContent() {
 
 export default function Learn() {
   return (
-    <ProtectedRoute roles={["STUDENT", "TUTOR", "TENANT_ADMIN"]}>
+    <ProtectedRoute requires={["lessons", "view"]}>
       <LearnContent />
     </ProtectedRoute>
   );

@@ -207,8 +207,9 @@ function SlotCard({ slot, mode, currentUserId, onBook, onCancel, onComplete, onD
 }
 
 function MockInterviewsContent() {
-  const { isInstructor, isStaff, user } = usePermissions();
-  const canHost = isInstructor || isStaff;
+  const { user, can } = usePermissions();
+  const { tenantInfo } = useAuth();
+  const canHost = can("mentorship", "host");
   const navigate = useNavigate();
 
   const [tab, setTab] = useState("browse");

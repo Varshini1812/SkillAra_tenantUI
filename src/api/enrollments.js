@@ -1,7 +1,40 @@
 import api, { getData } from "./client.js";
 
-export async function enroll(courseId) {
-  const res = await api.post("/api/enrollments", { courseId });
+/**
+ * Free courses enrol immediately; paid courses record a request that staff must approve.
+ * The response message tells the learner which happened.
+ */
+export async function enroll(courseId, note) {
+  const res = await api.post("/api/enrollments", { courseId, note });
+  return getData(res);
+}
+
+/* ------------------- paid-course access requests (staff) ------------------- */
+
+export async function fetchEnrollmentRequests(status) {
+  const res = await api.get("/api/enrollments/requests", { params: { status } });
+  return getData(res)?.requests || [];
+}
+
+export async function approveEnrollmentRequest(id, note) {
+  const res = await api.post(`/api/enrollments/requests/${id}/approve`, { note });
+  return getData(res);
+}
+
+export async function rejectEnrollmentRequest(id, note) {
+  const res = await api.post(`/api/enrollments/requests/${id}/reject`, { note });
+  return getData(res);
+}
+
+/** Staff view of one learner's course access — includes pending and declined rows. */
+export async function fetchUserEnrollments(userId) {
+  const res = await api.get(`/api/enrollments/user/${userId}`);
+  return getData(res)?.enrollments || [];
+}
+
+/** Give one learner access to one course directly, without waiting for a request. */
+export async function grantCourseAccess(userId, courseId) {
+  const res = await api.post("/api/enrollments/grant", { userId, courseId });
   return getData(res);
 }
 

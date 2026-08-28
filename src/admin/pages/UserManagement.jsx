@@ -20,6 +20,44 @@ import { useTenantMasterData } from "../hooks/useTenantMasterData.js";
 import { enrichUser, useAuditLog, useUserProfiles } from "../hooks/useUserProfiles.js";
 import { validateUserForm } from "../utils/userValidation.js";
 import { filterManageableUsers, isOrganizationOwner, isOrgAdminRole, logOwnerAuthContext } from "../utils/tenantUsers.js";
+import CourseAccessPanel from "../components/users/CourseAccessPanel.jsx";
+
+/**
+ * Permissions that make a role a staff role. Anything holding none of them is someone who
+ * only consumes the workspace — a student. Derived from the permission map rather than the
+ * role name, so custom roles land in the right tab automatically.
+ */
+const STAFF_MARKERS = [
+  ["courses", "create"],
+  ["courses", "edit"],
+  ["courses", "approve"],
+  ["courses", "moderate"],
+  ["lessons", "create"],
+  ["mentorship", "claim"],
+  ["mentorship", "host"],
+  ["learners", "assign"],
+  ["users", "view"],
+  ["roles", "view"],
+  ["org-settings", "view"],
+  ["community", "moderate"],
+  ["forum", "moderate"],
+];
+
+function isStaffRole(role) {
+  if (!role) return false;
+  if (role.isOwnerRole) return true;
+  const permissions = role.permissions || {};
+  return STAFF_MARKERS.some(([moduleId, action]) => {
+    const actions = permissions[moduleId];
+    return Array.isArray(actions) && (actions.includes(action) || actions.includes("manage"));
+  });
+}
+
+const AUDIENCE_TABS = [
+  { value: "students", label: "Students" },
+  { value: "staff", label: "Staff" },
+  { value: "all", label: "Everyone" },
+];
 import { useAdminAuth } from "../context/AdminAuthContext.jsx";
 import { downloadUserImportSample } from "../utils/userImportSample.js";
 import { findMasterItemByName } from "../utils/masterDataHelpers.js";
@@ -108,6 +146,7 @@ export default function UserManagement() {
   const [error, setError] = useState("");
 
   const [search, setSearch] = useState("");
+  const [audience, setAudience] = useState("students");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [deptFilter, setDeptFilter] = useState("all");
@@ -181,6 +220,12 @@ export default function UserManagement() {
           (u.department || "").toLowerCase().includes(q)
       );
     }
+    if (audience !== "all") {
+      const staffRoleIds = new Set(allRoles.filter(isStaffRole).map((r) => r.id));
+      list = list.filter((u) =>
+        audience === "staff" ? staffRoleIds.has(u.roleId) : !staffRoleIds.has(u.roleId)
+      );
+    }
     if (roleFilter !== "all") list = list.filter((u) => u.roleId === roleFilter);
     if (statusFilter !== "all") list = list.filter((u) => u.status === statusFilter);
     if (deptFilter !== "all") list = list.filter((u) => u.departmentId === deptFilter);
@@ -197,7 +242,7 @@ export default function UserManagement() {
       return 0;
     });
     return list;
-  }, [users, search, roleFilter, statusFilter, deptFilter, sortBy, allRoles]);
+  }, [users, search, audience, roleFilter, statusFilter, deptFilter, sortBy, allRoles]);
 
   const {
     page,
@@ -208,7 +253,7 @@ export default function UserManagement() {
     totalItems,
     pagedItems: paged,
   } = usePagination(filtered, {
-    resetDeps: [search, roleFilter, statusFilter, deptFilter, sortBy],
+    resetDeps: [search, audience, roleFilter, statusFilter, deptFilter, sortBy],
   });
 
   const hasActiveFilters =
@@ -362,8 +407,15 @@ export default function UserManagement() {
       } else {
         toast(`${form.firstName} created successfully`, "success");
       }
-      closePanel();
-      loadUsers();
+
+      const createdRole = allRoles.find((r) => r.id === form.roleId);
+      await loadUsers();
+      if (createdUser?.id && !isStaffRole(createdRole)) {
+        // Open the new student straight away so their courses can be assigned in one go.
+        setSearchParams({ panel: "view", id: String(createdUser.id) });
+      } else {
+        closePanel();
+      }
     } catch (err) {
       logOwnerAuthContext("Create user API error", {
         user: currentUser,
@@ -616,6 +668,37 @@ export default function UserManagement() {
         </div>
       </div>
 
+      {/* Students and staff are managed differently enough to deserve their own lists. */}
+      <div className="mb-3 flex flex-wrap gap-1">
+        {AUDIENCE_TABS.map((t) => {
+          const staffRoleIds = new Set(allRoles.filter(isStaffRole).map((r) => r.id));
+          const n =
+            t.value === "all"
+              ? users.length
+              : users.filter((u) =>
+                  t.value === "staff" ? staffRoleIds.has(u.roleId) : !staffRoleIds.has(u.roleId)
+                ).length;
+          return (
+            <button
+              key={t.value}
+              type="button"
+              onClick={() => {
+                setAudience(t.value);
+                setRoleFilter("all");
+              }}
+              className={`rounded-lg px-3 py-1.5 text-sm transition ${
+                audience === t.value
+                  ? "bg-indigo-50 font-medium text-indigo-700"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              {t.label}
+              <span className="ml-1.5 text-xs text-slate-400">{n}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <FilterBar onClear={clearFilters} showClear={hasActiveFilters}>
         <input
           value={search}
@@ -630,9 +713,11 @@ export default function UserManagement() {
           aria-label="Filter by role"
         >
           <option value="all">All roles</option>
-          {assignableRoles.map((r) => (
-            <option key={r.id} value={r.id}>{r.name}</option>
-          ))}
+          {assignableRoles
+            .filter((r) => audience === "all" || isStaffRole(r) === (audience === "staff"))
+            .map((r) => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
         </select>
         <select
           value={statusFilter}
@@ -819,6 +904,7 @@ export default function UserManagement() {
           onSubmit={handleEdit}
           loading={submitting}
         />
+        {activeUser && !isStaffRole(activeRole) && <CourseAccessPanel user={activeUser} />}
       </Drawer>
 
       <Drawer
@@ -827,7 +913,10 @@ export default function UserManagement() {
         title="User details"
         subtitle={activeUser?.email}
       >
-        <UserDetailDrawer user={activeUser} role={activeRole} auditLogs={getForUser(userId)} />
+        <>
+          <UserDetailDrawer user={activeUser} role={activeRole} auditLogs={getForUser(userId)} />
+          {activeUser && !isStaffRole(activeRole) && <CourseAccessPanel user={activeUser} />}
+        </>
       </Drawer>
 
       <ConfirmDialog
