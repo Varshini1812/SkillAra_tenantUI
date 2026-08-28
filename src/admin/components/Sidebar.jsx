@@ -12,6 +12,23 @@ const STORAGE_KEY = "skillara-tenant-admin-sidebar-collapsed";
 function NavIcon({ name }) {
   const className = "h-4 w-4 shrink-0 transition-colors";
   switch (name) {
+    case "enrollments":
+      // Inbox tray — access requests waiting for a decision.
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+          <path d="M3 13h4l2 3h6l2-3h4" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M5 5h14l2 8v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4z" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "review":
+      // Document with a tick — content awaiting sign-off.
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M14 3v5h5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M9 15l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
     case "dashboard":
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>

@@ -271,8 +271,8 @@ function MentorsTab() {
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { isInstructor, isStaff } = usePermissions();
-  const canBeMentor = isInstructor || isStaff;
+  const { can } = usePermissions();
+  const canBeMentor = can("mentorship", "host");
 
   const [profile, setProfile] = useState(null);
   const [bio, setBio] = useState("");
@@ -385,8 +385,8 @@ function MentorsTab() {
 }
 
 function MentorshipContent() {
-  const { isInstructor, isStaff } = usePermissions();
-  const canMentor = isInstructor || isStaff;
+  const { can } = usePermissions();
+  const canMentor = can("mentorship", "claim");
   const navigate = useNavigate();
 
   const [tab, setTab] = useState(canMentor ? "queue" : "mine");
@@ -415,7 +415,7 @@ function MentorshipContent() {
             {canMentor ? "Claim open tickets, chat, and schedule sessions." : "Raise a ticket, chat with your mentor, and book sessions."}
           </p>
         </div>
-        {!isInstructor && !isStaff && (
+        {!canMentor && (
           <button
             type="button"
             onClick={() => setShowNewTicket(true)}

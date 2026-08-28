@@ -153,8 +153,8 @@ function NewSessionForm({ courses, onCreated }) {
 }
 
 function LiveSessionsContent() {
-  const { user, isInstructor, isStaff } = usePermissions();
-  const canHost = isInstructor || isStaff;
+  const { user, can } = usePermissions();
+  const canHost = can("live-sessions", "create");
   const navigate = useNavigate();
 
   const [tab, setTab] = useState("upcoming");

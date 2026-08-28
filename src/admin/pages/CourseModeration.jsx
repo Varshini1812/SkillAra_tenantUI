@@ -24,6 +24,13 @@ const STATUS_BADGE = {
   ARCHIVED: "bg-amber-100 text-amber-700",
 };
 
+/** NOT_SUBMITTED is deliberately absent — a plain draft needs no extra badge. */
+const REVIEW_BADGE = {
+  PENDING: { label: "In review", chip: "bg-indigo-100 text-indigo-700" },
+  CHANGES_REQUESTED: { label: "Changes requested", chip: "bg-amber-100 text-amber-800" },
+  APPROVED: { label: "Approved", chip: "bg-emerald-100 text-emerald-700" },
+};
+
 function BlockDialog({ course, onClose, onConfirm }) {
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
@@ -134,6 +141,7 @@ export default function CourseModeration() {
   const counts = {
     total: courses.length,
     published: courses.filter((c) => c.status === "PUBLISHED").length,
+    inReview: courses.filter((c) => c.review?.status === "PENDING").length,
     blocked: courses.filter((c) => c.moderation?.isBlocked).length,
   };
 
@@ -159,10 +167,11 @@ export default function CourseModeration() {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid gap-3 sm:grid-cols-4">
         {[
           { label: "Total courses", value: counts.total },
           { label: "Published", value: counts.published },
+          { label: "Awaiting review", value: counts.inReview },
           { label: "Blocked", value: counts.blocked },
         ].map((stat) => (
           <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-4">
@@ -246,6 +255,16 @@ export default function CourseModeration() {
                     {course.moderation?.isBlocked && (
                       <span className="ml-1 rounded bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
                         Blocked
+                      </span>
+                    )}
+                    {/* Review state only matters while a course is not yet live. */}
+                    {course.status !== "PUBLISHED" && REVIEW_BADGE[course.review?.status] && (
+                      <span
+                        className={`ml-1 rounded px-2 py-0.5 text-xs font-semibold ${
+                          REVIEW_BADGE[course.review.status].chip
+                        }`}
+                      >
+                        {REVIEW_BADGE[course.review.status].label}
                       </span>
                     )}
                   </td>

@@ -1,27 +1,26 @@
 import { Navigate } from "react-router-dom";
 import { useAdminAuth } from "../context/AdminAuthContext.jsx";
 import { isOrganizationOwner } from "../utils/tenantUsers.js";
-
-const ADMIN_PORTAL_ROLES = new Set([
-  "tenant_admin",
-  "TENANT_ADMIN",
-  "ORG_ADMIN",
-  "org_admin",
-]);
-
-function canAccessAdminPortal(user, sessionClaims, allowedRoles) {
-  if (isOrganizationOwner(user)) return true;
-  const role = String(user?.role || sessionClaims?.role || "").toLowerCase();
-  if (allowedRoles?.some((r) => String(r).toLowerCase() === role)) return true;
-  return ADMIN_PORTAL_ROLES.has(role);
-}
+import { canAccessAdminPanel } from "../../utils/permissions.js";
 
 /**
- * UI route guard only — role checks here are NOT a security boundary.
- * The API enforces authorization on every request.
+ * UI route guard only — NOT a security boundary. The API re-checks every request.
+ *
+ * Admission is decided by the permission matrix, not by a role name — keying on
+ * ORG_ADMIN/TENANT_ADMIN used to lock out any custom role that legitimately held users:view,
+ * because every such role reports the TUTOR tier.
+ *
+ * The gate names administrative permissions explicitly rather than asking whether any nav
+ * item renders: dashboard:view and courses:view are part of the baseline every colleague
+ * holds, so "has a visible menu entry" would have admitted learners.
  */
-export default function AdminProtectedRoute({ children, roles }) {
-  const { user, sessionClaims, loading } = useAdminAuth();
+function canAccessAdminPortal(user) {
+  if (isOrganizationOwner(user)) return true;
+  return canAccessAdminPanel(user);
+}
+
+export default function AdminProtectedRoute({ children }) {
+  const { user, loading } = useAdminAuth();
 
   if (loading) {
     return (
@@ -31,8 +30,7 @@ export default function AdminProtectedRoute({ children, roles }) {
     );
   }
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !canAccessAdminPortal(user, sessionClaims, roles)) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!canAccessAdminPortal(user)) return <Navigate to="/dashboard" replace />;
+
   return children;
 }

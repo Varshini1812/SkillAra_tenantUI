@@ -182,8 +182,8 @@ const QUICK_LINKS = [
 ];
 
 function AiToolsContent() {
-  const { isInstructor, isStaff } = usePermissions();
-  const canManage = isInstructor || isStaff;
+  const { can } = usePermissions();
+  const canManage = can("courses", "create");
 
   const [courses, setCourses] = useState([]);
   const [courseId, setCourseId] = useState("");

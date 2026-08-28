@@ -40,6 +40,48 @@ export async function unpublishCourse(id) {
   return getData(res);
 }
 
+/* ------------------------------ content review ------------------------------ */
+
+/**
+ * A course must be approved by a content reviewer before it can be published.
+ * The reviewer list comes from the permission matrix (anyone granted courses:approve),
+ * so renamed or cloned reviewer roles work without a client change.
+ */
+export async function fetchCourseReviewers() {
+  const res = await api.get("/api/courses/reviewers");
+  return getData(res)?.reviewers || [];
+}
+
+/**
+ * Courses waiting on the signed-in reviewer. Pass "ALL" for the admin monitoring view:
+ * moderators then see every course in review, sent back, or approved-but-unpublished.
+ */
+export async function fetchReviewQueue(status) {
+  const res = await api.get("/api/courses/review-queue", { params: { status } });
+  return getData(res)?.courses || [];
+}
+
+export async function fetchCourseReview(id) {
+  const res = await api.get(`/api/courses/${id}/review`);
+  return getData(res);
+}
+
+export async function submitCourseForReview(id, { reviewerId, note }) {
+  const res = await api.post(`/api/courses/${id}/submit-review`, { reviewerId, note });
+  return getData(res);
+}
+
+/** Reviewer sends the course back with what needs fixing. The note is required. */
+export async function requestCourseChanges(id, note) {
+  const res = await api.post(`/api/courses/${id}/review/request-changes`, { note });
+  return getData(res);
+}
+
+export async function approveCourseReview(id, note) {
+  const res = await api.post(`/api/courses/${id}/review/approve`, { note });
+  return getData(res);
+}
+
 /** Tenant admin / org admin only. */
 export async function blockCourse(id, reason) {
   const res = await api.post(`/api/courses/${id}/block`, { reason });

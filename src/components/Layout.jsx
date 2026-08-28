@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 
 import AppSidebar, { useSidebarCollapsed } from "./AppSidebar.jsx";
 import DevTenantBanner from "./DevTenantBanner.jsx";
+import NotificationBell from "./NotificationBell.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePermissions } from "../hooks/usePermissions.js";
 import { getTenantFromHostname } from "../utils/tenant.js";
@@ -53,6 +54,8 @@ export default function Layout() {
             </p>
             {user && <p className="truncate text-xs text-slate-500">{roleLabel}</p>}
           </div>
+
+          {user && <NotificationBell />}
         </header>
 
         {isPlainLocalhost && (
