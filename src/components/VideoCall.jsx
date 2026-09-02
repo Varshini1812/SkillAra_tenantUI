@@ -26,8 +26,8 @@ function PresenceToasts({ events }) {
       {visible.map((e) => (
         <div
           key={e.id}
-          className={`rounded-full px-3 py-1 text-xs font-medium shadow-sm ${
-            e.type === "joined" ? "bg-emerald-600 text-white" : "bg-slate-800 text-white"
+          className={`rounded-full px-3 py-1 text-xs font-medium  ${
+            e.type === "joined" ? "bg-success text-white" : "bg-ink text-white"
           }`}
         >
           {e.type === "joined" ? "Participant joined the call" : "Participant left the call"}
@@ -90,6 +90,12 @@ function Icon({ name, className = "h-5 w-5" }) {
           <path d="M12 9c-2.5 0-4.9.5-7 1.4a1.5 1.5 0 0 0-.9 1.6l.4 2.5a1.5 1.5 0 0 0 1.3 1.2l2.3.3a1.5 1.5 0 0 0 1.4-.7l.6-1a8.9 8.9 0 0 1 3.8 0l.6 1a1.5 1.5 0 0 0 1.4.7l2.3-.3a1.5 1.5 0 0 0 1.3-1.2l.4-2.5a1.5 1.5 0 0 0-.9-1.6A17.9 17.9 0 0 0 12 9z" />
         </svg>
       );
+    case "close":
+      return (
+        <svg {...common}>
+          <path d="M18 6 6 18M6 6l12 12" {...cap} />
+        </svg>
+      );
     case "send":
       return (
         <svg {...common}>
@@ -109,7 +115,7 @@ function VideoTile({ stream, muted, label }) {
   }, [stream]);
 
   return (
-    <div className="relative aspect-video overflow-hidden rounded-lg bg-slate-900">
+    <div className="relative aspect-video overflow-hidden rounded-control bg-ink">
       <video ref={ref} autoPlay playsInline muted={muted} className="h-full w-full object-cover" />
       <span className="absolute bottom-2 left-2 rounded bg-black/50 px-2 py-0.5 text-xs text-white">
         {label}
@@ -120,10 +126,10 @@ function VideoTile({ stream, muted, label }) {
 
 function IconButton({ variant = "neutral", onClick, label, icon }) {
   const styles = {
-    neutral: "bg-slate-100 text-slate-700 hover:bg-slate-200",
-    off: "bg-rose-100 text-rose-700 hover:bg-rose-200",
-    selected: "bg-indigo-600 text-white hover:bg-indigo-700",
-    danger: "bg-rose-600 text-white hover:bg-rose-700",
+    neutral: "bg-surface-sunken text-ink-muted hover:bg-surface-sunken",
+    off: "bg-danger-subtle text-danger hover:bg-danger-border",
+    selected: "bg-brand text-white hover:bg-brand-hover",
+    danger: "bg-danger text-white hover:bg-danger-hover",
   };
   const style = styles[variant];
   return (
@@ -155,20 +161,20 @@ function ChatPanel({ messages, onSend, onClose }) {
   };
 
   return (
-    <div className="flex w-full shrink-0 flex-col border-l border-slate-100 sm:w-72">
-      <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
-        <span className="text-sm font-semibold text-slate-700">Chat</span>
-        <button type="button" onClick={onClose} className="rounded p-1 text-slate-400 hover:bg-slate-100" aria-label="Close chat">
-          ✕
+    <div className="flex w-full shrink-0 flex-col border-l border-line sm:w-72">
+      <div className="flex items-center justify-between border-b border-line px-3 py-2">
+        <span className="text-sm font-semibold text-ink-muted">Chat</span>
+        <button type="button" onClick={onClose} className="rounded p-1 text-ink-subtle hover:bg-surface-sunken" aria-label="Close chat">
+          <Icon name="close" className="h-4 w-4" />
         </button>
       </div>
       <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-2">
-        {messages.length === 0 && <p className="text-xs text-slate-400">No messages yet.</p>}
+        {messages.length === 0 && <p className="text-xs text-ink-subtle">No messages yet.</p>}
         {messages.map((m) => (
           <div key={m.id} className={`flex ${m.self ? "justify-end" : "justify-start"}`}>
             <span
-              className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-sm ${
-                m.self ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-700"
+              className={`max-w-[85%] rounded-control px-2.5 py-1.5 text-sm ${
+                m.self ? "bg-brand text-white" : "bg-surface-sunken text-ink-muted"
               }`}
             >
               {m.text}
@@ -176,19 +182,19 @@ function ChatPanel({ messages, onSend, onClose }) {
           </div>
         ))}
       </div>
-      <form onSubmit={submit} className="flex items-center gap-2 border-t border-slate-100 p-2">
+      <form onSubmit={submit} className="flex items-center gap-2 border-t border-line p-2">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Message…"
           maxLength={2000}
-          className="flex-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm"
+          className="flex-1 rounded-control border border-line-strong px-2.5 py-1.5 text-sm"
         />
         <button
           type="submit"
           disabled={!text.trim()}
           aria-label="Send"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white hover:bg-brand-hover disabled:opacity-40"
         >
           <Icon name="send" className="h-4 w-4" />
         </button>
@@ -236,12 +242,12 @@ export default function VideoCall({ roomId, jitsiFallbackUrl, title, onLeave }) 
 
   if (useFallback || status === "failed") {
     return (
-      <div className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+      <div className="flex h-full flex-col overflow-hidden rounded-surface border border-line bg-surface">
+        <div className="flex items-center justify-between border-b border-line px-4 py-3">
           <div>
-            <h3 className="font-semibold text-slate-900">{title || "Session"}</h3>
+            <h3 className="font-semibold text-ink">{title || "Session"}</h3>
             {status === "failed" && !useFallback && (
-              <p className="text-xs text-amber-600">
+              <p className="text-xs text-warning">
                 Direct connection didn't go through — switched to the backup room.
               </p>
             )}
@@ -249,7 +255,7 @@ export default function VideoCall({ roomId, jitsiFallbackUrl, title, onLeave }) 
           <button
             type="button"
             onClick={onLeave}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+            className="rounded-control border border-line-strong px-3 py-1.5 text-sm hover:bg-surface-sunken"
           >
             Leave
           </button>
@@ -265,18 +271,18 @@ export default function VideoCall({ roomId, jitsiFallbackUrl, title, onLeave }) 
   }
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="relative flex h-full flex-col overflow-hidden rounded-surface border border-line bg-surface">
       <PresenceToasts events={presenceEvents} />
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-line px-4 py-3">
         <div>
-          <h3 className="font-semibold text-slate-900">{title || "Session"}</h3>
-          <p className="text-xs text-slate-400">
+          <h3 className="font-semibold text-ink">{title || "Session"}</h3>
+          <p className="text-xs text-ink-subtle">
             {status === "connecting" ? "Connecting…" : `${remoteEntries.length + 1} in the call`}
           </p>
         </div>
       </div>
 
-      {error && <div className="mx-4 mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="mx-4 mt-3 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
 
       <div className="flex min-h-0 flex-1">
         <div className="grid flex-1 auto-rows-min grid-cols-1 gap-3 overflow-y-auto p-4 sm:grid-cols-2">
@@ -285,7 +291,7 @@ export default function VideoCall({ roomId, jitsiFallbackUrl, title, onLeave }) 
             <VideoTile key={peerId} stream={stream} label="Participant" />
           ))}
           {remoteEntries.length === 0 && status === "connecting" && (
-            <div className="flex aspect-video items-center justify-center rounded-lg border border-dashed border-slate-300 text-sm text-slate-400">
+            <div className="flex aspect-video items-center justify-center rounded-control border border-dashed border-line-strong text-sm text-ink-subtle">
               Waiting for the other participant to join…
             </div>
           )}
@@ -296,7 +302,7 @@ export default function VideoCall({ roomId, jitsiFallbackUrl, title, onLeave }) 
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-3 border-t border-slate-100 px-4 py-3">
+      <div className="flex items-center justify-center gap-3 border-t border-line px-4 py-3">
         <IconButton
           variant={micOn ? "neutral" : "off"}
           onClick={toggleMic}
@@ -317,7 +323,7 @@ export default function VideoCall({ roomId, jitsiFallbackUrl, title, onLeave }) 
             icon="chat"
           />
           {unread > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[10px] font-semibold text-white">
+            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-[10px] font-semibold text-white">
               {unread}
             </span>
           )}
@@ -326,7 +332,7 @@ export default function VideoCall({ roomId, jitsiFallbackUrl, title, onLeave }) 
         <button
           type="button"
           onClick={() => setUseFallback(true)}
-          className="ml-2 text-xs text-slate-400 underline hover:text-slate-600"
+          className="ml-2 text-xs text-ink-subtle underline hover:text-ink-muted"
         >
           Trouble connecting? Use backup room
         </button>

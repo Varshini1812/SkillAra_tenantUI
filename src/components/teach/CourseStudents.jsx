@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { bulkEnroll, dropEnrollment, fetchCourseEnrollments, fetchCourseEnrollableUsers } from "../../api/enrollments.js";
 import { getErrorMessage } from "../../api/client.js";
+import Icon from "../../admin/components/ui/Icon.jsx";
 
 /**
  * Roster management for a course — the admin-driven half of the two enrolment paths.
@@ -108,55 +109,55 @@ export default function CourseStudents({ courseId }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="rounded-surface border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="font-semibold text-slate-900">Students</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="font-semibold text-ink">Students</h2>
+          <p className="text-xs text-ink-subtle">
             {enrollments.length} enrolled · learners can also enrol themselves from the catalog
           </p>
         </div>
         <button
           type="button"
           onClick={openPicker}
-          className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-900"
+          className="rounded-control bg-ink px-3 py-1.5 text-sm font-medium text-white hover:bg-ink"
         >
           Add students
         </button>
       </div>
 
-      {error && <div className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-3 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       {notice && (
-        <div className="mt-3 rounded-lg bg-green-50 p-2 text-sm text-green-700">{notice}</div>
+        <div className="mt-3 rounded-control bg-success-subtle p-2 text-sm text-success">{notice}</div>
       )}
 
       {loading ? (
-        <p className="mt-4 text-sm text-slate-400">Loading roster…</p>
+        <p className="mt-4 text-sm text-ink-subtle">Loading roster…</p>
       ) : enrollments.length === 0 ? (
-        <p className="mt-4 rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+        <p className="mt-4 rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
           Nobody is enrolled yet.
         </p>
       ) : (
-        <ul className="mt-3 divide-y divide-slate-100">
+        <ul className="mt-3 divide-y divide-line">
           {enrollments.map((e) => (
             <li key={e.id} className="flex items-center gap-3 py-2 text-sm">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-xs font-semibold text-ink-muted">
                 {(e.user?.name?.[0] || e.user?.email?.[0] || "?").toUpperCase()}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium text-slate-800">
+                <span className="block truncate font-medium text-ink">
                   {e.user?.name || e.user?.email}
                 </span>
-                <span className="block truncate text-xs text-slate-400">{e.user?.email}</span>
+                <span className="block truncate text-xs text-ink-subtle">{e.user?.email}</span>
               </span>
-              <span className="w-24 shrink-0 text-right text-xs text-slate-500">
+              <span className="w-24 shrink-0 text-right text-xs text-ink-subtle">
                 {e.completedLessons || 0} done · {e.mastery || 0}%
               </span>
               <span
                 className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-medium ${
                   e.status === "COMPLETED"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-100 text-slate-600"
+                    ? "bg-success-subtle text-success"
+                    : "bg-surface-sunken text-ink-muted"
                 }`}
               >
                 {e.status}
@@ -164,7 +165,7 @@ export default function CourseStudents({ courseId }) {
               <button
                 type="button"
                 onClick={() => remove(e)}
-                className="shrink-0 rounded border border-rose-200 px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50"
+                className="shrink-0 rounded border border-danger-border px-2 py-1 text-xs font-medium text-danger hover:bg-danger-subtle"
               >
                 Remove
               </button>
@@ -174,33 +175,33 @@ export default function CourseStudents({ courseId }) {
       )}
 
       {pickerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-          <div className="flex max-h-[80vh] w-full max-w-md flex-col rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
-              <h3 className="font-semibold text-slate-900">Add students</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+          <div className="flex max-h-[80vh] w-full max-w-md flex-col rounded-surface bg-surface ">
+            <div className="flex items-center justify-between border-b border-line px-5 py-3">
+              <h3 className="font-semibold text-ink">Add students</h3>
               <button
                 type="button"
                 onClick={() => setPickerOpen(false)}
-                className="rounded p-1 text-slate-400 hover:bg-slate-100"
+                className="rounded p-1 text-ink-subtle hover:bg-surface-sunken"
                 aria-label="Close"
               >
-                ✕
+                <Icon name="close" size={16} />
               </button>
             </div>
 
-            <div className="border-b border-slate-100 px-5 py-3">
+            <div className="border-b border-line px-5 py-3">
               <input
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by name or email…"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-control border border-line-strong px-3 py-2 text-sm"
               />
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-2">
               {filtered.length === 0 ? (
-                <p className="py-6 text-center text-sm text-slate-400">
+                <p className="py-6 text-center text-sm text-ink-subtle">
                   No users available to add.
                 </p>
               ) : (
@@ -209,7 +210,7 @@ export default function CourseStudents({ courseId }) {
                   return (
                     <label
                       key={id}
-                      className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-slate-50"
+                      className="flex cursor-pointer items-center gap-3 rounded-control px-2 py-2 text-sm hover:bg-surface-sunken"
                     >
                       <input
                         type="checkbox"
@@ -217,10 +218,10 @@ export default function CourseStudents({ courseId }) {
                         onChange={() => toggle(id)}
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium text-slate-800">
+                        <span className="block truncate font-medium text-ink">
                           {u.name || u.email}
                         </span>
-                        <span className="block truncate text-xs text-slate-400">{u.email}</span>
+                        <span className="block truncate text-xs text-ink-subtle">{u.email}</span>
                       </span>
                     </label>
                   );
@@ -228,13 +229,13 @@ export default function CourseStudents({ courseId }) {
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3">
-              <span className="text-xs text-slate-500">{selected.size} selected</span>
+            <div className="flex items-center justify-between border-t border-line px-5 py-3">
+              <span className="text-xs text-ink-subtle">{selected.size} selected</span>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setPickerOpen(false)}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+                  className="rounded-control border border-line-strong px-3 py-1.5 text-sm hover:bg-surface-sunken"
                 >
                   Cancel
                 </button>
@@ -242,7 +243,7 @@ export default function CourseStudents({ courseId }) {
                   type="button"
                   onClick={submit}
                   disabled={saving || selected.size === 0}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="rounded-control bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
                 >
                   {saving ? "Enrolling…" : "Enrol selected"}
                 </button>

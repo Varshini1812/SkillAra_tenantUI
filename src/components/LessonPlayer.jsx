@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getLessonPlaybackUrl } from "../api/courses.js";
 import { getErrorMessage } from "../api/client.js";
+import Icon from "../admin/components/ui/Icon.jsx";
 
 /**
  * Renders lesson media from Backblaze B2.
@@ -51,15 +52,14 @@ export default function LessonPlayer({ lesson }) {
 
   if (lesson.locked) {
     return (
-      <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
-        🔒 Enroll in this course to watch this lesson.
+      <div className="mt-4 rounded-control border border-line bg-surface-sunken p-6 text-center text-sm text-ink-subtle"><Icon name="lock" size={15} /> Enroll in this course to watch this lesson.
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+      <div className="mt-4 rounded-control bg-danger-subtle p-3 text-sm text-danger">
         {error}
         <button
           type="button"
@@ -74,7 +74,7 @@ export default function LessonPlayer({ lesson }) {
 
   if (loading && !url) {
     return (
-      <div className="mt-4 aspect-video animate-pulse rounded-lg bg-slate-100" aria-label="Loading media" />
+      <div className="mt-4 aspect-video animate-pulse rounded-control bg-surface-sunken" aria-label="Loading media" />
     );
   }
 
@@ -82,7 +82,7 @@ export default function LessonPlayer({ lesson }) {
 
   if (isVideo) {
     return (
-      <div className="mt-4 aspect-video overflow-hidden rounded-lg bg-black">
+      <div className="mt-4 aspect-video overflow-hidden rounded-control bg-black">
         {/* key forces a reload when the signed URL rotates */}
         <video key={url} src={url} controls controlsList="nodownload" className="h-full w-full" />
       </div>
@@ -96,12 +96,12 @@ export default function LessonPlayer({ lesson }) {
   if (isPdf) {
     return (
       <div className="mt-4">
-        <iframe key={url} src={url} title={lesson.title} className="h-[70vh] w-full rounded-lg border border-slate-200" />
+        <iframe key={url} src={url} title={lesson.title} className="h-[70vh] w-full rounded-control border border-line" />
         <a
           href={url}
           target="_blank"
           rel="noreferrer"
-          className="mt-2 inline-block text-sm font-medium text-indigo-600 hover:underline"
+          className="mt-2 inline-block text-sm font-medium text-brand hover:underline"
         >
           Open in a new tab
         </a>
@@ -114,7 +114,7 @@ export default function LessonPlayer({ lesson }) {
       href={url}
       target="_blank"
       rel="noreferrer"
-      className="mt-4 inline-block rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50"
+      className="mt-4 inline-block rounded-control border border-line-strong px-4 py-2 text-sm font-medium hover:bg-surface-sunken"
     >
       Download lesson file
     </a>
@@ -143,8 +143,8 @@ export function LessonAttachments({ lesson }) {
 
   return (
     <div className="mt-6">
-      <h3 className="text-sm font-semibold text-slate-700">Resources</h3>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      <h3 className="text-sm font-semibold text-ink-muted">Resources</h3>
+      {error && <p className="mt-1 text-sm text-danger">{error}</p>}
       <ul className="mt-2 space-y-1">
         {lesson.attachments.map((a) => (
           <li key={a.id}>
@@ -152,9 +152,8 @@ export function LessonAttachments({ lesson }) {
               type="button"
               onClick={() => open(a.id)}
               disabled={busyId === a.id}
-              className="text-sm text-indigo-600 hover:underline disabled:opacity-50"
-            >
-              📎 {a.name} {busyId === a.id && "…"}
+              className="text-sm text-brand hover:underline disabled:opacity-50"
+            ><Icon name="paperclip" size={14} /> {a.name} {busyId === a.id && "…"}
             </button>
           </li>
         ))}

@@ -4,11 +4,13 @@ import { Link } from "react-router-dom";
 import { fetchReviewQueue } from "../../api/courses.js";
 import { getErrorMessage } from "../../api/client.js";
 import Breadcrumb from "../components/ui/Breadcrumb.jsx";
+import Icon from "../components/ui/Icon.jsx";
+import { PageHeader } from "../components/ui/primitives.jsx";
 
 const STAGE = {
-  PENDING: { label: "In review", chip: "bg-indigo-100 text-indigo-700" },
-  CHANGES_REQUESTED: { label: "Changes requested", chip: "bg-amber-100 text-amber-800" },
-  APPROVED: { label: "Approved, not published", chip: "bg-emerald-100 text-emerald-700" },
+  PENDING: { label: "In review", chip: "bg-brand-muted text-brand-hover" },
+  CHANGES_REQUESTED: { label: "Changes requested", chip: "bg-warning-subtle text-warning" },
+  APPROVED: { label: "Approved, not published", chip: "bg-success-subtle text-success" },
 };
 
 const TABS = [
@@ -65,15 +67,13 @@ export default function ContentReviews() {
 
   return (
     <div>
-      <Breadcrumb items={[{ label: "Dashboard", to: "/admin" }, { label: "Content reviews" }]} />
-
-      <div className="mt-4">
-        <h1 className="text-2xl font-bold text-slate-900">Content reviews</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Every course moving through review. Instructors submit, content reviewers decide, and
-          only approved courses can be published.
-        </p>
-      </div>
+      <PageHeader
+        breadcrumb={
+          <Breadcrumb items={[{ label: "Dashboard", to: "/admin" }, { label: "Content reviews" }]} />
+        }
+        title="Content reviews"
+        description="Every course moving through review. Instructors submit, reviewers decide, and only approved courses can be published."
+      />
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         {[
@@ -81,11 +81,11 @@ export default function ContentReviews() {
           { label: "Changes requested", value: counts.CHANGES_REQUESTED },
           { label: "Awaiting publish", value: counts.APPROVED },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+          <div key={stat.label} className="rounded-surface border border-line bg-surface p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
               {stat.label}
             </p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{stat.value}</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{stat.value}</p>
           </div>
         ))}
       </div>
@@ -96,32 +96,32 @@ export default function ContentReviews() {
             key={t.value || "all"}
             type="button"
             onClick={() => setTab(t.value)}
-            className={`rounded-lg px-3 py-1.5 text-sm transition ${
+            className={`rounded-control px-3 py-1.5 text-sm transition ${
               tab === t.value
-                ? "bg-indigo-50 font-medium text-indigo-700"
-                : "text-slate-600 hover:bg-slate-100"
+                ? "bg-brand-subtle font-medium text-brand-hover"
+                : "text-ink-muted hover:bg-surface-sunken"
             }`}
           >
             {t.label}
-            <span className="ml-1.5 text-xs text-slate-400">
+            <span className="ml-1.5 text-xs text-ink-subtle">
               {t.value ? counts[t.value] : courses.length}
             </span>
           </button>
         ))}
       </div>
 
-      {error && <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-4 rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
 
       {loading ? (
-        <p className="py-16 text-center text-sm text-slate-400">Loading reviews…</p>
+        <p className="py-16 text-center text-sm text-ink-subtle">Loading reviews…</p>
       ) : visible.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-slate-300 px-6 py-16 text-center">
-          <p className="text-sm text-slate-500">Nothing in review right now.</p>
+        <div className="mt-6 rounded-surface border border-dashed border-line-strong px-6 py-16 text-center">
+          <p className="text-sm text-ink-subtle">Nothing in review right now.</p>
         </div>
       ) : (
-        <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <div className="mt-4 overflow-x-auto rounded-surface border border-line bg-surface">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
+            <thead className="bg-surface-sunken text-left text-xs uppercase tracking-wide text-ink-subtle">
               <tr>
                 <th className="px-4 py-3 font-medium">Course</th>
                 <th className="px-4 py-3 font-medium">Instructor</th>
@@ -130,24 +130,24 @@ export default function ContentReviews() {
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-line">
               {visible.map((course) => {
                 const stage = STAGE[course.review?.status] || {
                   label: course.review?.status || "—",
-                  chip: "bg-slate-100 text-slate-600",
+                  chip: "bg-surface-sunken text-ink-muted",
                 };
                 const days = ageInDays(course.review?.submittedAt);
                 return (
-                  <tr key={course.id} className="hover:bg-slate-50">
+                  <tr key={course.id} className="hover:bg-surface-sunken">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-slate-800">{course.title}</p>
+                      <p className="font-medium text-ink">{course.title}</p>
                       {course.review?.note && (
-                        <p className="mt-0.5 max-w-md truncate text-xs text-slate-500">
+                        <p className="mt-0.5 max-w-md truncate text-xs text-ink-subtle">
                           {course.review.note}
                         </p>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-ink-muted">
                       {course.instructor?.name || course.instructor?.email || "—"}
                     </td>
                     <td className="px-4 py-3">
@@ -155,18 +155,19 @@ export default function ContentReviews() {
                         {stage.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-500">
+                    <td className="px-4 py-3 text-ink-subtle">
                       {days === null ? "—" : days === 0 ? "today" : `${days}d`}
                       {days !== null && days >= 3 && course.review?.status === "PENDING" && (
-                        <span className="ml-1 text-amber-600" title="Sitting a while">
-                          ●
+                        <span className="ml-1 inline-flex align-middle text-warning" title="Sitting a while">
+                          <Icon name="clock" size={12} />
+                          <span className="sr-only">Waiting three days or more</span>
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
                         to={`/teach/${course.id}`}
-                        className="text-xs font-medium text-indigo-600 hover:underline"
+                        className="text-xs font-medium text-brand hover:underline"
                       >
                         Open
                       </Link>

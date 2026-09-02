@@ -13,11 +13,12 @@ import { getErrorMessage } from "../api/client.js";
 import { usePermissions } from "../hooks/usePermissions.js";
 import { useTicketChat } from "../hooks/useTicketChat.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import Icon from "../admin/components/ui/Icon.jsx";
 
 const STATUS_STYLE = {
-  OPEN: "bg-slate-100 text-slate-600",
-  ASSIGNED: "bg-indigo-100 text-indigo-700",
-  CLOSED: "bg-emerald-100 text-emerald-700",
+  OPEN: "bg-surface-sunken text-ink-muted",
+  ASSIGNED: "bg-brand-muted text-brand-hover",
+  CLOSED: "bg-success-subtle text-success",
 };
 
 function fmt(iso) {
@@ -55,31 +56,31 @@ function ChatThread({ ticketId, closed }) {
   };
 
   return (
-    <div className="flex flex-col rounded-xl border border-slate-200 bg-white">
-      <div className="flex items-center justify-between border-b border-slate-100 p-4">
+    <div className="flex flex-col rounded-surface border border-line bg-surface">
+      <div className="flex items-center justify-between border-b border-line p-4">
         <h2 className="font-semibold">Chat</h2>
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-ink-subtle">
           {status === "connected" ? "Live" : status === "failed" ? "Offline" : "Connecting…"}
         </span>
       </div>
 
-      {error && <div className="m-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="m-3 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
 
       <div className="max-h-[28rem] min-h-[10rem] space-y-2 overflow-y-auto p-4">
         {messages.length === 0 ? (
-          <p className="text-sm text-slate-400">No messages yet — say hello.</p>
+          <p className="text-sm text-ink-subtle">No messages yet — say hello.</p>
         ) : (
           messages.map((m) => {
             const mine = String(m.senderId?._id || m.senderId) === String(user?.id);
             return (
               <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
-                    mine ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-800"
+                  className={`max-w-[80%] rounded-surface px-3 py-2 text-sm ${
+                    mine ? "bg-brand text-white" : "bg-surface-sunken text-ink"
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{m.body}</p>
-                  <p className={`mt-1 text-[10px] ${mine ? "text-indigo-100" : "text-slate-400"}`}>{fmt(m.created_on)}</p>
+                  <p className={`mt-1 text-[10px] ${mine ? "text-brand-muted" : "text-ink-subtle"}`}>{fmt(m.created_on)}</p>
                 </div>
               </div>
             );
@@ -89,16 +90,16 @@ function ChatThread({ ticketId, closed }) {
       </div>
 
       {closed ? (
-        <p className="border-t border-slate-100 p-4 text-sm text-slate-400">This ticket is closed — chat is read-only.</p>
+        <p className="border-t border-line p-4 text-sm text-ink-subtle">This ticket is closed — chat is read-only.</p>
       ) : (
-        <form onSubmit={submit} className="flex gap-2 border-t border-slate-100 p-3">
+        <form onSubmit={submit} className="flex gap-2 border-t border-line p-3">
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Write a message…"
-            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="flex-1 rounded-control border border-line-strong px-3 py-2 text-sm"
           />
-          <button type="submit" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+          <button type="submit" className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover">
             Send
           </button>
         </form>
@@ -136,13 +137,13 @@ function ScheduleSessionForm({ ticketId, subject, onScheduled }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-2 border-t border-slate-100 p-4">
-      {error && <div className="rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+    <form onSubmit={submit} className="space-y-2 border-t border-line p-4">
+      {error && <div className="rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={subject}
-        className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+        className="w-full rounded border border-line-strong px-2 py-1.5 text-sm"
       />
       <div className="grid grid-cols-2 gap-2">
         <input
@@ -150,20 +151,20 @@ function ScheduleSessionForm({ ticketId, subject, onScheduled }) {
           required
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
-          className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+          className="w-full rounded border border-line-strong px-2 py-1.5 text-sm"
         />
         <input
           type="datetime-local"
           required
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
-          className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+          className="w-full rounded border border-line-strong px-2 py-1.5 text-sm"
         />
       </div>
       <button
         type="submit"
         disabled={saving}
-        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="rounded-control bg-brand px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-hover disabled:opacity-50"
       >
         {saving ? "Scheduling…" : "Schedule session"}
       </button>
@@ -193,28 +194,28 @@ function SessionsPanel({ ticketId, subject, canSchedule }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white">
+    <div className="rounded-surface border border-line bg-surface">
       <h2 className="p-4 pb-0 font-semibold">Sessions</h2>
       <div className="p-4">
         {loading ? (
-          <p className="text-sm text-slate-400">Loading…</p>
+          <p className="text-sm text-ink-subtle">Loading…</p>
         ) : sessions.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-sm text-slate-400">
+          <p className="rounded-control border border-dashed border-line-strong p-4 text-center text-sm text-ink-subtle">
             No sessions scheduled yet.
           </p>
         ) : (
           <ul className="space-y-2">
             {sessions.map((s) => (
-              <li key={s.id} className="flex items-center justify-between rounded-lg border border-slate-100 p-3 text-sm">
+              <li key={s.id} className="flex items-center justify-between rounded-control border border-line p-3 text-sm">
                 <div>
-                  <p className="font-medium text-slate-800">{s.title}</p>
-                  <p className="text-xs text-slate-400">{fmt(s.startTime)}</p>
+                  <p className="font-medium text-ink">{s.title}</p>
+                  <p className="text-xs text-ink-subtle">{fmt(s.startTime)}</p>
                 </div>
                 {s.status === "BOOKED" && s.meeting?.roomId && (
                   <button
                     type="button"
                     onClick={() => join(s)}
-                    className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700"
+                    className="rounded-control bg-success px-3 py-1 text-xs font-medium text-white hover:bg-success"
                   >
                     Join call
                   </button>
@@ -256,8 +257,8 @@ function MentorshipTicketContent() {
     if (isStaff) fetchMentors().then(setMentors).catch(() => {});
   }, [isStaff]);
 
-  if (loading) return <p className="text-sm text-slate-400">Loading…</p>;
-  if (!ticket) return <p className="text-sm text-red-500">{error || "Ticket not found"}</p>;
+  if (loading) return <p className="text-sm text-ink-subtle">Loading…</p>;
+  if (!ticket) return <p className="text-sm text-danger">{error || "Ticket not found"}</p>;
 
   const isAssignedMentor = ticket.mentorId && String(ticket.mentorId._id || ticket.mentorId) === String(user?.id);
   const isMyTicket = String(ticket.studentId._id || ticket.studentId) === String(user?.id);
@@ -301,33 +302,32 @@ function MentorshipTicketContent() {
 
   return (
     <div className="space-y-6">
-      <Link to="/mentorship" className="text-sm text-slate-500 hover:text-indigo-600">
-        ← Back to Mentorship
+      <Link to="/mentorship" className="text-sm text-ink-subtle hover:text-brand"><Icon name="arrowLeft" size={15} /> Back to Mentorship
       </Link>
 
-      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-      {notice && <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
+      {notice && <div className="rounded-control bg-success-subtle p-3 text-sm text-success">{notice}</div>}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="rounded-surface border border-line bg-surface p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold text-slate-900">{ticket.subject}</h1>
-            {ticket.description && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">{ticket.description}</p>}
-            <p className="mt-3 text-xs text-slate-400">
+            <h1 className="text-xl font-bold text-ink">{ticket.subject}</h1>
+            {ticket.description && <p className="mt-2 whitespace-pre-wrap text-sm text-ink-muted">{ticket.description}</p>}
+            <p className="mt-3 text-xs text-ink-subtle">
               Student: {ticket.studentId.name || ticket.studentId.email}
               {ticket.mentorId && ` · Mentor: ${ticket.mentorId.name || ticket.mentorId.email}`}
             </p>
             {ticket.topicTags?.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {ticket.topicTags.map((tag) => (
-                  <span key={tag} className="rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] text-indigo-700">
+                  <span key={tag} className="rounded bg-brand-subtle px-1.5 py-0.5 text-[10px] text-brand-hover">
                     {tag}
                   </span>
                 ))}
               </div>
             )}
             {ticket.status === "CLOSED" && ticket.closeNote && (
-              <p className="mt-3 rounded-lg bg-slate-50 p-2 text-xs text-slate-500">Closing note: {ticket.closeNote}</p>
+              <p className="mt-3 rounded-control bg-surface-sunken p-2 text-xs text-ink-subtle">Closing note: {ticket.closeNote}</p>
             )}
           </div>
           <span className={`shrink-0 rounded px-2 py-1 text-xs font-semibold ${STATUS_STYLE[ticket.status]}`}>{ticket.status}</span>
@@ -335,21 +335,21 @@ function MentorshipTicketContent() {
 
         <div className="mt-4 flex flex-wrap gap-2">
           {(isAssignedMentor || isStaff) && ticket.status !== "CLOSED" && (
-            <button type="button" onClick={handleClose} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50">
+            <button type="button" onClick={handleClose} className="rounded-control border border-line-strong px-3 py-1.5 text-xs hover:bg-surface-sunken">
               Close ticket
             </button>
           )}
           {(isAssignedMentor || isStaff) && ticket.status === "CLOSED" && (
-            <button type="button" onClick={handleReopen} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50">
+            <button type="button" onClick={handleReopen} className="rounded-control border border-line-strong px-3 py-1.5 text-xs hover:bg-surface-sunken">
               Reopen ticket
             </button>
           )}
         </div>
 
         {isStaff && ticket.status !== "CLOSED" && (
-          <form onSubmit={handleReassign} className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
-            <label className="text-xs font-medium text-slate-600">Reassign to</label>
-            <select value={reassignTo} onChange={(e) => setReassignTo(e.target.value)} className="rounded border border-slate-300 px-2 py-1 text-xs">
+          <form onSubmit={handleReassign} className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+            <label className="text-xs font-medium text-ink-muted">Reassign to</label>
+            <select value={reassignTo} onChange={(e) => setReassignTo(e.target.value)} className="rounded border border-line-strong px-2 py-1 text-xs">
               <option value="">Select a mentor…</option>
               {mentors.map((m) => (
                 <option key={m.userId} value={m.userId}>
@@ -357,7 +357,7 @@ function MentorshipTicketContent() {
                 </option>
               ))}
             </select>
-            <button type="submit" className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700">
+            <button type="submit" className="rounded-control bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-hover">
               Assign
             </button>
           </form>
@@ -374,7 +374,7 @@ function MentorshipTicketContent() {
       </div>
 
       {isLearnerView && ticket.status === "OPEN" && (
-        <p className="text-sm text-slate-400">Waiting for a mentor to pick this up — you'll be able to chat here once claimed.</p>
+        <p className="text-sm text-ink-subtle">Waiting for a mentor to pick this up — you'll be able to chat here once claimed.</p>
       )}
     </div>
   );

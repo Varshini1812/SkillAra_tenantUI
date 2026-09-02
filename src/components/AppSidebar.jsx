@@ -4,134 +4,71 @@ import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePermissions } from "../hooks/usePermissions.js";
 import { getRoleBadgeClass } from "../utils/permissions.js";
+import Icon from "../admin/components/ui/Icon.jsx";
+import { PoweredBySkillAra } from "../admin/components/SkillAraBrand.jsx";
 
 const STORAGE_KEY = "skillara-app-sidebar-collapsed";
 
-function NavIcon({ name }) {
-  const cls = "h-4 w-4 shrink-0";
-  const common = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, className: cls };
-  const cap = { strokeLinecap: "round", strokeLinejoin: "round" };
+/** Nav config icon keys -> the shared icon set. */
+const ICON = {
+  home: "home",
+  courses: "courses",
+  learning: "graduation",
+  sessions: "calendar",
+  live: "tv",
+  quiz: "clipboardCheck",
+  mentors: "mentor",
+  forum: "chat",
+  ai: "robot",
+  teach: "books",
+  moderate: "moderation",
+  admin: "settings",
+  notifications: "bell",
+  profile: "user",
+};
 
-  switch (name) {
-    case "notifications":
-      return (
-        <svg {...common}>
-          <path
-            d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0v1a3 3 0 1 1-6 0v-1m6 0H9"
-            {...cap}
-          />
-        </svg>
-      );
-    case "home":
-      return (
-        <svg {...common}>
-          <path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" {...cap} />
-          <path d="M9 22V12h6v10" {...cap} />
-        </svg>
-      );
-    case "courses":
-      return (
-        <svg {...common}>
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" {...cap} />
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" {...cap} />
-        </svg>
-      );
-    case "learning":
-      return (
-        <svg {...common}>
-          <path d="M22 10L12 5 2 10l10 5 10-5z" {...cap} />
-          <path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5" {...cap} />
-        </svg>
-      );
-    case "sessions":
-      return (
-        <svg {...common}>
-          <rect x="3" y="4" width="18" height="16" rx="2" {...cap} />
-          <path d="M16 2v4M8 2v4M3 10h18" {...cap} />
-        </svg>
-      );
-    case "mentors":
-      return (
-        <svg {...common}>
-          <circle cx="9" cy="8" r="3" {...cap} />
-          <path d="M3 20a6 6 0 0 1 12 0" {...cap} />
-          <path d="M16 8a3 3 0 1 1 4 2.83M21 20a5 5 0 0 0-4.5-5" {...cap} />
-        </svg>
-      );
-    case "forum":
-      return (
-        <svg {...common}>
-          <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" {...cap} />
-        </svg>
-      );
-    case "ai":
-      return (
-        <svg {...common}>
-          <path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" {...cap} />
-          <circle cx="12" cy="12" r="3.5" {...cap} />
-        </svg>
-      );
-    case "quiz":
-      return (
-        <svg {...common}>
-          <path d="M9 11l3 3L22 4" {...cap} />
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" {...cap} />
-        </svg>
-      );
-    case "live":
-      return (
-        <svg {...common}>
-          <rect x="2" y="6" width="14" height="12" rx="2" {...cap} />
-          <path d="m22 8-6 4 6 4z" {...cap} />
-        </svg>
-      );
-    case "teach":
-      return (
-        <svg {...common}>
-          <rect x="2" y="3" width="20" height="14" rx="2" {...cap} />
-          <path d="M8 21h8M12 17v4" {...cap} />
-          <path d="m10 8 5 2-5 2z" {...cap} />
-        </svg>
-      );
-    case "admin":
-      return (
-        <svg {...common}>
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" {...cap} />
-        </svg>
-      );
-    case "moderate":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="12" r="9" {...cap} />
-          <path d="M5.6 5.6l12.8 12.8" {...cap} />
-        </svg>
-      );
-    case "profile":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="8" r="4" {...cap} />
-          <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" {...cap} />
-        </svg>
-      );
-    default:
-      return null;
-  }
-}
-
-function navClass({ isActive }, compact) {
-  const base = [
-    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition",
-    isActive
-      ? "bg-indigo-50 text-indigo-700"
-      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
-  ].join(" ");
-  return compact ? `${base} justify-center px-2` : base;
+function NavItem({ item, compact, onNavigate }) {
+  return (
+    <NavLink
+      to={item.to}
+      end={item.end}
+      onClick={onNavigate}
+      title={compact ? item.label : undefined}
+      className={({ isActive }) =>
+        [
+          "group relative flex min-h-9 items-center rounded-control border text-[0.8125rem]",
+          "transition-colors duration-200 ease-standard",
+          compact ? "justify-center px-2" : "gap-2.5 px-2.5",
+          isActive
+            ? "border-brand-border bg-brand-subtle font-semibold text-brand-hover"
+            : "border-transparent text-ink-muted hover:bg-surface-sunken hover:text-ink",
+        ].join(" ")
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {/* Active state is a shape as well as a colour (`color-not-only`). */}
+          {isActive && (
+            <span
+              aria-hidden="true"
+              className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-brand"
+            />
+          )}
+          <Icon name={ICON[item.icon] || "home"} size={16} />
+          {/* The label stays in the accessibility tree when collapsed, so the
+              link never becomes an unnamed icon (`nav-label-icon`). */}
+          <span className={compact ? "sr-only" : "truncate"}>{item.label}</span>
+          {isActive && <span className="sr-only">(current page)</span>}
+        </>
+      )}
+    </NavLink>
+  );
 }
 
 /**
- * Primary navigation for every signed-in role — students, instructors, and staff.
- * Entries come from the user's permission map (see utils/permissions.js), so each
- * role sees only what it can actually use.
+ * Primary navigation for every signed-in role — students, instructors and
+ * mentors. Entries come from the user's permission map (see
+ * utils/permissions.js), so each role sees only what it can actually use.
  */
 export default function AppSidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }) {
   const { user, tenantInfo, tenantHost, logout } = useAuth();
@@ -147,12 +84,16 @@ export default function AppSidebar({ collapsed, onToggleCollapse, mobileOpen, on
     return () => window.removeEventListener("keydown", onKey);
   }, [mobileOpen, onCloseMobile]);
 
+  const rowBase =
+    "flex min-h-9 w-full items-center rounded-control border text-[0.8125rem] font-medium " +
+    "transition-colors duration-200 ease-standard";
+
   return (
     <>
       {mobileOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-slate-900/40 lg:hidden"
+          className="fixed inset-0 z-40 bg-ink/40 lg:hidden"
           aria-label="Close menu"
           onClick={onCloseMobile}
         />
@@ -161,127 +102,161 @@ export default function AppSidebar({ collapsed, onToggleCollapse, mobileOpen, on
       <aside
         aria-label="Main navigation"
         className={[
-          // h-full inside the viewport-height shell keeps the rail static; only its
-          // <nav> scrolls, and only when the menu is taller than the screen.
-          "z-50 flex h-full shrink-0 flex-col border-r border-slate-200 bg-white",
+          // h-full inside the viewport-height shell keeps the rail static; only
+          // its <nav> scrolls, and only when the menu is taller than the screen.
+          "z-50 flex h-full min-h-0 shrink-0 flex-col border-r border-line bg-surface",
           "fixed inset-y-0 left-0 lg:static",
-          compact ? "w-16" : "w-64",
+          compact ? "w-[4.5rem]" : "w-60 sm:w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          "transition-transform duration-200 lg:transition-[width]",
+          "transition-transform duration-200 ease-standard lg:transition-[width]",
         ].join(" ")}
       >
-        <div className={`flex h-16 items-center border-b border-slate-100 ${compact ? "justify-center px-2" : "justify-between px-4"}`}>
-          <Link to="/" onClick={onCloseMobile} className="flex min-w-0 items-center gap-2">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-              {orgName[0]?.toUpperCase() || "S"}
-            </span>
-            {!compact && (
-              <span className="truncate font-semibold text-slate-900">{orgName}</span>
-            )}
+        <div
+          className={`flex h-14 shrink-0 items-center gap-2 border-b border-line ${
+            compact ? "justify-center px-2" : "justify-between px-3"
+          }`}
+        >
+          <Link
+            to="/"
+            onClick={onCloseMobile}
+            className="flex min-w-0 items-center gap-2.5 rounded-control"
+          >
+            <img src="/logo.png" alt="" aria-hidden="true" className="h-8 w-8 shrink-0 object-contain" />
+            {!compact && <span className="truncate text-sm font-semibold text-ink">{orgName}</span>}
           </Link>
+
           {!compact && (
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="hidden rounded p-1 text-slate-400 hover:bg-slate-100 lg:inline-flex"
+              aria-expanded
               aria-label="Collapse sidebar"
+              title="Collapse sidebar"
+              className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-control text-ink-subtle transition-colors duration-200 ease-standard hover:bg-surface-sunken hover:text-ink lg:inline-flex"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
+              <Icon name="chevronsLeft" size={16} />
             </button>
           )}
         </div>
 
-        {compact && (
-          <button
-            type="button"
-            onClick={onToggleCollapse}
-            className="mx-auto mt-2 hidden rounded p-1 text-slate-400 hover:bg-slate-100 lg:inline-flex"
-            aria-label="Expand sidebar"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
-
-        <nav className={`flex-1 space-y-5 overflow-y-auto py-4 ${compact ? "px-2" : "px-3"}`}>
+        <nav
+          className={`min-h-0 flex-1 space-y-4 overflow-y-auto py-3 ${compact ? "px-2" : "px-2.5"}`}
+          aria-label="Sections"
+        >
           {nav.map((group) => (
             <div key={group.section}>
-              {!compact && (
-                <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              {compact ? (
+                <hr className="mx-2 mb-2 border-line" aria-hidden="true" />
+              ) : (
+                <p className="mb-1.5 px-2.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">
                   {group.section}
                 </p>
               )}
               <div className="space-y-0.5">
                 {group.items.map((item) => (
-                  <NavLink
+                  <NavItem
                     key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    onClick={onCloseMobile}
-                    title={compact ? item.label : undefined}
-                    className={(args) => navClass(args, compact)}
-                  >
-                    <NavIcon name={item.icon} />
-                    {!compact && item.label}
-                  </NavLink>
+                    item={item}
+                    compact={compact}
+                    onNavigate={onCloseMobile}
+                  />
                 ))}
               </div>
             </div>
           ))}
         </nav>
 
-        <div className={`shrink-0 border-t border-slate-100 ${compact ? "p-2" : "p-3"}`}>
+        <div className="shrink-0 border-t border-line p-2">
           {user ? (
-            <div className={compact ? "flex flex-col items-center gap-2" : "space-y-2"}>
-              <Link
-                to="/profile"
-                onClick={onCloseMobile}
-                title={compact ? user.name || user.email : undefined}
-                className={`flex items-center rounded-lg transition hover:bg-slate-50 ${compact ? "justify-center p-1.5" : "gap-3 p-2"}`}
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 text-xs font-semibold text-indigo-600 ring-1 ring-indigo-100">
-                  {user.profilePhoto ? (
-                    <img src={user.profilePhoto} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    (user.name?.[0] || user.email?.[0] || "?").toUpperCase()
-                  )}
-                </span>
-                {!compact && (
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-slate-800">
-                      {user.name || user.email}
-                    </span>
-                    <span
-                      className={`mt-0.5 inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold ring-1 ${getRoleBadgeClass(user)}`}
-                    >
-                      {roleLabel}
-                    </span>
+            <>
+              <div className="space-y-0.5">
+                <NavLink
+                  to="/profile"
+                  onClick={onCloseMobile}
+                  title={compact ? `${user.name || user.email} · ${roleLabel}` : undefined}
+                  className={({ isActive }) =>
+                    [
+                      rowBase,
+                      compact ? "justify-center px-1" : "gap-2.5 px-2",
+                      isActive
+                        ? "border-brand-border bg-brand-subtle text-brand-hover"
+                        : "border-transparent text-ink-muted hover:bg-surface-sunken hover:text-ink",
+                    ].join(" ")
+                  }
+                >
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-subtle text-[0.6875rem] font-semibold text-brand-hover ring-1 ring-brand-border">
+                    {user.profilePhoto ? (
+                      <img src={user.profilePhoto} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      (user.name?.[0] || user.email?.[0] || "?").toUpperCase()
+                    )}
                   </span>
-                )}
-              </Link>
+                  {compact ? (
+                    <span className="sr-only">
+                      My profile — {user.name || user.email}, {roleLabel}
+                    </span>
+                  ) : (
+                    <span className="min-w-0 flex-1 text-left">
+                      <span className="block truncate font-semibold leading-4 text-ink">
+                        {user.name || user.email}
+                      </span>
+                      <span
+                        className={`mt-0.5 inline-block rounded-chip px-1.5 py-px text-[0.625rem] font-semibold ring-1 ${getRoleBadgeClass(user)}`}
+                      >
+                        {roleLabel}
+                      </span>
+                    </span>
+                  )}
+                </NavLink>
 
-              <button
-                type="button"
-                onClick={logout}
-                title="Log out"
-                className={`flex items-center justify-center gap-2 rounded-lg border border-rose-100 bg-rose-50/50 text-xs font-medium text-rose-600 transition hover:bg-rose-50 ${compact ? "p-2" : "w-full px-3 py-2"}`}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                {!compact && "Log out"}
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={logout}
+                  title={compact ? "Log out" : undefined}
+                  className={[
+                    rowBase,
+                    "border-transparent text-danger hover:bg-danger-subtle",
+                    compact ? "justify-center px-1" : "gap-2.5 px-2",
+                  ].join(" ")}
+                >
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                    <Icon name="logout" size={16} />
+                  </span>
+                  <span className={compact ? "sr-only" : ""}>Log out</span>
+                </button>
+
+                {/* Expanded, the collapse control sits beside the workspace name
+                    at the top; collapsed, the way back out lives here. */}
+                {compact && (
+                  <button
+                    type="button"
+                    onClick={onToggleCollapse}
+                    aria-expanded={false}
+                    title="Expand sidebar"
+                    className={[
+                      rowBase,
+                      "hidden justify-center border-transparent px-1 text-ink-muted hover:bg-surface-sunken hover:text-ink lg:flex",
+                    ].join(" ")}
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                      <Icon name="chevronsRight" size={16} />
+                    </span>
+                    <span className="sr-only">Expand sidebar</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="mt-2 border-t border-line pt-2">
+                <PoweredBySkillAra compact={compact} />
+              </div>
+            </>
           ) : (
             !compact && (
               <Link
                 to="/login"
-                className="block rounded-lg bg-indigo-600 px-3 py-2 text-center text-sm font-medium text-white"
+                className="flex min-h-9 items-center justify-center rounded-control bg-brand px-3 text-[0.8125rem] font-semibold text-brand-fg transition-colors duration-200 ease-standard hover:bg-brand-hover"
               >
-                Login
+                Sign in
               </Link>
             )
           )}

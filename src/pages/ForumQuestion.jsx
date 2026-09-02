@@ -14,16 +14,17 @@ import {
 import { getErrorMessage } from "../api/client.js";
 import { usePermissions } from "../hooks/usePermissions.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import Icon from "../admin/components/ui/Icon.jsx";
 
 function VoteButtons({ score, onVote }) {
   return (
-    <div className="flex flex-col items-center gap-1 text-slate-500">
-      <button type="button" onClick={() => onVote(1)} className="rounded p-1 hover:bg-slate-100" aria-label="Upvote">
-        ▲
+    <div className="flex flex-col items-center gap-1 text-ink-subtle">
+      <button type="button" onClick={() => onVote(1)} className="rounded p-1 hover:bg-surface-sunken" aria-label="Upvote">
+        <Icon name="sortAsc" size={16} />
       </button>
-      <span className="text-sm font-semibold text-slate-700">{score}</span>
-      <button type="button" onClick={() => onVote(-1)} className="rounded p-1 hover:bg-slate-100" aria-label="Downvote">
-        ▼
+      <span className="text-sm font-semibold text-ink-muted">{score}</span>
+      <button type="button" onClick={() => onVote(-1)} className="rounded p-1 hover:bg-surface-sunken" aria-label="Downvote">
+        <Icon name="sortDesc" size={16} />
       </button>
     </div>
   );
@@ -141,38 +142,37 @@ function ForumQuestionContent() {
     }
   };
 
-  if (loading) return <p className="text-sm text-slate-400">Loading…</p>;
-  if (!question) return <p className="text-sm text-red-500">{error || "Question not found"}</p>;
+  if (loading) return <p className="text-sm text-ink-subtle">Loading…</p>;
+  if (!question) return <p className="text-sm text-danger">{error || "Question not found"}</p>;
 
   return (
     <div className="space-y-6">
-      <Link to="/forum" className="text-sm text-slate-500 hover:text-indigo-600">
-        ← Back to forum
+      <Link to="/forum" className="text-sm text-ink-subtle hover:text-brand"><Icon name="arrowLeft" size={15} /> Back to forum
       </Link>
 
-      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
 
-      <div className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex gap-4 rounded-surface border border-line bg-surface p-4">
         <VoteButtons score={question.voteScore} onVote={handleVoteQuestion} />
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-bold text-slate-900">{question.title}</h1>
-          <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">{question.body}</p>
+          <h1 className="text-xl font-bold text-ink">{question.title}</h1>
+          <p className="mt-2 whitespace-pre-wrap text-sm text-ink-muted">{question.body}</p>
           <div className="mt-3 flex flex-wrap gap-1">
             {question.tags?.map((tag) => (
-              <span key={tag} className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500">
+              <span key={tag} className="rounded bg-surface-sunken px-1.5 py-0.5 text-[10px] text-ink-subtle">
                 {tag}
               </span>
             ))}
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-ink-subtle">
             <span>Asked by {question.userId?.name || question.userId?.email}</span>
             {(isOwner || canModerate) && (
-              <button type="button" onClick={handleDeleteQuestion} className="text-rose-600 hover:underline">
+              <button type="button" onClick={handleDeleteQuestion} className="text-danger hover:underline">
                 Delete
               </button>
             )}
             {canModerate && (
-              <button type="button" onClick={handleModerateQuestion} className="text-amber-600 hover:underline">
+              <button type="button" onClick={handleModerateQuestion} className="text-warning hover:underline">
                 {question.moderation?.isHidden ? "Unhide" : "Hide"}
               </button>
             )}
@@ -186,27 +186,26 @@ function ForumQuestionContent() {
           {answers.map((a) => (
             <div
               key={a.id}
-              className={`flex gap-4 rounded-xl border p-4 ${
-                a.isAccepted ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"
+              className={`flex gap-4 rounded-surface border p-4 ${
+                a.isAccepted ? "border-success-border bg-success-subtle" : "border-line bg-surface"
               }`}
             >
               <VoteButtons score={a.voteScore} onVote={(v) => handleVoteAnswer(a.id, v)} />
               <div className="min-w-0 flex-1">
                 {a.isAccepted && (
-                  <span className="mb-1 inline-block rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold text-white">
-                    ✓ Accepted
+                  <span className="mb-1 inline-block rounded bg-success px-2 py-0.5 text-[10px] font-semibold text-white"><Icon name="check" size={14} /> Accepted
                   </span>
                 )}
-                <p className="whitespace-pre-wrap text-sm text-slate-700">{a.body}</p>
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                <p className="whitespace-pre-wrap text-sm text-ink-muted">{a.body}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-ink-subtle">
                   <span>{a.userId?.name || a.userId?.email}</span>
                   {isOwner && !a.isAccepted && question.status !== "CLOSED" && (
-                    <button type="button" onClick={() => handleAccept(a.id)} className="text-emerald-600 hover:underline">
+                    <button type="button" onClick={() => handleAccept(a.id)} className="text-success hover:underline">
                       Accept answer
                     </button>
                   )}
                   {(String(a.userId?._id || a.userId) === String(user?.id) || canModerate) && (
-                    <button type="button" onClick={() => handleDeleteAnswer(a.id)} className="text-rose-600 hover:underline">
+                    <button type="button" onClick={() => handleDeleteAnswer(a.id)} className="text-danger hover:underline">
                       Delete
                     </button>
                   )}
@@ -214,7 +213,7 @@ function ForumQuestionContent() {
                     <button
                       type="button"
                       onClick={() => handleModerateAnswer(a.id, a.moderation?.isHidden)}
-                      className="text-amber-600 hover:underline"
+                      className="text-warning hover:underline"
                     >
                       {a.moderation?.isHidden ? "Unhide" : "Hide"}
                     </button>
@@ -227,21 +226,21 @@ function ForumQuestionContent() {
       </div>
 
       {question.status === "CLOSED" ? (
-        <p className="text-sm text-slate-400">This question is closed to new answers.</p>
+        <p className="text-sm text-ink-subtle">This question is closed to new answers.</p>
       ) : (
-        <form onSubmit={submitAnswer} className="space-y-2 rounded-xl border border-slate-200 bg-white p-4">
-          <label className="block text-sm font-medium text-slate-700">Your answer</label>
+        <form onSubmit={submitAnswer} className="space-y-2 rounded-surface border border-line bg-surface p-4">
+          <label className="block text-sm font-medium text-ink-muted">Your answer</label>
           <textarea
             required
             rows={4}
             value={answerBody}
             onChange={(e) => setAnswerBody(e.target.value)}
-            className="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
           <button
             type="submit"
             disabled={posting}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
           >
             {posting ? "Posting…" : "Post answer"}
           </button>

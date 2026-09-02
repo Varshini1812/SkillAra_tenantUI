@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useAdminAuth } from "../admin/context/AdminAuthContext.jsx";
@@ -8,53 +8,101 @@ import { getTenantLogoUrl } from "../admin/utils/tenantLogo.js";
 import { useDocumentTitle } from "../admin/hooks/useDocumentTitle.js";
 import { buildRootUrl } from "../utils/tenant.js";
 import { loadRememberedLogin, saveRememberedLogin } from "../lib/rememberLogin.js";
+import { readableTextOn } from "../utils/contrastColor.js";
+import { DEFAULT_TENANT_BRAND } from "../admin/constants/branding.js";
+import Icon from "../admin/components/ui/Icon.jsx";
+import { SkillAraMark } from "../admin/components/SkillAraBrand.jsx";
+import { Button, Field } from "../admin/components/ui/primitives.jsx";
 
-function InputField({ label, type, value, onChange, placeholder, autoComplete }) {
+const CONTROL =
+  "w-full rounded-control border border-line-strong bg-surface px-3 py-2.5 text-base text-ink " +
+  "transition-[border-color,box-shadow] duration-200 ease-standard " +
+  "focus:border-brand focus:outline-none focus:ring-[3px] focus:ring-brand-muted";
+
+const CAPABILITIES = [
+  { icon: "courses", title: "Courses", desc: "Everything your organization teaches" },
+  { icon: "users", title: "People", desc: "Learners, instructors and mentors" },
+  { icon: "analytics", title: "Progress", desc: "Enrolment and completion at a glance" },
+];
+
+/**
+ * Password field with a show/hide toggle. Paste is never blocked and
+ * `autoComplete` is always set, so password managers work normally
+ * (`accessible-authentication`, `password-toggle`).
+ */
+function PasswordField({ id, label, value, onChange, autoComplete, hint, required = true }) {
   const [show, setShow] = useState(false);
-  const isPassword = type === "password";
-
   return (
-    <div>
-      {label ? (
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">{label}</label>
-      ) : null}
+    <Field label={label} htmlFor={id} hint={hint} required={required}>
       <div className="relative">
         <input
-          type={isPassword && show ? "text" : type}
-          required
+          id={id}
+          type={show ? "text" : "password"}
+          required={required}
           value={value}
           onChange={onChange}
-          placeholder={placeholder}
           autoComplete={autoComplete}
-          className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 transition focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          aria-describedby={hint ? `${id}-hint` : undefined}
+          className={`${CONTROL} pr-20`}
         />
-        {isPassword && (
-          <button
-            type="button"
-            onClick={() => setShow(!show)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-400 hover:text-gray-600"
-          >
-            {show ? "Hide" : "Show"}
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setShow((v) => !v)}
+          aria-pressed={show}
+          className="absolute right-2 top-1/2 inline-flex min-h-8 -translate-y-1/2 items-center rounded-control px-2 text-xs font-semibold text-ink-muted transition-colors duration-150 ease-standard hover:bg-surface-sunken hover:text-ink"
+        >
+          {show ? "Hide" : "Show"}
+          <span className="sr-only"> password</span>
+        </button>
       </div>
+    </Field>
+  );
+}
+
+function Notice({ variant = "error", children }) {
+  const style = {
+    error: "border-danger-border bg-danger-subtle text-danger",
+    success: "border-success-border bg-success-subtle text-success",
+    warning: "border-warning-border bg-warning-subtle text-warning",
+  }[variant];
+  const icon = { error: "danger", success: "success", warning: "warning" }[variant];
+
+  return (
+    <div
+      role={variant === "error" ? "alert" : "status"}
+      className={`flex items-start gap-2.5 rounded-surface border px-3.5 py-2.5 text-[0.8125rem] ${style}`}
+    >
+      <Icon name={icon} size={15} className="mt-0.5 shrink-0" />
+      <p className="min-w-0 flex-1">{children}</p>
     </div>
   );
 }
 
 export default function TenantLogin() {
-  const { establishSession: establishUserSession, tenantInfo, tenantHost, tenantSubdomain } = useAuth();
+  const { establishSession: establishUserSession, tenantInfo, tenantHost, tenantSubdomain } =
+    useAuth();
   const { establishSession: establishAdminSession } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const successMsg = location.state?.message;
 
-  const tenantName = tenantInfo?.tenant_name || tenantSubdomain || "Your Workspace";
+  const emailId = useId();
+  const passwordId = useId();
+  const newPasswordId = useId();
+  const confirmId = useId();
+
+  const tenantName = tenantInfo?.tenant_name || tenantSubdomain || "Your workspace";
   const tenantLogoUrl = getTenantLogoUrl(tenantInfo?.logo);
-  const tenantPrimaryColor = tenantInfo?.branding?.primary_color || "#4F46E5";
+  const brand = tenantInfo?.branding?.primary_color || DEFAULT_TENANT_BRAND;
+  // Every tenant picks its own brand colour, so the text on top is chosen at
+  // runtime rather than assumed to be white.
+  const onBrand = readableTextOn(brand);
+
   const [email, setEmail] = useState(() => loadRememberedLogin(tenantSubdomain).email);
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(() => loadRememberedLogin(tenantSubdomain).rememberMe);
+  const [rememberMe, setRememberMe] = useState(
+    () => loadRememberedLogin(tenantSubdomain).rememberMe
+  );
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [mustChangePassword, setMustChangePassword] = useState(false);
@@ -99,11 +147,11 @@ export default function TenantLogin() {
     e.preventDefault();
     setError("");
     if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError("Your new password must be at least 8 characters.");
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError("Those passwords do not match.");
       return;
     }
     setLoading(true);
@@ -128,231 +176,215 @@ export default function TenantLogin() {
     }
   };
 
+  const mark = tenantLogoUrl ? (
+    <img src={tenantLogoUrl} alt="" className="h-10 w-10 rounded-control object-cover" />
+  ) : (
+    <span
+      className="flex h-10 w-10 items-center justify-center rounded-control text-base font-bold"
+      style={{ backgroundColor: "rgba(255,255,255,0.16)", color: onBrand }}
+      aria-hidden="true"
+    >
+      {tenantName?.[0]?.toUpperCase()}
+    </span>
+  );
+
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* Left: branded panel */}
-      <div className="relative hidden w-[45%] flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 px-10 py-10 lg:flex">
-        {/* Background decoration */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
-          <div className="absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-violet-400/10 blur-3xl" />
-          <div
-            className="absolute inset-0 opacity-[0.04]"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(255,255,255,1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)
-              `,
-              backgroundSize: "40px 40px",
-            }}
-          />
+    <div className="slim-scroll font-sans flex min-h-dvh items-stretch bg-surface text-ink">
+      {/* Brand panel — decorative, hidden below lg. Pinned to the viewport so it
+          can never grow the page and produce a second scrollbar. */}
+      <aside
+        className="relative hidden flex-col justify-between overflow-hidden px-10 py-10 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-[46%] xl:w-[48%]"
+        style={{ backgroundColor: brand, color: onBrand }}
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(110% 80% at 105% -10%, rgba(255,255,255,0.16) 0%, transparent 60%)," +
+              "radial-gradient(70% 55% at -10% 110%, rgba(0,0,0,0.18) 0%, transparent 60%)",
+          }}
+        />
+
+        <div className="relative flex shrink-0 items-center gap-3">
+          {mark}
+          <span className="truncate text-lg font-bold tracking-tight">{tenantName}</span>
         </div>
 
-        {/* Top: brand */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-3">
-            {tenantLogoUrl ? (
-              <img src={tenantLogoUrl} alt="" className="h-10 w-10 rounded-xl object-cover shadow-lg" />
-            ) : (
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-lg font-bold text-white backdrop-blur-sm">
-                {tenantName?.[0]?.toUpperCase()}
-              </span>
-            )}
-            <span className="text-lg font-bold text-white">{tenantName}</span>
-          </div>
-        </div>
-
-        {/* Middle: content */}
-        <div className="relative z-10 flex flex-col justify-center">
-          <p className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium text-indigo-100 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Active workspace
-          </p>
-          <h1 className="text-4xl font-bold leading-tight tracking-tight text-white">
-            Welcome back to
-            <br />
-            <span className="text-indigo-200">{tenantName}</span>
-          </h1>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-indigo-200/80">
-            {tenantInfo?.branding?.welcome_message || `Sign in to access your courses, track progress, and learn smarter.`}
-          </p>
-
-          {/* Feature cards */}
-          <div className="mt-10 space-y-3">
-            {[
-              { icon: "users", title: "User management", desc: "Create students and tutor accounts" },
-              { icon: "book", title: "Course oversight", desc: "Manage your organization's content" },
-              { icon: "chart", title: "Enrollment stats", desc: "Track learners and progress" },
-            ].map((f) => (
-              <div
-                key={f.title}
-                className="flex items-center gap-3.5 rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3 backdrop-blur-sm transition hover:bg-white/[0.12]"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
-                  {f.icon === "users" && (
-                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 00-3-3.87" />
-                      <path d="M16 3.13a4 4 0 010 7.75" />
-                    </svg>
-                  )}
-                  {f.icon === "book" && (
-                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
-                      <line x1="8" y1="7" x2="16" y2="7" />
-                      <line x1="8" y1="11" x2="14" y2="11" />
-                    </svg>
-                  )}
-                  {f.icon === "chart" && (
-                    <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="20" x2="18" y2="10" />
-                      <line x1="12" y1="20" x2="12" y2="4" />
-                      <line x1="6" y1="20" x2="6" y2="14" />
-                    </svg>
-                  )}
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-white">{f.title}</p>
-                  <p className="text-xs text-indigo-200/70">{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom: tagline */}
-        <div className="relative z-10">
-          <p className="text-xs text-indigo-300/60">
-            Courses &middot; AI Tutoring &middot; Mock Tests &middot; Progress Tracking
-          </p>
-        </div>
-      </div>
-
-      {/* Right: login form */}
-      <div className="flex w-full flex-col justify-center bg-white px-8 lg:w-[55%]">
-        <div className="mx-auto w-full max-w-sm">
-          <div className="text-center lg:text-left">
-            {tenantLogoUrl ? (
-              <img src={tenantLogoUrl} alt="" className="mx-auto h-12 w-12 rounded-2xl object-cover shadow-sm lg:mx-0" />
-            ) : (
-              <span
-                className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold text-white shadow-sm lg:mx-0"
-                style={{ backgroundColor: tenantPrimaryColor }}
-              >
-                {tenantName?.[0]?.toUpperCase()}
-              </span>
-            )}
-            <h1 className="mt-5 text-2xl font-semibold tracking-tight text-gray-900">
-              {mustChangePassword ? "Set a new password" : "Sign in"}
-            </h1>
-            <p className="mt-1.5 text-sm text-gray-500">
-              {mustChangePassword ? "Finish setting up your account" : "Enter your credentials to continue"}
+        <div className="relative flex flex-1 flex-col justify-center py-10">
+          <div className="max-w-lg">
+            <h2 className="text-[2.25rem] font-bold leading-[1.12] tracking-tight xl:text-[2.5rem]">
+              Welcome back to
+              <br />
+              {tenantName}.
+            </h2>
+            <p className="mt-4 max-w-md text-base leading-relaxed opacity-80">
+              {tenantInfo?.branding?.welcome_message ||
+                "Sign in to reach your courses, your people and your progress."}
             </p>
           </div>
 
-          <div className="mt-8">
-            {tenantHost && !mustChangePassword && (
-              <div className="mb-5 rounded-xl border border-gray-100 bg-gray-50/80 px-4 py-2.5 text-sm text-gray-500">
-                <span className="font-medium text-gray-700">Workspace:</span>{" "}
-                <span className="font-mono font-medium text-gray-900">{tenantHost}</span>
-              </div>
-            )}
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+            {CAPABILITIES.map((c) => (
+              <li
+                key={c.title}
+                className="rounded-surface p-3.5"
+                style={{
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  backgroundColor: "rgba(255,255,255,0.09)",
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name={c.icon} size={16} className="opacity-80" />
+                  <p className="text-[0.875rem] font-semibold">{c.title}</p>
+                </div>
+                <p className="mt-1 text-[0.8125rem] leading-5 opacity-75">{c.desc}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-            <form onSubmit={mustChangePassword ? handleSetPassword : handleSubmit} className="space-y-5">
-              {successMsg && (
-                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                  {successMsg}
-                </div>
-              )}
-              {mustChangePassword && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                  Choose a new password to finish signing in. Your temporary password was used to authenticate this step.
-                </div>
-              )}
-              {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                  {error}
-                </div>
-              )}
+        <div className="relative flex shrink-0 items-center gap-1.5 text-xs font-medium tracking-wide opacity-70">
+          <span>Powered by</span>
+          <SkillAraMark className="h-3.5 w-3.5" />
+          <span className="font-semibold">SkillAra</span>
+        </div>
+      </aside>
 
-              {!mustChangePassword ? (
-                <>
-                  <InputField
-                    label="Email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@company.com"
-                    autoComplete="email"
-                  />
-                  <InputField
-                    label="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                  <div className="flex items-center justify-between">
-                    <label className="flex cursor-pointer items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-2 focus:ring-gray-900/20"
-                      />
-                      <span className="text-sm text-gray-500">Remember me</span>
-                    </label>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    style={{ backgroundColor: tenantPrimaryColor }}
-                    className="w-full rounded-xl py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md disabled:opacity-50 disabled:shadow-none"
-                  >
-                    {loading ? "Signing in..." : "Sign in"}
-                  </button>
-                </>
+      <div className="flex w-full flex-col justify-center px-6 py-10 sm:px-8 lg:flex-1">
+        <div className="mx-auto w-full max-w-sm">
+          <div className="flex items-center gap-2.5 lg:hidden">
+            <span
+              className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-control text-sm font-bold"
+              style={{ backgroundColor: brand, color: onBrand }}
+              aria-hidden="true"
+            >
+              {tenantLogoUrl ? (
+                <img src={tenantLogoUrl} alt="" className="h-full w-full object-cover" />
               ) : (
-                <>
-                  <InputField
-                    label="New password"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="At least 8 characters"
-                    autoComplete="new-password"
-                  />
-                  <InputField
-                    label="Confirm new password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    style={{ backgroundColor: tenantPrimaryColor }}
-                    className="w-full rounded-xl py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md disabled:opacity-50 disabled:shadow-none"
-                  >
-                    {loading ? "Saving..." : "Set password & continue"}
-                  </button>
-                </>
+                tenantName?.[0]?.toUpperCase()
               )}
-            </form>
+            </span>
+            <span className="min-w-0 truncate text-base font-semibold text-ink">{tenantName}</span>
           </div>
 
-          <p className="mt-8 text-center text-xs text-gray-400">
+          <h1 className="mt-5 text-2xl font-semibold tracking-tight text-ink lg:mt-0">
+            {mustChangePassword ? "Set a new password" : "Sign in"}
+          </h1>
+          <p className="mt-1.5 text-[0.875rem] text-ink-muted">
+            {mustChangePassword
+              ? "One last step to finish setting up your account."
+              : `Continue to ${tenantName}.`}
+          </p>
+
+          {tenantHost && !mustChangePassword && (
+            <p className="mt-5 rounded-control border border-line bg-surface-sunken px-3 py-2 text-[0.8125rem] text-ink-muted">
+              Workspace <span className="break-token font-mono text-ink">{tenantHost}</span>
+            </p>
+          )}
+
+          <form
+            onSubmit={mustChangePassword ? handleSetPassword : handleSubmit}
+            className="mt-6 space-y-4"
+            noValidate
+          >
+            {successMsg && <Notice variant="success">{successMsg}</Notice>}
+            {mustChangePassword && (
+              <Notice variant="warning">
+                Your temporary password got you this far. Choose a new one to finish signing in.
+              </Notice>
+            )}
+            {error && <Notice>{error}</Notice>}
+
+            {!mustChangePassword ? (
+              <>
+                <Field label="Email" htmlFor={emailId} required>
+                  <input
+                    id={emailId}
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    className={CONTROL}
+                  />
+                </Field>
+
+                <PasswordField
+                  id={passwordId}
+                  label="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+
+                <label className="flex w-fit cursor-pointer items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded-chip border-line-strong accent-[var(--color-brand)]"
+                  />
+                  <span className="text-[0.8125rem] text-ink-muted">Remember me</span>
+                </label>
+
+                {/* The CTA carries the tenant's brand colour, with its text
+                    colour chosen for contrast rather than assumed white. */}
+                <Button
+                  type="submit"
+                  size="lg"
+                  variant="tenant"
+                  loading={loading}
+                  className="w-full"
+                  style={{ backgroundColor: brand, color: onBrand }}
+                >
+                  {loading ? "Signing in…" : "Sign in"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <PasswordField
+                  id={newPasswordId}
+                  label="New password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
+                  hint="At least 8 characters."
+                />
+                <PasswordField
+                  id={confirmId}
+                  label="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+                <Button
+                  type="submit"
+                  size="lg"
+                  variant="tenant"
+                  loading={loading}
+                  className="w-full"
+                  style={{ backgroundColor: brand, color: onBrand }}
+                >
+                  {loading ? "Saving…" : "Set password and continue"}
+                </Button>
+              </>
+            )}
+          </form>
+
+          <p className="mt-7 text-center text-xs text-ink-subtle">
             Accounts are created by your organization admin.
           </p>
 
-          <p className="mt-3 text-center text-xs">
+          <p className="mt-4 flex items-center justify-center gap-1.5 text-[0.6875rem] text-ink-subtle lg:hidden">
+            Powered by
+            <SkillAraMark className="h-3.5 w-3.5" />
+            <span className="font-semibold text-ink-muted">SkillAra</span>
+          </p>
+          <p className="mt-2 text-center text-xs">
             <a
               href={buildRootUrl("/login")}
-              className="font-medium text-gray-400 transition hover:text-gray-600"
+              className="rounded-control font-medium text-ink-subtle transition-colors duration-150 ease-standard hover:text-ink hover:underline underline-offset-2"
             >
               Not your workspace? Switch workspace
             </a>

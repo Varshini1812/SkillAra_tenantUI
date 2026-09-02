@@ -1,139 +1,94 @@
 import { useEffect, useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useAdminAuth } from "../context/AdminAuthContext.jsx";
 import { useTenantBranding } from "../hooks/useTenantBranding.js";
-import { getRoleLabel } from "../utils/roles.js";
 import { getAdminNav } from "../../utils/permissions.js";
-import { PoweredBySkillAra } from "./SkillAraBrand.jsx";
+import Icon from "./ui/Icon.jsx";
+import SidebarFooter from "./SidebarFooter.jsx";
 
 const STORAGE_KEY = "skillara-tenant-admin-sidebar-collapsed";
 
+/** Nav config icon keys -> the shared icon set. */
+const ICON = {
+  dashboard: "dashboard",
+  courses: "courses",
+  enrollments: "inbox",
+  review: "clipboardCheck",
+  monitoring: "activity",
+  mentors: "mentor",
+  users: "users",
+  roles: "roles",
+  "master-data": "database",
+};
 
-function NavIcon({ name }) {
-  const className = "h-4 w-4 shrink-0 transition-colors";
-  switch (name) {
-    case "enrollments":
-      // Inbox tray — access requests waiting for a decision.
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-          <path d="M3 13h4l2 3h6l2-3h4" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M5 5h14l2 8v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4z" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "review":
-      // Document with a tick — content awaiting sign-off.
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M14 3v5h5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M9 15l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "dashboard":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-          <rect x="3" y="3" width="7" height="9" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-          <rect x="14" y="3" width="7" height="5" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-          <rect x="14" y="12" width="7" height="9" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-          <rect x="3" y="16" width="7" height="5" rx="1" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "users":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "roles":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "courses":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M9 7h7M9 11h7" strokeLinecap="round" />
-        </svg>
-      );
-    case "master-data":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "monitoring":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-          <path d="M22 12h-4l-3 9L9 3l-3 9H2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "mentors":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
-          <circle cx="9" cy="8" r="3" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M3 20a6 6 0 0 1 12 0" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M16 8a3 3 0 1 1 4 2.83M21 20a5 5 0 0 0-4.5-5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    default:
-      return null;
-  }
-}
-
-function CollapseIcon({ collapsed }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" aria-hidden="true">
-      {collapsed ? (
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-      ) : (
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-      )}
-    </svg>
-  );
-}
-
-function navClass({ isActive }, compact) {
-  const base = isActive ? "admin-nav-link admin-nav-link-active" : "admin-nav-link admin-nav-link-idle";
-  return compact ? `${base} justify-center px-2` : base;
-}
-
+/** Organization mark: the tenant's own logo when it has one, else its initial. */
 function BrandMark({ tenantName, logoUrl, primaryColor, compact }) {
-  if (compact) {
-    return null;
-  }
+  const initial = (tenantName || "O").trim().charAt(0).toUpperCase();
 
-  if (logoUrl) {
-    return (
-      <>
-        <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" />
-        <div className="min-w-0">
-          <p className="truncate font-semibold text-slate-900">{tenantName}</p>
-        </div>
-      </>
-    );
-  }
+  const badge = logoUrl ? (
+    <img
+      src={logoUrl}
+      alt=""
+      className="h-9 w-9 shrink-0 rounded-control border border-line object-cover"
+    />
+  ) : (
+    <span
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-sm font-semibold text-white"
+      style={{ backgroundColor: primaryColor || "var(--color-brand)" }}
+      aria-hidden="true"
+    >
+      {initial}
+    </span>
+  );
+
+  if (compact) return badge;
 
   return (
     <>
-      <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
-        style={{ backgroundColor: primaryColor }}
-      >
-        {tenantName?.[0]?.toUpperCase() || "O"}
-      </span>
-      {!compact && (
-        <div className="min-w-0">
-          <p className="truncate font-semibold text-slate-900">{tenantName}</p>
-        </div>
-      )}
+      {badge}
+      <div className="min-w-0">
+        <p className="truncate text-sm font-semibold text-ink">{tenantName || "Your organization"}</p>
+        <p className="truncate text-xs text-ink-subtle">Admin</p>
+      </div>
     </>
+  );
+}
+
+function NavItem({ item, compact, onNavigate }) {
+  return (
+    <NavLink
+      to={item.to}
+      end={item.end}
+      onClick={onNavigate}
+      title={compact ? item.label : undefined}
+      className={({ isActive }) =>
+        [
+          "group relative flex min-h-9 items-center rounded-control border text-[0.8125rem]",
+          "transition-colors duration-200 ease-standard",
+          compact ? "justify-center px-2" : "gap-2.5 px-2.5",
+          isActive
+            ? "border-brand-border bg-brand-subtle font-semibold text-brand-hover"
+            : "border-transparent text-ink-muted hover:bg-surface-sunken hover:text-ink",
+        ].join(" ")
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {/* Active state is a shape as well as a colour (`color-not-only`). */}
+          {isActive && (
+            <span
+              aria-hidden="true"
+              className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-brand"
+            />
+          )}
+          <Icon name={ICON[item.icon] || "dashboard"} size={16} />
+          {/* The label stays in the accessibility tree when collapsed, so the
+              link never becomes an unnamed icon (`nav-label-icon`). */}
+          <span className={compact ? "sr-only" : "truncate"}>{item.label}</span>
+          {isActive && <span className="sr-only">(current page)</span>}
+        </>
+      )}
+    </NavLink>
   );
 }
 
@@ -143,13 +98,12 @@ export default function Sidebar({
   mobileOpen = false,
   onCloseMobile,
 }) {
-  const { user, logout } = useAdminAuth();
+  const { user } = useAdminAuth();
   const { tenantName, logoUrl, primaryColor } = useTenantBranding();
-  const roleLabel = getRoleLabel(user);
   const compact = collapsed && !mobileOpen;
 
   // Navigation follows the user's role permissions, so a custom role created in
-  // Roles & Permissions gets the right menu without changing this file.
+  // Roles & permissions gets the right menu without changing this file.
   const navGroups = getAdminNav(user);
 
   useEffect(() => {
@@ -162,11 +116,11 @@ export default function Sidebar({
   }, [mobileOpen, onCloseMobile]);
 
   const asideClass = [
-    "admin-sidebar z-50 flex shrink-0 flex-col",
+    "z-50 flex h-full min-h-0 shrink-0 flex-col border-r border-line bg-surface",
     "fixed inset-y-0 left-0 lg:static",
-    compact ? "admin-sidebar-collapsed" : "admin-sidebar-expanded",
+    compact ? "w-[4.5rem]" : "w-60 sm:w-64",
     mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-    "transition-transform duration-200 lg:transition-[width]",
+    "transition-transform duration-200 ease-standard lg:transition-[width]",
   ].join(" ");
 
   return (
@@ -174,7 +128,7 @@ export default function Sidebar({
       {mobileOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-slate-900/40 lg:hidden"
+          className="fixed inset-0 z-40 bg-ink/40 lg:hidden"
           aria-label="Close menu"
           onClick={onCloseMobile}
         />
@@ -182,11 +136,11 @@ export default function Sidebar({
 
       <aside className={asideClass} aria-label="Admin navigation">
         <div
-          className={`admin-sidebar-brand gap-2 ${
-            compact ? "h-auto flex-col justify-center px-2 py-3" : "justify-between px-3"
+          className={`flex h-14 shrink-0 items-center gap-2 border-b border-line ${
+            compact ? "justify-center px-2" : "justify-between px-3"
           }`}
         >
-          <div className={`flex min-w-0 items-center ${compact ? "" : "gap-3"}`}>
+          <div className="flex min-w-0 items-center gap-2.5">
             <BrandMark
               tenantName={tenantName}
               logoUrl={logoUrl}
@@ -194,90 +148,54 @@ export default function Sidebar({
               compact={compact}
             />
           </div>
-          <button
-            type="button"
-            className="admin-sidebar-toggle hidden lg:inline-flex"
-            onClick={onToggleCollapse}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <CollapseIcon collapsed={collapsed} />
-          </button>
+
+          {!compact && (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-expanded
+              aria-label="Collapse sidebar"
+              title="Collapse sidebar"
+              className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-control text-ink-subtle transition-colors duration-200 ease-standard hover:bg-surface-sunken hover:text-ink lg:inline-flex"
+            >
+              <Icon name="chevronsLeft" size={16} />
+            </button>
+          )}
         </div>
 
-        <nav className={`flex-1 space-y-6 overflow-y-auto py-4 ${compact ? "px-2" : "px-3"}`}>
+        <nav
+          className={`min-h-0 flex-1 space-y-4 overflow-y-auto py-3 ${compact ? "px-2" : "px-2.5"}`}
+          aria-label="Sections"
+        >
           {navGroups.map((group) => (
             <div key={group.section}>
-              {!compact && (
-                <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              {compact ? (
+                <hr className="mx-2 mb-2 border-line" aria-hidden="true" />
+              ) : (
+                <p className="mb-1.5 px-2.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-subtle">
                   {group.section}
                 </p>
               )}
               <div className="space-y-0.5">
                 {group.items.map((item) => (
-                  <NavLink
+                  <NavItem
                     key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    title={compact ? item.label : undefined}
-                    onClick={onCloseMobile}
-                    className={(args) => navClass(args, compact)}
-                  >
-                    <NavIcon name={item.icon} />
-                    {!compact && item.label}
-                  </NavLink>
+                    item={item}
+                    compact={compact}
+                    onNavigate={onCloseMobile}
+                  />
                 ))}
               </div>
             </div>
           ))}
         </nav>
 
-        <div className={`shrink-0 border-t border-slate-100 ${compact ? "p-2" : "p-4"}`}>
-          {user && (
-            <div className={`flex flex-col ${compact ? "items-center gap-2" : "gap-3"}`}>
-              <Link
-                to="/admin/profile"
-                onClick={onCloseMobile}
-                title={compact ? user.name || user.email : undefined}
-                className={`flex items-center rounded-xl transition-colors hover:bg-slate-50 ${
-                  compact ? "justify-center p-1.5" : "gap-3 p-2"
-                }`}
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-indigo-100 bg-indigo-50 text-xs font-semibold text-indigo-600">
-                  {user.profilePhoto ? (
-                    <img src={user.profilePhoto} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    (user.name?.[0] || user.email?.[0] || "?").toUpperCase()
-                  )}
-                </span>
-                {!compact && (
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-slate-800">{user.name || user.email}</p>
-                    <p className="truncate text-xs text-slate-500">{roleLabel}</p>
-                  </div>
-                )}
-              </Link>
-              <button
-                type="button"
-                onClick={logout}
-                title="Logout"
-                className={`flex items-center gap-2 rounded-lg border border-rose-100 bg-rose-50/50 text-xs font-medium text-rose-600 shadow-sm transition-all hover:bg-rose-50 hover:text-rose-700 active:scale-[0.98] ${
-                  compact ? "justify-center p-2" : "w-full justify-center px-3 py-2"
-                }`}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                {!compact && "Logout"}
-              </button>
-            </div>
-          )}
-          {!compact && (
-            <div className="mt-3 text-center">
-              <PoweredBySkillAra />
-            </div>
-          )}
-        </div>
+        <SidebarFooter
+          compact={compact}
+          onToggleCollapse={onToggleCollapse}
+          onNavigate={onCloseMobile}
+        />
+
       </aside>
     </>
   );

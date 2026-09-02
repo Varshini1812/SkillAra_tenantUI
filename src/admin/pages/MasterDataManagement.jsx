@@ -5,17 +5,20 @@ import Drawer from "../components/ui/Drawer.jsx";
 import ConfirmDialog from "../components/ui/ConfirmDialog.jsx";
 import FilterBar from "../components/ui/FilterBar.jsx";
 import Pagination from "../components/ui/Pagination.jsx";
-import { EmptyState, OrgStatusBadge, TableSkeleton } from "../components/ui/OrgBadges.jsx";
-import { TableAction, TableActions, EditIcon, DeleteIcon } from "../components/ui/TableActions.jsx";
+import { OrgStatusBadge } from "../components/ui/OrgBadges.jsx";
+import { Button, EmptyState, PageHeader, TableSkeleton } from "../components/ui/primitives.jsx";
+import { TableAction, TableActions } from "../components/ui/TableActions.jsx";
 import { useToast } from "../components/ui/Toast.jsx";
 import { usePagination } from "../hooks/usePagination.js";
 import { useMasterCategories, useTenantMasterData } from "../hooks/useTenantMasterData.js";
+import Icon from "../components/ui/Icon.jsx";
+import { BTN_PRIMARY, BTN_SECONDARY, INPUT, TABLE_SHELL } from "../components/ui/styles.js";
 import {
   MASTER_DATA_LIMITS,
   validateMasterDataForm,
 } from "../utils/masterDataValidation.js";
 
-const inputClass = "admin-input";
+const inputClass = INPUT;
 
 const EMPTY_FORM = { name: "", code: "", description: "", status: "active" };
 
@@ -189,80 +192,54 @@ export default function MasterDataManagement() {
         ]}
       />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Master data</h1>
-          <p className="mt-1 text-slate-500">
-            Manage lookup values for your organization. Selected options store MongoDB IDs on users and records.
-          </p>
-        </div>
-        <button type="button" onClick={openCreate} className="admin-btn-primary">
-          + Add {label}
-        </button>
-      </div>
-
-      <div className="mt-6 flex flex-wrap gap-2 border-b border-slate-200 pb-1">
-        {categories.map((cat) => (
-          <button
-            key={cat.key}
-            type="button"
-            onClick={() => setCategory(cat.key)}
-            className={`rounded-t-lg px-4 py-2 text-sm font-medium ${
-              category === cat.key
-                ? "border-b-2 border-indigo-600 text-indigo-600"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            {cat.labelPlural}
-          </button>
-        ))}
-      </div>
-
-      {activeCategory?.description && (
-        <p className="mt-3 text-sm text-slate-500">{activeCategory.description}</p>
-      )}
+      <PageHeader
+        title="Master data"
+        description="Lookup values for your organization. Selected options are stored by id on users and records."
+        actions={
+          <Button onClick={openCreate}>
+            <Icon name="plus" size={15} />
+            Add {label}
+          </Button>
+        }
+      />
 
       <FilterBar
-        onClear={() => {
-          setSearch("");
-          setStatusFilter("all");
-        }}
-        showClear={Boolean(search.trim()) || statusFilter !== "all"}
-      >
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={`Search ${activeCategory?.labelPlural?.toLowerCase() || "items"}...`}
-          className="admin-input admin-filter-search"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="admin-input admin-filter-select text-slate-700"
-          aria-label="Filter by status"
-        >
-          <option value="all">All status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </FilterBar>
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchLabel="Search items"
+        searchPlaceholder={`Search ${activeCategory?.labelPlural?.toLowerCase() || "items"}`}
+        filters={[
+          {
+            id: "status",
+            label: "Status",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            defaultValue: "all",
+            options: [
+              { value: "all", label: "All statuses" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" },
+            ],
+          },
+        ]}
+      />
 
-      <div className="admin-table mt-4">
+      <div className={`${TABLE_SHELL} mt-4`}>
         {pageLoading ? (
-          <TableSkeleton rows={6} cols={5} />
+          <TableSkeleton rows={6} columns={5} />
         ) : pagedItems.length === 0 ? (
           <EmptyState
             title={`No ${activeCategory?.labelPlural?.toLowerCase() || "items"} yet`}
             description={`Create ${activeCategory?.labelPlural?.toLowerCase() || "items"} to use in user forms and across the app.`}
             action={
-              <button type="button" onClick={openCreate} className="admin-btn-primary">
+              <button type="button" onClick={openCreate} className={`${BTN_PRIMARY}`}>
                 + Add {label}
               </button>
             }
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="admin-data-table admin-data-table-fixed">
+            <table className="data-table data-table-fixed">
               <thead>
                 <tr>
                   <th className="col-name">Name</th>
@@ -274,9 +251,9 @@ export default function MasterDataManagement() {
               </thead>
               <tbody>
                 {pagedItems.map((item) => (
-                  <tr key={item.id} className="admin-table-row border-b border-slate-100 last:border-0">
+                  <tr key={item.id} className="border-b border-line last:border-0">
                     <td className="col-name">
-                      <p className="truncate font-medium text-slate-900" title={item.name}>
+                      <p className="truncate font-medium text-ink" title={item.name}>
                         {item.name}
                       </p>
                     </td>
@@ -284,7 +261,7 @@ export default function MasterDataManagement() {
                       <span title={item.description || undefined}>{item.description || "—"}</span>
                     </td>
                     <td className="col-code">
-                      <span className="font-mono text-xs uppercase text-slate-600">
+                      <span className="font-mono text-xs uppercase text-ink-muted">
                         {item.code || "—"}
                       </span>
                     </td>
@@ -293,8 +270,8 @@ export default function MasterDataManagement() {
                     </td>
                     <td className="col-actions">
                       <TableActions>
-                        <TableAction variant="edit" onClick={() => openEdit(item)} title="Edit"><EditIcon /></TableAction>
-                        <TableAction variant="warn" onClick={() => setDeleteTarget(item)} title="Delete"><DeleteIcon /></TableAction>
+                        <TableAction variant="edit" onClick={() => openEdit(item)} title="Edit"><Icon name="edit" size={14} /></TableAction>
+                        <TableAction variant="warn" onClick={() => setDeleteTarget(item)} title="Delete"><Icon name="trash" size={14} /></TableAction>
                       </TableActions>
                     </td>
                   </tr>
@@ -322,10 +299,10 @@ export default function MasterDataManagement() {
         title={panel === "create" ? `Add ${label}` : `Edit ${label}`}
         footer={
           <>
-            <button type="button" onClick={closePanel} className="admin-btn-secondary" disabled={submitting}>
+            <button type="button" onClick={closePanel} className={`${BTN_SECONDARY}`} disabled={submitting}>
               Cancel
             </button>
-            <button type="submit" form="master-data-form" disabled={submitting} className="admin-btn-primary">
+            <button type="submit" form="master-data-form" disabled={submitting} className={`${BTN_PRIMARY}`}>
               {submitting ? "Saving..." : "Save"}
             </button>
           </>
@@ -333,24 +310,24 @@ export default function MasterDataManagement() {
       >
         <form id="master-data-form" onSubmit={saveItem} className="space-y-4" noValidate>
           <div>
-            <label className="mb-1 block text-sm text-slate-500">Name *</label>
+            <label className="mb-1 block text-sm text-ink-subtle">Name *</label>
             <input
               value={form.name}
               onChange={(e) => setField("name", e.target.value.slice(0, MASTER_DATA_LIMITS.name.max))}
               className={inputClass}
               aria-invalid={Boolean(errors.name)}
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-ink-subtle">
               {MASTER_DATA_LIMITS.name.min}–{MASTER_DATA_LIMITS.name.max} characters
             </p>
             {errors.name && (
-              <p className="mt-1 text-xs text-red-600" role="alert">
+              <p className="mt-1 text-xs text-danger" role="alert">
                 {errors.name}
               </p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-500">Code *</label>
+            <label className="mb-1 block text-sm text-ink-subtle">Code *</label>
             <input
               value={form.code}
               onChange={(e) =>
@@ -367,15 +344,15 @@ export default function MasterDataManagement() {
               maxLength={MASTER_DATA_LIMITS.code.length}
               aria-invalid={Boolean(errors.code)}
             />
-            <p className="mt-1 text-xs text-slate-500">Exactly 3 letters or numbers</p>
+            <p className="mt-1 text-xs text-ink-subtle">Exactly 3 letters or numbers</p>
             {errors.code && (
-              <p className="mt-1 text-xs text-red-600" role="alert">
+              <p className="mt-1 text-xs text-danger" role="alert">
                 {errors.code}
               </p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-500">Description</label>
+            <label className="mb-1 block text-sm text-ink-subtle">Description</label>
             <textarea
               value={form.description}
               onChange={(e) =>
@@ -385,17 +362,17 @@ export default function MasterDataManagement() {
               className={inputClass}
               aria-invalid={Boolean(errors.description)}
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-ink-subtle">
               Optional · max {MASTER_DATA_LIMITS.description.max} characters
             </p>
             {errors.description && (
-              <p className="mt-1 text-xs text-red-600" role="alert">
+              <p className="mt-1 text-xs text-danger" role="alert">
                 {errors.description}
               </p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-500">Status</label>
+            <label className="mb-1 block text-sm text-ink-subtle">Status</label>
             <select
               value={form.status}
               onChange={(e) => setField("status", e.target.value)}

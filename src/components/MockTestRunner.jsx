@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchMockTest, startMockTestAttempt, submitMockTest } from "../api/mockTests.js";
 import { getErrorMessage } from "../api/client.js";
+import Icon from "../admin/components/ui/Icon.jsx";
 
 function formatClock(totalSeconds) {
   const m = Math.floor(Math.max(0, totalSeconds) / 60);
@@ -74,26 +75,26 @@ export function MockTestRunner({ test, onDone, onCancel }) {
   }, [startedAt, submit]);
 
   if (!questions) {
-    return <p className="text-sm text-slate-400">Preparing test…</p>;
+    return <p className="text-sm text-ink-subtle">Preparing test…</p>;
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex items-center justify-between rounded-surface border border-line bg-surface p-4">
         <h3 className="font-semibold">{test.title}</h3>
         <span
-          className={`rounded-lg px-3 py-1 text-sm font-semibold ${
-            remaining <= 60 ? "bg-red-50 text-red-600" : "bg-indigo-50 text-indigo-700"
+          className={`rounded-control px-3 py-1 text-sm font-semibold ${
+            remaining <= 60 ? "bg-danger-subtle text-danger" : "bg-brand-subtle text-brand-hover"
           }`}
         >
           {formatClock(remaining)}
         </span>
       </div>
 
-      {error && <div className="rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
 
       {questions.map((q, i) => (
-        <div key={i} className="rounded-xl border border-slate-200 bg-white p-4">
+        <div key={i} className="rounded-surface border border-line bg-surface p-4">
           <p className="font-medium">
             {i + 1}. {q.question}
           </p>
@@ -117,7 +118,7 @@ export function MockTestRunner({ test, onDone, onCancel }) {
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
+          className="rounded-control border border-line-strong px-4 py-2 text-sm hover:bg-surface-sunken"
         >
           Cancel
         </button>
@@ -125,7 +126,7 @@ export function MockTestRunner({ test, onDone, onCancel }) {
           type="button"
           onClick={submit}
           disabled={submitting || Object.keys(answers).length < questions.length}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
         >
           {submitting ? "Submitting…" : "Submit test"}
         </button>
@@ -136,29 +137,32 @@ export function MockTestRunner({ test, onDone, onCancel }) {
 
 export function MockTestResult({ result, questions, onClose, closeLabel = "Back to mock tests" }) {
   return (
-    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+    <div className="space-y-3 rounded-surface border border-line bg-surface p-4">
       <h3 className="font-semibold">
-        Score: {result.percentage}% {result.passed ? "✅ Passed" : "❌ Not passed"}
+        Score: {result.percentage}% <span className={`inline-flex items-center gap-1 ${result.passed ? "text-success" : "text-danger"}`}>
+              <Icon name={result.passed ? "success" : "danger"} size={14} />
+              {result.passed ? "Passed" : "Not passed"}
+            </span>
       </h3>
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-ink-subtle">
         Completed in {Math.floor(result.durationTakenSeconds / 60)}m{" "}
         {result.durationTakenSeconds % 60}s
       </p>
       <div className="space-y-2">
         {result.results?.map((r, i) => (
-          <div key={i} className={`rounded-lg p-3 text-sm ${r.isCorrect ? "bg-green-50" : "bg-red-50"}`}>
+          <div key={i} className={`rounded-control p-3 text-sm ${r.isCorrect ? "bg-success-subtle" : "bg-danger-subtle"}`}>
             <p>{questions?.[r.questionIndex]?.question}</p>
-            <p className="mt-1 text-slate-500">
+            <p className="mt-1 text-ink-subtle">
               Your answer: {r.selectedAnswer} | Correct: {r.correctAnswer}
             </p>
-            {r.explanation && <p className="mt-1 text-slate-400">{r.explanation}</p>}
+            {r.explanation && <p className="mt-1 text-ink-subtle">{r.explanation}</p>}
           </div>
         ))}
       </div>
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900"
+        className="rounded-control bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-ink"
       >
         {closeLabel}
       </button>

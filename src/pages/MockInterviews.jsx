@@ -17,10 +17,10 @@ import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import LockedFeature from "../components/common/LockedFeature.jsx";
 
 const STATUS_STYLE = {
-  OPEN: "bg-slate-100 text-slate-600",
-  BOOKED: "bg-indigo-100 text-indigo-700",
-  COMPLETED: "bg-emerald-100 text-emerald-700",
-  CANCELLED: "bg-rose-100 text-rose-700",
+  OPEN: "bg-surface-sunken text-ink-muted",
+  BOOKED: "bg-brand-muted text-brand-hover",
+  COMPLETED: "bg-success-subtle text-success",
+  CANCELLED: "bg-danger-subtle text-danger",
 };
 
 function fmt(iso) {
@@ -72,15 +72,15 @@ function NewSlotForm({ courses, onCreated }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-      {error && <div className="rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+    <form onSubmit={submit} className="space-y-3 rounded-surface border border-line bg-surface p-4">
+      {error && <div className="rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Course (optional)
           <select
             value={courseId}
             onChange={(e) => setCourseId(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           >
             <option value="">None</option>
             {courses.map((c) => (
@@ -90,40 +90,40 @@ function NewSlotForm({ courses, onCreated }) {
             ))}
           </select>
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Title
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. React fundamentals mock interview"
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Start time
           <input
             type="datetime-local"
             required
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           End time
           <input
             type="datetime-local"
             required
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
       </div>
       <button
         type="submit"
         disabled={saving}
-        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
       >
         {saving ? "Publishing…" : "Publish availability"}
       </button>
@@ -136,18 +136,18 @@ function SlotCard({ slot, mode, currentUserId, onBook, onCancel, onComplete, onD
   const canJoin = slot.status === "BOOKED" && slot.meeting?.roomId;
 
   return (
-    <li className="rounded-lg border border-slate-100 p-3">
+    <li className="rounded-control border border-line p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-800">{slot.title || "Mock interview"}</span>
+            <span className="text-sm font-medium text-ink">{slot.title || "Mock interview"}</span>
             <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${STATUS_STYLE[slot.status]}`}>
               {slot.status}
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-400">{fmt(slot.startTime)}</p>
+          <p className="mt-1 text-xs text-ink-subtle">{fmt(slot.startTime)}</p>
           {mode !== "browse" && (
-            <p className="mt-0.5 text-xs text-slate-400">
+            <p className="mt-0.5 text-xs text-ink-subtle">
               {isHost
                 ? `With ${slot.studentId?.name || slot.studentId?.email || "—"}`
                 : `Hosted by ${slot.hostId?.name || slot.hostId?.email || "—"}`}
@@ -159,7 +159,7 @@ function SlotCard({ slot, mode, currentUserId, onBook, onCancel, onComplete, onD
             <button
               type="button"
               onClick={() => onBook(slot.id)}
-              className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700"
+              className="rounded-control bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-hover"
             >
               Book
             </button>
@@ -168,7 +168,7 @@ function SlotCard({ slot, mode, currentUserId, onBook, onCancel, onComplete, onD
             <button
               type="button"
               onClick={() => onJoin(slot)}
-              className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700"
+              className="rounded-control bg-success px-3 py-1 text-xs font-medium text-white hover:bg-success"
             >
               Join call
             </button>
@@ -177,7 +177,7 @@ function SlotCard({ slot, mode, currentUserId, onBook, onCancel, onComplete, onD
             <button
               type="button"
               onClick={() => onComplete(slot.id)}
-              className="rounded-lg border border-slate-300 px-3 py-1 text-xs hover:bg-slate-50"
+              className="rounded-control border border-line-strong px-3 py-1 text-xs hover:bg-surface-sunken"
             >
               Mark complete
             </button>
@@ -186,7 +186,7 @@ function SlotCard({ slot, mode, currentUserId, onBook, onCancel, onComplete, onD
             <button
               type="button"
               onClick={() => onDelete(slot.id)}
-              className="rounded-lg border border-rose-200 px-3 py-1 text-xs text-rose-600 hover:bg-rose-50"
+              className="rounded-control border border-danger-border px-3 py-1 text-xs text-danger hover:bg-danger-subtle"
             >
               Delete
             </button>
@@ -195,7 +195,7 @@ function SlotCard({ slot, mode, currentUserId, onBook, onCancel, onComplete, onD
             <button
               type="button"
               onClick={() => onCancel(slot.id)}
-              className="rounded-lg border border-rose-200 px-3 py-1 text-xs text-rose-600 hover:bg-rose-50"
+              className="rounded-control border border-danger-border px-3 py-1 text-xs text-danger hover:bg-danger-subtle"
             >
               Cancel
             </button>
@@ -284,7 +284,7 @@ function MockInterviewsContent() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Mock Interviews</h1>
-        <p className="mt-1 text-sm text-slate-500">Book open interview practice time, or publish your own.</p>
+        <p className="mt-1 text-sm text-ink-subtle">Book open interview practice time, or publish your own.</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -293,8 +293,8 @@ function MockInterviewsContent() {
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`rounded-lg px-4 py-2 text-sm font-medium ${
-              tab === t ? "bg-indigo-600 text-white" : "border border-slate-300 text-slate-600"
+            className={`rounded-control px-4 py-2 text-sm font-medium ${
+              tab === t ? "bg-brand text-white" : "border border-line-strong text-ink-muted"
             }`}
           >
             {t === "browse" ? "Browse" : t === "mine" ? "My sessions" : "Host"}
@@ -302,18 +302,18 @@ function MockInterviewsContent() {
         ))}
       </div>
 
-      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-      {notice && <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
+      {notice && <div className="rounded-control bg-success-subtle p-3 text-sm text-success">{notice}</div>}
 
       {tab === "host" && canHost && <NewSlotForm courses={courses} onCreated={() => { setNotice("Slot published."); loadAll(); }} />}
 
       {tab === "browse" && (
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="rounded-surface border border-line bg-surface p-4">
           <h2 className="mb-3 font-semibold">Open slots</h2>
           {loading ? (
-            <p className="text-sm text-slate-400">Loading…</p>
+            <p className="text-sm text-ink-subtle">Loading…</p>
           ) : openSlots.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+            <p className="rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
               No open slots right now.
             </p>
           ) : (
@@ -327,12 +327,12 @@ function MockInterviewsContent() {
       )}
 
       {(tab === "mine" || tab === "host") && (
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="rounded-surface border border-line bg-surface p-4">
           <h2 className="mb-3 font-semibold">My sessions</h2>
           {loading ? (
-            <p className="text-sm text-slate-400">Loading…</p>
+            <p className="text-sm text-ink-subtle">Loading…</p>
           ) : mySlots.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+            <p className="rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
               Nothing here yet.
             </p>
           ) : (

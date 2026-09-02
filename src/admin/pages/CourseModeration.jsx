@@ -10,6 +10,8 @@ import {
 import { getErrorMessage } from "../../api/client.js";
 import { useAdminAuth } from "../context/AdminAuthContext.jsx";
 import Breadcrumb from "../components/ui/Breadcrumb.jsx";
+import { PageHeader } from "../components/ui/primitives.jsx";
+import FilterBar from "../components/ui/FilterBar.jsx";
 
 const STATUS_FILTERS = [
   { value: "", label: "All" },
@@ -19,16 +21,16 @@ const STATUS_FILTERS = [
 ];
 
 const STATUS_BADGE = {
-  DRAFT: "bg-slate-100 text-slate-600",
-  PUBLISHED: "bg-emerald-100 text-emerald-700",
-  ARCHIVED: "bg-amber-100 text-amber-700",
+  DRAFT: "bg-surface-sunken text-ink-muted",
+  PUBLISHED: "bg-success-subtle text-success",
+  ARCHIVED: "bg-warning-subtle text-warning",
 };
 
 /** NOT_SUBMITTED is deliberately absent — a plain draft needs no extra badge. */
 const REVIEW_BADGE = {
-  PENDING: { label: "In review", chip: "bg-indigo-100 text-indigo-700" },
-  CHANGES_REQUESTED: { label: "Changes requested", chip: "bg-amber-100 text-amber-800" },
-  APPROVED: { label: "Approved", chip: "bg-emerald-100 text-emerald-700" },
+  PENDING: { label: "In review", chip: "bg-brand-muted text-brand-hover" },
+  CHANGES_REQUESTED: { label: "Changes requested", chip: "bg-warning-subtle text-warning" },
+  APPROVED: { label: "Approved", chip: "bg-success-subtle text-success" },
 };
 
 function BlockDialog({ course, onClose, onConfirm }) {
@@ -36,7 +38,7 @@ function BlockDialog({ course, onClose, onConfirm }) {
   const [saving, setSaving] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -44,15 +46,15 @@ function BlockDialog({ course, onClose, onConfirm }) {
           await onConfirm(reason.trim());
           setSaving(false);
         }}
-        className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+        className="w-full max-w-md rounded-surface bg-surface p-6 shadow-panel"
       >
         <h2 className="text-lg font-semibold">Block “{course.title}”</h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-ink-subtle">
           Blocking hides the course from learners immediately and stops the instructor
           re-publishing it. The reason is shown to the instructor.
         </p>
 
-        <label className="mt-4 block text-sm font-medium text-slate-700">
+        <label className="mt-4 block text-sm font-medium text-ink-muted">
           Reason
           <textarea
             rows={3}
@@ -62,7 +64,7 @@ function BlockDialog({ course, onClose, onConfirm }) {
             minLength={3}
             maxLength={500}
             autoFocus
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm"
             placeholder="e.g. Copyright complaint received on lesson 4"
           />
         </label>
@@ -71,14 +73,14 @@ function BlockDialog({ course, onClose, onConfirm }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
+            className="rounded-control border border-line-strong px-4 py-2 text-sm hover:bg-surface-sunken"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving || reason.trim().length < 3}
-            className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-50"
+            className="rounded-control bg-danger px-4 py-2 text-sm font-medium text-white hover:bg-danger-hover disabled:opacity-50"
           >
             {saving ? "Blocking…" : "Block course"}
           </button>
@@ -147,36 +149,29 @@ export default function CourseModeration() {
 
   return (
     <div>
-      <Breadcrumb items={[{ label: "Dashboard", to: "/admin" }, { label: "Courses" }]} />
+      <PageHeader
+        breadcrumb={<Breadcrumb items={[{ label: "Dashboard", to: "/admin" }, { label: "Courses" }]} />}
+        title="Course catalog"
+        description="Every course in your organization. You can unpublish or block any of them."
+      />
 
-      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Course catalog</h1>
-          <p className="text-sm text-slate-500">
-            Every course in your organization. You can unpublish or block any of them.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search courses…"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
-      </div>
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchLabel="Search courses"
+        searchPlaceholder="Search courses by title"
+      />
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-4">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
           { label: "Total courses", value: counts.total },
           { label: "Published", value: counts.published },
           { label: "Awaiting review", value: counts.inReview },
           { label: "Blocked", value: counts.blocked },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{stat.label}</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{stat.value}</p>
+          <div key={stat.label} className="rounded-surface border border-line bg-surface p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">{stat.label}</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{stat.value}</p>
           </div>
         ))}
       </div>
@@ -187,10 +182,10 @@ export default function CourseModeration() {
             key={f.value}
             type="button"
             onClick={() => setStatus(f.value)}
-            className={`rounded-lg px-3 py-1.5 text-sm transition ${
+            className={`rounded-control px-3 py-1.5 text-sm transition ${
               status === f.value
-                ? "bg-indigo-50 font-medium text-indigo-700"
-                : "text-slate-600 hover:bg-slate-50"
+                ? "bg-brand-subtle font-medium text-brand-hover"
+                : "text-ink-muted hover:bg-surface-sunken"
             }`}
           >
             {f.label}
@@ -198,12 +193,12 @@ export default function CourseModeration() {
         ))}
       </div>
 
-      {error && <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-      {notice && <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</div>}
+      {error && <div className="mt-4 rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
+      {notice && <div className="mt-4 rounded-control bg-success-subtle p-3 text-sm text-success">{notice}</div>}
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="mt-4 overflow-x-auto rounded-surface border border-line bg-surface">
         <table className="w-full min-w-[720px] text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-surface-sunken text-left text-xs uppercase tracking-wide text-ink-subtle">
             <tr>
               <th className="px-4 py-3">Course</th>
               <th className="px-4 py-3">Instructor</th>
@@ -212,36 +207,36 @@ export default function CourseModeration() {
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-line">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-10 text-center text-ink-subtle">
                   Loading…
                 </td>
               </tr>
             ) : courses.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-10 text-center text-ink-subtle">
                   No courses found.
                 </td>
               </tr>
             ) : (
               courses.map((course) => (
-                <tr key={course.id} className="hover:bg-slate-50/50">
+                <tr key={course.id} className="hover:bg-surface-sunken/50">
                   <td className="px-4 py-3">
-                    <Link to={`/courses/${course.id}`} className="font-medium hover:text-indigo-600">
+                    <Link to={`/courses/${course.id}`} className="font-medium hover:text-brand">
                       {course.title}
                     </Link>
                     {course.category && (
-                      <p className="text-xs text-slate-400">{course.category}</p>
+                      <p className="text-xs text-ink-subtle">{course.category}</p>
                     )}
                     {course.moderation?.isBlocked && course.moderation.reason && (
-                      <p className="mt-0.5 text-xs text-rose-600">
+                      <p className="mt-0.5 text-xs text-danger">
                         Blocked: {course.moderation.reason}
                       </p>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 text-ink-muted">
                     {course.instructor?.name || course.instructor?.email || "—"}
                   </td>
                   <td className="px-4 py-3">
@@ -253,7 +248,7 @@ export default function CourseModeration() {
                       {course.status}
                     </span>
                     {course.moderation?.isBlocked && (
-                      <span className="ml-1 rounded bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                      <span className="ml-1 rounded bg-danger-subtle px-2 py-0.5 text-xs font-semibold text-danger">
                         Blocked
                       </span>
                     )}
@@ -268,7 +263,7 @@ export default function CourseModeration() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{course.stats?.lessonCount || 0}</td>
+                  <td className="px-4 py-3 text-ink-muted">{course.stats?.lessonCount || 0}</td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
                       {course.status === "PUBLISHED" && (
@@ -277,7 +272,7 @@ export default function CourseModeration() {
                           onClick={() =>
                             apply(() => unpublishCourse(course.id), `“${course.title}” unpublished.`)
                           }
-                          className="rounded border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-50"
+                          className="rounded border border-line-strong px-2 py-1 text-xs font-medium hover:bg-surface-sunken"
                         >
                           Unpublish
                         </button>
@@ -288,7 +283,7 @@ export default function CourseModeration() {
                           onClick={() =>
                             apply(() => unblockCourse(course.id), `“${course.title}” unblocked.`)
                           }
-                          className="rounded border border-emerald-300 px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+                          className="rounded border border-success-border px-2 py-1 text-xs font-medium text-success hover:bg-success-subtle"
                         >
                           Unblock
                         </button>
@@ -296,7 +291,7 @@ export default function CourseModeration() {
                         <button
                           type="button"
                           onClick={() => setBlockTarget(course)}
-                          className="rounded border border-rose-300 px-2 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50"
+                          className="rounded border border-danger-border px-2 py-1 text-xs font-medium text-danger hover:bg-danger-subtle"
                         >
                           Block
                         </button>
@@ -325,7 +320,7 @@ export default function CourseModeration() {
       )}
 
       {!user?.isTenantAdmin && (
-        <p className="mt-3 text-xs text-slate-400">
+        <p className="mt-3 text-xs text-ink-subtle">
           Moderation actions are recorded against your account.
         </p>
       )}

@@ -9,15 +9,15 @@ import {
 import { getErrorMessage } from "../api/client.js";
 
 const TYPE_META = {
-  "course.review.assigned": { label: "Review requested", dot: "bg-indigo-500" },
-  "course.review.submitted": { label: "Submitted", dot: "bg-indigo-500" },
-  "course.review.changes_requested": { label: "Changes requested", dot: "bg-amber-500" },
-  "course.review.approved": { label: "Approved", dot: "bg-emerald-500" },
-  "course.published": { label: "Published", dot: "bg-emerald-500" },
-  "enrollment.requested": { label: "Access requested", dot: "bg-indigo-500" },
-  "enrollment.approved": { label: "Access approved", dot: "bg-emerald-500" },
-  "enrollment.rejected": { label: "Access declined", dot: "bg-rose-500" },
-  "enrollment.granted": { label: "Access granted", dot: "bg-emerald-500" },
+"course.review.assigned": { label: "Review requested", dot: "bg-brand" },
+"course.review.submitted": { label: "Submitted", dot: "bg-brand" },
+"course.review.changes_requested": { label: "Changes requested", dot: "bg-warning" },
+"course.review.approved": { label: "Approved", dot: "bg-success" },
+"course.published": { label: "Published", dot: "bg-success" },
+"enrollment.requested": { label: "Access requested", dot: "bg-brand" },
+"enrollment.approved": { label: "Access approved", dot: "bg-success" },
+"enrollment.rejected": { label: "Access declined", dot: "bg-danger" },
+"enrollment.granted": { label: "Access granted", dot: "bg-success" },
 };
 
 function when(iso) {
@@ -90,8 +90,8 @@ export default function Notifications() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Notifications</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-ink">Notifications</h1>
+          <p className="mt-1 text-sm text-ink-subtle">
             {unread > 0 ? `${unread} unread` : "You're all caught up"}
           </p>
         </div>
@@ -99,7 +99,7 @@ export default function Notifications() {
           <button
             type="button"
             onClick={readAll}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
+            className="rounded-control border border-line-strong px-4 py-2 text-sm hover:bg-surface-sunken"
           >
             Mark all read
           </button>
@@ -115,10 +115,10 @@ export default function Notifications() {
             key={t.value}
             type="button"
             onClick={() => setTab(t.value)}
-            className={`rounded-lg px-3 py-1.5 text-sm transition ${
+            className={`rounded-control px-3 py-1.5 text-sm transition ${
               tab === t.value
-                ? "bg-indigo-50 font-medium text-indigo-700"
-                : "text-slate-600 hover:bg-slate-100"
+                ? "bg-brand-subtle font-medium text-brand-hover"
+                : "text-ink-muted hover:bg-surface-sunken"
             }`}
           >
             {t.label}
@@ -126,46 +126,46 @@ export default function Notifications() {
         ))}
       </div>
 
-      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
 
       {loading ? (
-        <p className="py-16 text-center text-sm text-slate-400">Loading…</p>
+        <p className="py-16 text-center text-sm text-ink-subtle">Loading…</p>
       ) : items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 px-6 py-16 text-center">
-          <p className="text-sm text-slate-500">
+        <div className="rounded-surface border border-dashed border-line-strong px-6 py-16 text-center">
+          <p className="text-sm text-ink-subtle">
             {tab === "unread" ? "Nothing unread." : "No notifications yet."}
           </p>
-          <Link to="/dashboard" className="mt-3 inline-block text-sm text-indigo-600 hover:underline">
+          <Link to="/dashboard" className="mt-3 inline-block text-sm text-brand hover:underline">
             Back to dashboard
           </Link>
         </div>
       ) : (
-        <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="divide-y divide-line overflow-hidden rounded-surface border border-line bg-surface">
           {items.map((n) => {
-            const meta = TYPE_META[n.type] || { label: "", dot: "bg-slate-400" };
+            const meta = TYPE_META[n.type] || { label: "", dot: "bg-ink-subtle" };
             return (
               <button
                 key={n.id}
                 type="button"
                 onClick={() => open(n)}
-                className={`flex w-full gap-3 px-4 py-4 text-left transition hover:bg-slate-50 ${
-                  n.isRead ? "" : "bg-indigo-50/40"
+                className={`flex w-full gap-3 px-4 py-4 text-left transition hover:bg-surface-sunken ${
+                  n.isRead ? "" : "bg-brand-subtle/40"
                 }`}
               >
                 <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${meta.dot}`} />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-slate-900">{n.title}</span>
+                  <span className="block text-sm font-medium text-ink">{n.title}</span>
                   {n.message && (
-                    <span className="mt-0.5 block text-sm text-slate-600">{n.message}</span>
+                    <span className="mt-0.5 block text-sm text-ink-muted">{n.message}</span>
                   )}
-                  <span className="mt-1 block text-xs text-slate-400">
+                  <span className="mt-1 block text-xs text-ink-subtle">
                     {meta.label ? `${meta.label} · ` : ""}
                     {n.actorName ? `${n.actorName} · ` : ""}
                     {when(n.createdAt)}
                   </span>
                 </span>
                 {!n.isRead && (
-                  <span className="mt-1 shrink-0 rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                  <span className="mt-1 shrink-0 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold text-white">
                     NEW
                   </span>
                 )}

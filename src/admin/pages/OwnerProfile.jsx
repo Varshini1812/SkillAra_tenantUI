@@ -27,10 +27,12 @@ import { useToast } from "../components/ui/Toast.jsx";
 import { useAdminAuth } from "../context/AdminAuthContext.jsx";
 import { isOrganizationOwner } from "../utils/tenantUsers.js";
 import { useAuditLog } from "../hooks/useUserProfiles.js";
+import { CARD, INPUT } from "../components/ui/styles.js";
+import { PageHeader } from "../components/ui/primitives.jsx";
 
 
 
-const inputClass = "admin-input";
+const inputClass = INPUT;
 
 
 
@@ -64,13 +66,13 @@ function StatusPill({ status }) {
 
   const styles = {
 
-    PENDING: "bg-amber-100 text-amber-600",
+    PENDING: "bg-warning-subtle text-warning",
 
-    APPROVED: "bg-emerald-100 text-emerald-600",
+    APPROVED: "bg-success-subtle text-success",
 
-    REJECTED: "bg-red-100 text-red-600",
+    REJECTED: "bg-danger-subtle text-danger",
 
-    CANCELLED: "bg-slate-100 text-slate-600",
+    CANCELLED: "bg-surface-sunken text-ink-muted",
 
   };
 
@@ -384,27 +386,20 @@ export default function OwnerProfile() {
 
 
 
-      <div className="mb-8">
-
-        <h1 className="text-2xl font-bold text-slate-900">My profile</h1>
-
-        <p className="mt-1 text-slate-500">
-
-          {isOwner
-
+      <PageHeader
+        title="My profile"
+        description={
+          isOwner
             ? "Organization owner account — not listed under Users. Ownership changes require platform approval."
-
-            : "Update your account settings."}
-
-        </p>
-
-      </div>
+            : "Your account details for this organization."
+        }
+      />
 
 
 
-      <div className="admin-card mb-6 flex items-center gap-4 p-5">
+      <div className={`${CARD} mb-6 flex items-center gap-4 p-5`}>
 
-        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-indigo-100 text-2xl font-semibold text-indigo-600">
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-brand-muted text-2xl font-semibold text-brand">
 
           {profileForm.profilePhoto ? (
 
@@ -420,13 +415,13 @@ export default function OwnerProfile() {
 
         <div>
 
-          <p className="text-lg font-semibold text-slate-900">{user?.name || "Organization Owner"}</p>
+          <p className="text-lg font-semibold text-ink">{user?.name || "Organization Owner"}</p>
 
-          <p className="text-sm text-slate-500">{user?.email}</p>
+          <p className="text-sm text-ink-subtle">{user?.email}</p>
 
           {isOwner && (
 
-            <span className="mt-2 inline-block rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-medium text-violet-600">
+            <span className="mt-2 inline-block rounded-full bg-brand-muted px-2.5 py-0.5 text-xs font-medium text-brand">
 
               Organization Owner
 
@@ -440,29 +435,29 @@ export default function OwnerProfile() {
 
 
 
-      <section className="admin-card mb-6 p-6">
+      <section className={`${CARD} mb-6 p-6`}>
 
-        <h2 className="text-lg font-semibold text-slate-900">Profile details</h2>
+        <h2 className="text-lg font-semibold text-ink">Profile details</h2>
 
         <form onSubmit={saveProfile} className="mt-5 space-y-4">
 
           <div>
 
-            <label className="mb-1 block text-sm text-slate-500">Profile picture</label>
+            <label className="mb-1 block text-sm text-ink-subtle">Profile picture</label>
 
-            <input type="file" accept="image/*" onChange={handlePhotoFile} className="text-sm text-slate-500" />
+            <input type="file" accept="image/*" onChange={handlePhotoFile} className="text-sm text-ink-subtle" />
 
           </div>
 
           <div>
 
-            <label className="mb-1 block text-sm text-slate-500">Phone</label>
+            <label className="mb-1 block text-sm text-ink-subtle">Phone</label>
 
             <input value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} className={inputClass} />
 
           </div>
 
-          <button type="submit" disabled={savingProfile} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+          <button type="submit" disabled={savingProfile} className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand disabled:opacity-50">
 
             {savingProfile ? "Saving..." : "Save profile"}
 
@@ -474,9 +469,9 @@ export default function OwnerProfile() {
 
 
 
-      <section className="admin-card mb-6 p-6">
+      <section className={`${CARD} mb-6 p-6`}>
 
-        <h2 className="text-lg font-semibold text-slate-900">Change password</h2>
+        <h2 className="text-lg font-semibold text-ink">Change password</h2>
 
         <form onSubmit={savePassword} className="mt-5 space-y-4">
 
@@ -486,7 +481,7 @@ export default function OwnerProfile() {
 
           <input type="password" placeholder="Confirm new password" value={passwordForm.confirm} onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })} required className={inputClass} />
 
-          <button type="submit" disabled={savingPassword} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+          <button type="submit" disabled={savingPassword} className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand disabled:opacity-50">
 
             {savingPassword ? "Updating..." : "Update password"}
 
@@ -504,33 +499,33 @@ export default function OwnerProfile() {
 
           {requests.length > 0 && (
 
-            <section className="admin-card mb-6 p-6">
+            <section className={`${CARD} mb-6 p-6`}>
 
-              <h2 className="text-lg font-semibold text-slate-900">Transfer request history</h2>
+              <h2 className="text-lg font-semibold text-ink">Transfer request history</h2>
 
               <ul className="mt-4 space-y-3">
 
                 {requests.map((req) => (
 
-                  <li key={req.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+                  <li key={req.id} className="rounded-control border border-line bg-surface-sunken p-4 text-sm">
 
                     <div className="flex flex-wrap items-center justify-between gap-2">
 
                       <StatusPill status={req.status} />
 
-                      <span className="text-slate-500">{formatDate(req.created_on)}</span>
+                      <span className="text-ink-subtle">{formatDate(req.created_on)}</span>
 
                     </div>
 
-                    <p className="mt-2 text-slate-700">
+                    <p className="mt-2 text-ink-muted">
 
                       New owner: <strong>{req.targetUser?.name}</strong> ({req.targetUser?.email})
 
                     </p>
 
-                    <p className="text-slate-500">Your role if approved: Organization Admin</p>
+                    <p className="text-ink-subtle">Your role if approved: Organization Admin</p>
 
-                    {req.reviewNote && <p className="mt-1 text-slate-500">Note: {req.reviewNote}</p>}
+                    {req.reviewNote && <p className="mt-1 text-ink-subtle">Note: {req.reviewNote}</p>}
 
                     {req.status === "PENDING" && (
 
@@ -542,7 +537,7 @@ export default function OwnerProfile() {
 
                         onClick={() => cancelRequest(req.id)}
 
-                        className="mt-3 text-xs text-red-600 hover:text-red-700"
+                        className="mt-3 text-xs text-danger hover:text-danger"
 
                       >
 
@@ -564,11 +559,11 @@ export default function OwnerProfile() {
 
 
 
-          <section className="rounded-xl border border-amber-200 bg-amber-50 p-6">
+          <section className="rounded-surface border border-warning-border bg-warning-subtle p-6">
 
-            <h2 className="text-lg font-semibold text-slate-900">Request ownership transfer</h2>
+            <h2 className="text-lg font-semibold text-ink">Request ownership transfer</h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-ink-subtle">
 
               Submit a request for platform super admin approval. Only eligible Organization Admins can become the new owner.
 
@@ -578,7 +573,7 @@ export default function OwnerProfile() {
 
             {pendingRequest ? (
 
-              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-100 p-4 text-sm text-amber-800">
+              <div className="mt-4 rounded-control border border-warning-border bg-warning-subtle p-4 text-sm text-warning">
 
                 A pending request is awaiting super admin approval. Cancel it to submit a new one.
 
@@ -586,11 +581,11 @@ export default function OwnerProfile() {
 
             ) : loadingEligible ? (
 
-              <p className="mt-4 text-sm text-slate-500">Loading eligible Organization Admins...</p>
+              <p className="mt-4 text-sm text-ink-subtle">Loading eligible Organization Admins...</p>
 
             ) : eligibleUsers.length === 0 ? (
 
-              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+              <div className="mt-4 rounded-control border border-line bg-surface-sunken p-4 text-sm text-ink-subtle">
 
                 No eligible Organization Admins available. A user must be active, have accepted their invitation, and not be blocked.
 
@@ -602,7 +597,7 @@ export default function OwnerProfile() {
 
                 <div>
 
-                  <label className="mb-1 block text-sm text-slate-500">New organization owner *</label>
+                  <label className="mb-1 block text-sm text-ink-subtle">New organization owner *</label>
 
                   <select value={transferTarget} onChange={(e) => setTransferTarget(e.target.value)} className={inputClass}>
 
@@ -620,7 +615,7 @@ export default function OwnerProfile() {
 
                   </select>
 
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-ink-subtle">
 
                     Only active Organization Admins who have accepted their invitation are shown.
 
@@ -630,7 +625,7 @@ export default function OwnerProfile() {
 
                 <div>
 
-                  <label className="mb-1 block text-sm text-slate-500">Reason (optional)</label>
+                  <label className="mb-1 block text-sm text-ink-subtle">Reason (optional)</label>
 
                   <textarea value={transferReason} onChange={(e) => setTransferReason(e.target.value)} rows={3} maxLength={500} placeholder="Why is ownership changing?" className={inputClass} />
 
@@ -644,7 +639,7 @@ export default function OwnerProfile() {
 
                   onClick={() => setShowTransferConfirm(true)}
 
-                  className="rounded-lg border border-amber-300 bg-amber-100 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-200 disabled:opacity-50"
+                  className="rounded-control border border-warning-border bg-warning-subtle px-4 py-2 text-sm font-medium text-warning hover:bg-warning-subtle disabled:opacity-50"
 
                 >
 
@@ -678,7 +673,7 @@ export default function OwnerProfile() {
 
               Are you sure you want to transfer ownership to{" "}
 
-              <strong className="text-slate-800">{targetDisplayName}</strong>?
+              <strong className="text-ink">{targetDisplayName}</strong>?
 
             </p>
 
@@ -688,7 +683,7 @@ export default function OwnerProfile() {
 
             </p>
 
-            <p className="mt-2 text-slate-500">No changes occur until the request is approved by a platform super admin.</p>
+            <p className="mt-2 text-ink-subtle">No changes occur until the request is approved by a platform super admin.</p>
 
           </>
 

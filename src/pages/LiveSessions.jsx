@@ -15,10 +15,10 @@ import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import LockedFeature from "../components/common/LockedFeature.jsx";
 
 const STATUS_STYLE = {
-  SCHEDULED: "bg-slate-100 text-slate-600",
-  LIVE: "bg-emerald-100 text-emerald-700",
-  ENDED: "bg-slate-100 text-slate-400",
-  CANCELLED: "bg-rose-100 text-rose-700",
+  SCHEDULED: "bg-surface-sunken text-ink-muted",
+  LIVE: "bg-success-subtle text-success",
+  ENDED: "bg-surface-sunken text-ink-subtle",
+  CANCELLED: "bg-danger-subtle text-danger",
 };
 
 function fmt(iso) {
@@ -76,23 +76,23 @@ function NewSessionForm({ courses, onCreated }) {
 
   if (courses.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-400">
+      <div className="rounded-surface border border-line bg-surface p-4 text-sm text-ink-subtle">
         You don't have any courses to schedule a live session for yet.
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-      {error && <div className="rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+    <form onSubmit={submit} className="space-y-3 rounded-surface border border-line bg-surface p-4">
+      {error && <div className="rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Course
           <select
             required
             value={courseId}
             onChange={(e) => setCourseId(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           >
             {courses.map((c) => (
               <option key={c.id} value={c.id}>
@@ -101,50 +101,50 @@ function NewSessionForm({ courses, onCreated }) {
             ))}
           </select>
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Title
           <input
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Week 3 live walkthrough"
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600 sm:col-span-2">
-          Description <span className="font-normal text-slate-400">(optional)</span>
+        <label className="block text-xs font-medium text-ink-muted sm:col-span-2">
+          Description <span className="font-normal text-ink-subtle">(optional)</span>
           <textarea
             rows={2}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Start
           <input
             type="datetime-local"
             required
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           End
           <input
             type="datetime-local"
             required
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
       </div>
       <button
         type="submit"
         disabled={saving}
-        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
       >
         {saving ? "Scheduling…" : "Schedule session"}
       </button>
@@ -233,7 +233,7 @@ function LiveSessionsContent() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Live Sessions</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-ink-subtle">
           {canHost
             ? "Schedule and run live classes across all the courses you teach — no need to go into each course."
             : "Upcoming and past live classes across all your courses."}
@@ -247,8 +247,8 @@ function LiveSessionsContent() {
               key={t}
               type="button"
               onClick={() => setTab(t)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium ${
-                tab === t ? "bg-indigo-600 text-white" : "border border-slate-300 text-slate-600"
+              className={`rounded-control px-4 py-2 text-sm font-medium ${
+                tab === t ? "bg-brand text-white" : "border border-line-strong text-ink-muted"
               }`}
             >
               {t === "upcoming" ? "Upcoming & past" : "Schedule a session"}
@@ -257,8 +257,8 @@ function LiveSessionsContent() {
         </div>
       )}
 
-      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-      {notice && <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
+      {notice && <div className="rounded-control bg-success-subtle p-3 text-sm text-success">{notice}</div>}
 
       {tab === "schedule" && canHost && (
         <NewSessionForm courses={courses} onCreated={() => { setNotice("Session scheduled."); setTab("upcoming"); load(); }} />
@@ -266,12 +266,12 @@ function LiveSessionsContent() {
 
       {tab === "upcoming" && (
         <>
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <div className="rounded-surface border border-line bg-surface p-4">
             <h2 className="font-semibold">Upcoming</h2>
             {loading ? (
-              <p className="mt-3 text-sm text-slate-400">Loading…</p>
+              <p className="mt-3 text-sm text-ink-subtle">Loading…</p>
             ) : upcoming.length === 0 ? (
-              <p className="mt-3 rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+              <p className="mt-3 rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
                 No upcoming live sessions.
               </p>
             ) : (
@@ -279,15 +279,15 @@ function LiveSessionsContent() {
                 {upcoming.map((s) => {
                   const isHost = String(s.instructorId?._id || s.instructorId) === String(user?.id);
                   return (
-                    <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 p-3">
+                    <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line p-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-800">{s.title}</span>
+                          <span className="text-sm font-medium text-ink">{s.title}</span>
                           <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${STATUS_STYLE[s.status]}`}>
                             {s.status}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-1 text-xs text-ink-subtle">
                           {s.courseId?.title || "—"} · {fmt(s.scheduledStart)}
                           {!isHost && s.instructorId && ` · ${s.instructorId.name || s.instructorId.email}`}
                         </p>
@@ -296,7 +296,7 @@ function LiveSessionsContent() {
                         <button
                           type="button"
                           onClick={() => join(s)}
-                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+                          className="rounded-control bg-success px-3 py-1.5 text-xs font-medium text-white hover:bg-success"
                         >
                           {s.status === "LIVE" ? "Rejoin" : "Join"}
                         </button>
@@ -305,14 +305,14 @@ function LiveSessionsContent() {
                             <button
                               type="button"
                               onClick={() => endSession(s.id)}
-                              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
+                              className="rounded-control border border-line-strong px-3 py-1.5 text-xs hover:bg-surface-sunken"
                             >
                               End
                             </button>
                             <button
                               type="button"
                               onClick={() => cancelSession(s.id)}
-                              className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50"
+                              className="rounded-control border border-danger-border px-3 py-1.5 text-xs text-danger hover:bg-danger-subtle"
                             >
                               Cancel
                             </button>
@@ -326,17 +326,17 @@ function LiveSessionsContent() {
             )}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <div className="rounded-surface border border-line bg-surface p-4">
             <h2 className="font-semibold">Past</h2>
             {past.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-400">Nothing here yet.</p>
+              <p className="mt-3 text-sm text-ink-subtle">Nothing here yet.</p>
             ) : (
               <ul className="mt-3 space-y-2">
                 {past.map((s) => (
-                  <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-100 p-3 text-sm">
+                  <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line p-3 text-sm">
                     <div>
-                      <span className="font-medium text-slate-700">{s.title}</span>
-                      <span className="ml-2 text-xs text-slate-400">{s.courseId?.title || "—"} · {fmt(s.scheduledStart)}</span>
+                      <span className="font-medium text-ink-muted">{s.title}</span>
+                      <span className="ml-2 text-xs text-ink-subtle">{s.courseId?.title || "—"} · {fmt(s.scheduledStart)}</span>
                     </div>
                     <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${STATUS_STYLE[s.status]}`}>{s.status}</span>
                   </li>

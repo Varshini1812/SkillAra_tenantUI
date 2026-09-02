@@ -18,9 +18,9 @@ import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import LockedFeature from "../components/common/LockedFeature.jsx";
 
 const STATUS_STYLE = {
-  OPEN: "bg-slate-100 text-slate-600",
-  ASSIGNED: "bg-indigo-100 text-indigo-700",
-  CLOSED: "bg-emerald-100 text-emerald-700",
+  OPEN: "bg-surface-sunken text-ink-muted",
+  ASSIGNED: "bg-brand-muted text-brand-hover",
+  CLOSED: "bg-success-subtle text-success",
 };
 
 function fmt(iso) {
@@ -64,46 +64,46 @@ function NewTicketDialog({ onClose, onCreated }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-      <form onSubmit={submit} className="w-full max-w-md space-y-3 rounded-xl bg-white p-5 shadow-xl">
-        <h3 className="font-semibold text-slate-900">Raise a mentorship ticket</h3>
-        {error && <div className="rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
-        <label className="block text-xs font-medium text-slate-600">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+      <form onSubmit={submit} className="w-full max-w-md space-y-3 rounded-surface bg-surface p-5 ">
+        <h3 className="font-semibold text-ink">Raise a mentorship ticket</h3>
+        {error && <div className="rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
+        <label className="block text-xs font-medium text-ink-muted">
           Subject
           <input
             required
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="e.g. Stuck on React hooks"
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           What do you need help with?
           <textarea
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
-          Topics <span className="font-normal text-slate-400">(comma separated — helps match a mentor)</span>
+        <label className="block text-xs font-medium text-ink-muted">
+          Topics <span className="font-normal text-ink-subtle">(comma separated — helps match a mentor)</span>
           <input
             value={topicTags}
             onChange={(e) => setTopicTags(e.target.value)}
             placeholder="React, System Design"
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
         <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">
+          <button type="button" onClick={onClose} className="rounded-control border border-line-strong px-3 py-1.5 text-sm hover:bg-surface-sunken">
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-control bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
           >
             {saving ? "Raising…" : "Raise ticket"}
           </button>
@@ -116,7 +116,7 @@ function NewTicketDialog({ onClose, onCreated }) {
 function TicketList({ tickets, isLearner, emptyText, onOpen }) {
   if (tickets.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+      <p className="rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
         {emptyText}
       </p>
     );
@@ -128,14 +128,14 @@ function TicketList({ tickets, isLearner, emptyText, onOpen }) {
           <button
             type="button"
             onClick={() => onOpen(t.id)}
-            className="flex w-full flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-100 p-3 text-left hover:bg-slate-50"
+            className="flex w-full flex-wrap items-center justify-between gap-2 rounded-control border border-line p-3 text-left hover:bg-surface-sunken"
           >
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="truncate text-sm font-medium text-slate-800">{t.subject}</span>
-                {hasUnread(t, isLearner) && <span className="h-2 w-2 shrink-0 rounded-full bg-indigo-600" />}
+                <span className="truncate text-sm font-medium text-ink">{t.subject}</span>
+                {hasUnread(t, isLearner) && <span className="h-2 w-2 shrink-0 rounded-full bg-brand" />}
               </div>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-ink-subtle">
                 {isLearner
                   ? t.mentorId
                     ? `Mentor: ${t.mentorId.name || t.mentorId.email}`
@@ -186,31 +186,31 @@ function QueueTab({ onClaimed }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="rounded-surface border border-line bg-surface p-4">
       <h2 className="font-semibold">Open queue</h2>
-      <p className="mt-1 text-xs text-slate-400">Unclaimed tickets any mentor can pick up.</p>
-      {error && <div className="mt-2 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      <p className="mt-1 text-xs text-ink-subtle">Unclaimed tickets any mentor can pick up.</p>
+      {error && <div className="mt-2 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       {loading ? (
-        <p className="mt-3 text-sm text-slate-400">Loading…</p>
+        <p className="mt-3 text-sm text-ink-subtle">Loading…</p>
       ) : tickets.length === 0 ? (
-        <p className="mt-3 rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+        <p className="mt-3 rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
           Nothing waiting right now.
         </p>
       ) : (
         <ul className="mt-3 space-y-2">
           {tickets.map((t) => (
-            <li key={t.id} className="rounded-lg border border-slate-100 p-3">
+            <li key={t.id} className="rounded-control border border-line p-3">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="text-sm font-medium text-slate-800">{t.subject}</p>
-                  {t.description && <p className="mt-1 text-xs text-slate-500">{t.description}</p>}
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="text-sm font-medium text-ink">{t.subject}</p>
+                  {t.description && <p className="mt-1 text-xs text-ink-subtle">{t.description}</p>}
+                  <p className="mt-1 text-xs text-ink-subtle">
                     {t.studentId?.name || t.studentId?.email} · {fmt(t.created_on)}
                   </p>
                   {t.topicTags?.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {t.topicTags.map((tag) => (
-                        <span key={tag} className="rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] text-indigo-700">
+                        <span key={tag} className="rounded bg-brand-subtle px-1.5 py-0.5 text-[10px] text-brand-hover">
                           {tag}
                         </span>
                       ))}
@@ -221,7 +221,7 @@ function QueueTab({ onClaimed }) {
                   type="button"
                   disabled={claimingId === t.id}
                   onClick={() => claim(t.id)}
-                  className="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="shrink-0 rounded-control bg-brand px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-hover disabled:opacity-50"
                 >
                   {claimingId === t.id ? "Claiming…" : "Claim"}
                 </button>
@@ -248,12 +248,12 @@ function MyTicketsTab({ isLearner, onOpen, reloadKey }) {
   }, [reloadKey]);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="rounded-surface border border-line bg-surface p-4">
       <h2 className="font-semibold">My tickets</h2>
-      {error && <div className="mt-2 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-2 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       <div className="mt-3">
         {loading ? (
-          <p className="text-sm text-slate-400">Loading…</p>
+          <p className="text-sm text-ink-subtle">Loading…</p>
         ) : (
           <TicketList
             tickets={tickets}
@@ -324,52 +324,52 @@ function MentorsTab() {
   return (
     <div className="space-y-4">
       {canBeMentor && (
-        <form onSubmit={saveProfile} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+        <form onSubmit={saveProfile} className="space-y-3 rounded-surface border border-line bg-surface p-4">
           <h2 className="font-semibold">{profile ? "My mentor profile" : "Become a mentor"}</h2>
-          {notice && <div className="rounded-lg bg-green-50 p-2 text-sm text-green-700">{notice}</div>}
-          <label className="block text-xs font-medium text-slate-600">
+          {notice && <div className="rounded-control bg-success-subtle p-2 text-sm text-success">{notice}</div>}
+          <label className="block text-xs font-medium text-ink-muted">
             Bio
-            <textarea rows={3} value={bio} onChange={(e) => setBio(e.target.value)} className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm" />
+            <textarea rows={3} value={bio} onChange={(e) => setBio(e.target.value)} className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm" />
           </label>
-          <label className="block text-xs font-medium text-slate-600">
-            Expertise <span className="font-normal text-slate-400">(comma separated — matched against ticket topics)</span>
-            <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="React, System Design, Career coaching" className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm" />
+          <label className="block text-xs font-medium text-ink-muted">
+            Expertise <span className="font-normal text-ink-subtle">(comma separated — matched against ticket topics)</span>
+            <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="React, System Design, Career coaching" className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm" />
           </label>
           <div className="grid grid-cols-2 gap-3">
-            <label className="block text-xs font-medium text-slate-600">
+            <label className="block text-xs font-medium text-ink-muted">
               Years of experience
-              <input type="number" min="0" value={years} onChange={(e) => setYears(e.target.value)} className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm" />
+              <input type="number" min="0" value={years} onChange={(e) => setYears(e.target.value)} className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm" />
             </label>
-            <label className="mt-5 flex items-center gap-2 text-sm text-slate-600">
+            <label className="mt-5 flex items-center gap-2 text-sm text-ink-muted">
               <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
               Listed as active mentor
             </label>
           </div>
-          <button type="submit" disabled={saving} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+          <button type="submit" disabled={saving} className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50">
             {saving ? "Saving…" : "Save profile"}
           </button>
         </form>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="rounded-surface border border-line bg-surface p-4">
         <h2 className="font-semibold">Meet our mentors</h2>
-        {error && <div className="mt-2 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+        {error && <div className="mt-2 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
         {loading ? (
-          <p className="mt-3 text-sm text-slate-400">Loading…</p>
+          <p className="mt-3 text-sm text-ink-subtle">Loading…</p>
         ) : mentors.length === 0 ? (
-          <p className="mt-3 rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+          <p className="mt-3 rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
             No mentors listed yet.
           </p>
         ) : (
           <ul className="mt-3 grid gap-3 sm:grid-cols-2">
             {mentors.map((m) => (
-              <li key={m.id} className="rounded-lg border border-slate-100 p-3">
-                <p className="font-medium text-slate-800">{m.user?.name || m.user?.email}</p>
-                {m.bio && <p className="mt-1 text-xs text-slate-500">{m.bio}</p>}
+              <li key={m.id} className="rounded-control border border-line p-3">
+                <p className="font-medium text-ink">{m.user?.name || m.user?.email}</p>
+                {m.bio && <p className="mt-1 text-xs text-ink-subtle">{m.bio}</p>}
                 {m.expertiseTags?.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {m.expertiseTags.map((tag) => (
-                      <span key={tag} className="rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] text-indigo-700">
+                      <span key={tag} className="rounded bg-brand-subtle px-1.5 py-0.5 text-[10px] text-brand-hover">
                         {tag}
                       </span>
                     ))}
@@ -411,7 +411,7 @@ function MentorshipContent() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Mentorship</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-ink-subtle">
             {canMentor ? "Claim open tickets, chat, and schedule sessions." : "Raise a ticket, chat with your mentor, and book sessions."}
           </p>
         </div>
@@ -419,7 +419,7 @@ function MentorshipContent() {
           <button
             type="button"
             onClick={() => setShowNewTicket(true)}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover"
           >
             Raise a ticket
           </button>
@@ -432,8 +432,8 @@ function MentorshipContent() {
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`rounded-lg px-4 py-2 text-sm font-medium ${
-              tab === t.id ? "bg-indigo-600 text-white" : "border border-slate-300 text-slate-600"
+            className={`rounded-control px-4 py-2 text-sm font-medium ${
+              tab === t.id ? "bg-brand text-white" : "border border-line-strong text-ink-muted"
             }`}
           >
             {t.label}

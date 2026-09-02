@@ -27,7 +27,7 @@ export default function Layout() {
   return (
     // h-screen + overflow-hidden pins the shell to the viewport so the sidebar stays
     // put; only <main> scrolls.
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex h-screen overflow-hidden bg-surface-sunken">
       <AppSidebar
         collapsed={collapsed}
         onToggleCollapse={toggleCollapsed}
@@ -36,11 +36,11 @@ export default function Layout() {
       />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4">
+        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-line bg-surface px-4">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="rounded-lg border border-slate-300 p-2 lg:hidden"
+            className="rounded-control border border-line-strong p-2 lg:hidden"
             aria-label="Open menu"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
@@ -49,17 +49,17 @@ export default function Layout() {
           </button>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-slate-800">
+            <p className="truncate text-sm font-semibold text-ink">
               {tenantInfo?.tenant_name || tenantHost || "SkillAra"}
             </p>
-            {user && <p className="truncate text-xs text-slate-500">{roleLabel}</p>}
+            {user && <p className="truncate text-xs text-ink-subtle">{roleLabel}</p>}
           </div>
 
           {user && <NotificationBell />}
         </header>
 
         {isPlainLocalhost && (
-          <div className="shrink-0 border-b border-amber-100 bg-amber-50 px-4 py-3">
+          <div className="shrink-0 border-b border-warning-border bg-warning-subtle px-4 py-3">
             <DevTenantBanner />
           </div>
         )}

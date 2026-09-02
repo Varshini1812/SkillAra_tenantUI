@@ -10,6 +10,8 @@ import { getErrorMessage } from "../../api/client.js";
 import Breadcrumb from "../components/ui/Breadcrumb.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import LockedFeature from "../../components/common/LockedFeature.jsx";
+import Icon from "../components/ui/Icon.jsx";
+import { PageHeader } from "../components/ui/primitives.jsx";
 
 const TABS = [
   { key: "mock-tests", label: "Mock tests" },
@@ -21,20 +23,20 @@ const TABS = [
 
 function Badge({ status }) {
   const styles = {
-    DRAFT: "bg-slate-100 text-slate-600",
-    PUBLISHED: "bg-emerald-100 text-emerald-700",
-    OPEN: "bg-slate-100 text-slate-600",
-    BOOKED: "bg-indigo-100 text-indigo-700",
-    COMPLETED: "bg-emerald-100 text-emerald-700",
-    CANCELLED: "bg-rose-100 text-rose-700",
-    ASSIGNED: "bg-indigo-100 text-indigo-700",
-    CLOSED: "bg-emerald-100 text-emerald-700",
-    SCHEDULED: "bg-slate-100 text-slate-600",
-    LIVE: "bg-emerald-100 text-emerald-700",
-    ENDED: "bg-slate-100 text-slate-600",
+    DRAFT: "bg-surface-sunken text-ink-muted",
+    PUBLISHED: "bg-success-subtle text-success",
+    OPEN: "bg-surface-sunken text-ink-muted",
+    BOOKED: "bg-brand-muted text-brand-hover",
+    COMPLETED: "bg-success-subtle text-success",
+    CANCELLED: "bg-danger-subtle text-danger",
+    ASSIGNED: "bg-brand-muted text-brand-hover",
+    CLOSED: "bg-success-subtle text-success",
+    SCHEDULED: "bg-surface-sunken text-ink-muted",
+    LIVE: "bg-success-subtle text-success",
+    ENDED: "bg-surface-sunken text-ink-muted",
   };
   return (
-    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${styles[status] || "bg-slate-100 text-slate-600"}`}>
+    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${styles[status] || "bg-surface-sunken text-ink-muted"}`}>
       {status}
     </span>
   );
@@ -53,7 +55,7 @@ function fmt(iso) {
 function EmptyRow({ children }) {
   return (
     <tr>
-      <td colSpan={6} className="py-8 text-center text-sm text-slate-400">
+      <td colSpan={6} className="py-8 text-center text-sm text-ink-subtle">
         {children}
       </td>
     </tr>
@@ -68,13 +70,13 @@ function MockTestsTab() {
     fetchAllMockTests().then(setRows).catch((err) => setError(getErrorMessage(err)));
   }, []);
 
-  if (error) return <p className="text-sm text-red-600">{error}</p>;
-  if (!rows) return <p className="text-sm text-slate-400">Loading…</p>;
+  if (error) return <p className="text-sm text-danger">{error}</p>;
+  if (!rows) return <p className="text-sm text-ink-subtle">Loading…</p>;
 
   return (
     <table className="w-full text-left text-sm">
       <thead>
-        <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+        <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-subtle">
           <th className="py-2">Title</th>
           <th className="py-2">Course</th>
           <th className="py-2">Questions</th>
@@ -83,15 +85,15 @@ function MockTestsTab() {
           <th className="py-2">Status</th>
         </tr>
       </thead>
-      <tbody className="divide-y divide-slate-100">
+      <tbody className="divide-y divide-line">
         {rows.length === 0 && <EmptyRow>No mock tests yet.</EmptyRow>}
         {rows.map((t) => (
           <tr key={t.id}>
-            <td className="py-2 font-medium text-slate-800">{t.title}</td>
-            <td className="py-2 text-slate-500">{t.courseId?.title || "—"}</td>
-            <td className="py-2 text-slate-500">{t.questions?.length ?? "—"}</td>
-            <td className="py-2 text-slate-500">{t.durationMinutes} min</td>
-            <td className="py-2 text-slate-500">{t.createdBy?.name || t.createdBy?.email || "—"}</td>
+            <td className="py-2 font-medium text-ink">{t.title}</td>
+            <td className="py-2 text-ink-subtle">{t.courseId?.title || "—"}</td>
+            <td className="py-2 text-ink-subtle">{t.questions?.length ?? "—"}</td>
+            <td className="py-2 text-ink-subtle">{t.durationMinutes} min</td>
+            <td className="py-2 text-ink-subtle">{t.createdBy?.name || t.createdBy?.email || "—"}</td>
             <td className="py-2">
               <Badge status={t.status} />
             </td>
@@ -113,7 +115,7 @@ function SessionsTab() {
       .catch((err) => setError(getErrorMessage(err)));
   }, [typeFilter]);
 
-  if (error) return <p className="text-sm text-red-600">{error}</p>;
+  if (error) return <p className="text-sm text-danger">{error}</p>;
 
   return (
     <div>
@@ -121,7 +123,7 @@ function SessionsTab() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="rounded border border-slate-300 px-2 py-1 text-xs"
+          className="rounded border border-line-strong px-2 py-1 text-xs"
         >
           <option value="">All types</option>
           <option value="MOCK_INTERVIEW">Mock interview</option>
@@ -129,11 +131,11 @@ function SessionsTab() {
         </select>
       </div>
       {!rows ? (
-        <p className="text-sm text-slate-400">Loading…</p>
+        <p className="text-sm text-ink-subtle">Loading…</p>
       ) : (
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+            <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-subtle">
               <th className="py-2">Type</th>
               <th className="py-2">Title</th>
               <th className="py-2">Host</th>
@@ -142,15 +144,15 @@ function SessionsTab() {
               <th className="py-2">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-line">
             {rows.length === 0 && <EmptyRow>No sessions yet.</EmptyRow>}
             {rows.map((s) => (
               <tr key={s.id}>
-                <td className="py-2 text-slate-500">{s.sessionType === "MOCK_INTERVIEW" ? "Interview" : "Mentorship"}</td>
-                <td className="py-2 font-medium text-slate-800">{s.title || "—"}</td>
-                <td className="py-2 text-slate-500">{s.hostId?.name || s.hostId?.email || "—"}</td>
-                <td className="py-2 text-slate-500">{s.studentId?.name || s.studentId?.email || "—"}</td>
-                <td className="py-2 text-slate-500">{fmt(s.startTime)}</td>
+                <td className="py-2 text-ink-subtle">{s.sessionType === "MOCK_INTERVIEW" ? "Interview" : "Mentorship"}</td>
+                <td className="py-2 font-medium text-ink">{s.title || "—"}</td>
+                <td className="py-2 text-ink-subtle">{s.hostId?.name || s.hostId?.email || "—"}</td>
+                <td className="py-2 text-ink-subtle">{s.studentId?.name || s.studentId?.email || "—"}</td>
+                <td className="py-2 text-ink-subtle">{fmt(s.startTime)}</td>
                 <td className="py-2">
                   <Badge status={s.status} />
                 </td>
@@ -171,19 +173,20 @@ function MentorshipTab() {
     fetchAllTickets().then(setRows).catch((err) => setError(getErrorMessage(err)));
   }, []);
 
-  if (error) return <p className="text-sm text-red-600">{error}</p>;
-  if (!rows) return <p className="text-sm text-slate-400">Loading…</p>;
+  if (error) return <p className="text-sm text-danger">{error}</p>;
+  if (!rows) return <p className="text-sm text-ink-subtle">Loading…</p>;
 
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <Link to="/admin/mentorship" className="text-xs font-medium text-indigo-600 hover:underline">
-          Open ticket dispatch →
+        <Link to="/admin/mentorship" className="inline-flex items-center gap-1 text-xs font-medium text-brand transition-colors duration-150 ease-standard hover:text-brand-hover hover:underline underline-offset-2">
+          Open ticket dispatch
+          <Icon name="chevronRight" size={13} />
         </Link>
       </div>
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+          <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-subtle">
             <th className="py-2">Student</th>
             <th className="py-2">Mentor</th>
             <th className="py-2">Subject</th>
@@ -191,14 +194,14 @@ function MentorshipTab() {
             <th className="py-2">Status</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-line">
           {rows.length === 0 && <EmptyRow>No mentorship tickets yet.</EmptyRow>}
           {rows.map((t) => (
             <tr key={t.id}>
-              <td className="py-2 font-medium text-slate-800">{t.studentId?.name || t.studentId?.email}</td>
-              <td className="py-2 text-slate-500">{t.mentorId?.name || t.mentorId?.email || "—"}</td>
-              <td className="max-w-xs truncate py-2 text-slate-500">{t.subject}</td>
-              <td className="py-2 text-slate-500">{fmt(t.created_on)}</td>
+              <td className="py-2 font-medium text-ink">{t.studentId?.name || t.studentId?.email}</td>
+              <td className="py-2 text-ink-subtle">{t.mentorId?.name || t.mentorId?.email || "—"}</td>
+              <td className="max-w-xs truncate py-2 text-ink-subtle">{t.subject}</td>
+              <td className="py-2 text-ink-subtle">{fmt(t.created_on)}</td>
               <td className="py-2">
                 <Badge status={t.status} />
               </td>
@@ -218,13 +221,13 @@ function LiveSessionsTab() {
     fetchAllLiveSessions().then(setRows).catch((err) => setError(getErrorMessage(err)));
   }, []);
 
-  if (error) return <p className="text-sm text-red-600">{error}</p>;
-  if (!rows) return <p className="text-sm text-slate-400">Loading…</p>;
+  if (error) return <p className="text-sm text-danger">{error}</p>;
+  if (!rows) return <p className="text-sm text-ink-subtle">Loading…</p>;
 
   return (
     <table className="w-full text-left text-sm">
       <thead>
-        <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+        <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-subtle">
           <th className="py-2">Title</th>
           <th className="py-2">Course</th>
           <th className="py-2">Instructor</th>
@@ -232,14 +235,14 @@ function LiveSessionsTab() {
           <th className="py-2">Status</th>
         </tr>
       </thead>
-      <tbody className="divide-y divide-slate-100">
+      <tbody className="divide-y divide-line">
         {rows.length === 0 && <EmptyRow>No live sessions yet.</EmptyRow>}
         {rows.map((s) => (
           <tr key={s.id}>
-            <td className="py-2 font-medium text-slate-800">{s.title}</td>
-            <td className="py-2 text-slate-500">{s.courseId?.title || "—"}</td>
-            <td className="py-2 text-slate-500">{s.instructorId?.name || s.instructorId?.email || "—"}</td>
-            <td className="py-2 text-slate-500">{fmt(s.scheduledStart)}</td>
+            <td className="py-2 font-medium text-ink">{s.title}</td>
+            <td className="py-2 text-ink-subtle">{s.courseId?.title || "—"}</td>
+            <td className="py-2 text-ink-subtle">{s.instructorId?.name || s.instructorId?.email || "—"}</td>
+            <td className="py-2 text-ink-subtle">{fmt(s.scheduledStart)}</td>
             <td className="py-2">
               <Badge status={s.status} />
             </td>
@@ -260,13 +263,13 @@ function ForumTab() {
       .catch((err) => setError(getErrorMessage(err)));
   }, []);
 
-  if (error) return <p className="text-sm text-red-600">{error}</p>;
-  if (!rows) return <p className="text-sm text-slate-400">Loading…</p>;
+  if (error) return <p className="text-sm text-danger">{error}</p>;
+  if (!rows) return <p className="text-sm text-ink-subtle">Loading…</p>;
 
   return (
     <table className="w-full text-left text-sm">
       <thead>
-        <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
+        <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-subtle">
           <th className="py-2">Question</th>
           <th className="py-2">Answers</th>
           <th className="py-2">Votes</th>
@@ -274,23 +277,23 @@ function ForumTab() {
           <th className="py-2">Visibility</th>
         </tr>
       </thead>
-      <tbody className="divide-y divide-slate-100">
+      <tbody className="divide-y divide-line">
         {rows.length === 0 && <EmptyRow>No forum activity yet.</EmptyRow>}
         {rows.map((q) => (
           <tr key={q.id}>
-            <td className="py-2 font-medium text-slate-800">
-              <Link to={`/forum/${q.id}`} className="hover:text-indigo-600">
+            <td className="py-2 font-medium text-ink">
+              <Link to={`/forum/${q.id}`} className="hover:text-brand">
                 {q.title}
               </Link>
             </td>
-            <td className="py-2 text-slate-500">{q.answerCount}</td>
-            <td className="py-2 text-slate-500">{q.voteScore}</td>
-            <td className="py-2 text-slate-500">{fmt(q.created_on)}</td>
+            <td className="py-2 text-ink-subtle">{q.answerCount}</td>
+            <td className="py-2 text-ink-subtle">{q.voteScore}</td>
+            <td className="py-2 text-ink-subtle">{fmt(q.created_on)}</td>
             <td className="py-2">
               {q.moderation?.isHidden ? (
-                <span className="rounded bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">Hidden</span>
+                <span className="rounded bg-danger-subtle px-2 py-0.5 text-xs font-semibold text-danger">Hidden</span>
               ) : (
-                <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">Visible</span>
+                <span className="rounded bg-success-subtle px-2 py-0.5 text-xs font-semibold text-success">Visible</span>
               )}
             </td>
           </tr>
@@ -312,12 +315,11 @@ export default function CommunityMonitoring() {
 
   return (
     <div>
-      <Breadcrumb items={[{ label: "Admin", to: "/admin" }, { label: "Monitoring" }]} />
-      <h1 className="text-xl font-semibold text-slate-900">Community monitoring</h1>
-      <p className="mt-1 text-sm text-slate-500">
-        Everything happening across mock tests, sessions, mentorship, live classes, and the forum
-        — for every instructor and student in the organization, not just your own.
-      </p>
+      <PageHeader
+        breadcrumb={<Breadcrumb items={[{ label: "Admin", to: "/admin" }, { label: "Monitoring" }]} />}
+        title="Community monitoring"
+        description="Mock tests, sessions, mentorship, live classes and the forum — across every instructor and student in the organization."
+      />
 
       <div className="mt-4 flex flex-wrap gap-2">
         {TABS.map((t) => (
@@ -325,8 +327,8 @@ export default function CommunityMonitoring() {
             key={t.key}
             type="button"
             onClick={() => setTab(t.key)}
-            className={`rounded-lg px-4 py-2 text-sm font-medium ${
-              tab === t.key ? "bg-indigo-600 text-white" : "border border-slate-300 text-slate-600"
+            className={`rounded-control px-4 py-2 text-sm font-medium ${
+              tab === t.key ? "bg-brand text-white" : "border border-line-strong text-ink-muted"
             }`}
           >
             {t.label}
@@ -334,7 +336,7 @@ export default function CommunityMonitoring() {
         ))}
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white p-4">
+      <div className="mt-4 overflow-x-auto rounded-surface border border-line bg-surface p-4">
         {tab === "mock-tests" && (
           tenantInfo?.planFeatures?.mockInterviewsEnabled === false ? 
           <LockedFeature title="Mock Tests" description="Evaluate learners via interactive mock tests." /> : 

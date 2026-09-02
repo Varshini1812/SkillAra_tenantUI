@@ -3,6 +3,7 @@ import { useState } from "react";
 import { addLesson, deleteModule, reorderLessons, updateModule } from "../../api/courses.js";
 import { getErrorMessage } from "../../api/client.js";
 import LessonRow from "./LessonRow.jsx";
+import Icon from "../../admin/components/ui/Icon.jsx";
 
 /**
  * One module in the curriculum builder, owning its lesson list and ordering.
@@ -78,9 +79,9 @@ export default function ModuleCard({ module, index, onChanged, onDeleted, onMove
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+    <div className="rounded-surface border border-line bg-surface-sunken/50 p-4">
       <div className="flex items-start gap-2">
-        <span className="mt-2 shrink-0 rounded bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600">
+        <span className="mt-2 shrink-0 rounded bg-surface-sunken px-2 py-0.5 text-xs font-semibold text-ink-muted">
           {index + 1}
         </span>
 
@@ -89,14 +90,14 @@ export default function ModuleCard({ module, index, onChanged, onDeleted, onMove
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={() => title !== module.title && saveModule({ title })}
-            className="w-full rounded border border-transparent bg-transparent px-2 py-1 text-base font-semibold hover:border-slate-300 focus:border-slate-300 focus:bg-white"
+            className="w-full rounded border border-transparent bg-transparent px-2 py-1 text-base font-semibold hover:border-line-strong focus:border-line-strong focus:bg-surface"
             placeholder="Module title"
           />
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             onBlur={() => description !== (module.description || "") && saveModule({ description })}
-            className="w-full rounded border border-transparent bg-transparent px-2 py-1 text-sm text-slate-500 hover:border-slate-300 focus:border-slate-300 focus:bg-white"
+            className="w-full rounded border border-transparent bg-transparent px-2 py-1 text-sm text-ink-subtle hover:border-line-strong focus:border-line-strong focus:bg-surface"
             placeholder="Short description (optional)"
           />
         </div>
@@ -106,31 +107,31 @@ export default function ModuleCard({ module, index, onChanged, onDeleted, onMove
             type="button"
             onClick={() => onMove(-1)}
             disabled={!canMoveUp}
-            className="rounded px-2 py-1 text-sm text-slate-400 hover:bg-slate-200 disabled:opacity-30"
+            className="rounded px-2 py-1 text-sm text-ink-subtle hover:bg-surface-sunken disabled:opacity-30"
             aria-label="Move module up"
           >
-            ↑
+            <Icon name="arrowUp" size={14} />
           </button>
           <button
             type="button"
             onClick={() => onMove(1)}
             disabled={!canMoveDown}
-            className="rounded px-2 py-1 text-sm text-slate-400 hover:bg-slate-200 disabled:opacity-30"
+            className="rounded px-2 py-1 text-sm text-ink-subtle hover:bg-surface-sunken disabled:opacity-30"
             aria-label="Move module down"
           >
-            ↓
+            <Icon name="arrowDown" size={14} />
           </button>
           <button
             type="button"
             onClick={remove}
-            className="rounded px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50"
+            className="rounded px-2 py-1 text-xs font-medium text-danger hover:bg-danger-subtle"
           >
             Delete
           </button>
         </div>
       </div>
 
-      {error && <div className="mt-2 rounded bg-red-50 p-2 text-xs text-red-600">{error}</div>}
+      {error && <div className="mt-2 rounded bg-danger-subtle p-2 text-xs text-danger">{error}</div>}
 
       <ul className="mt-3 space-y-2">
         {lessons.map((lesson, i) => (
@@ -148,7 +149,7 @@ export default function ModuleCard({ module, index, onChanged, onDeleted, onMove
           />
         ))}
         {lessons.length === 0 && (
-          <li className="rounded-lg border border-dashed border-slate-300 p-3 text-center text-xs text-slate-400">
+          <li className="rounded-control border border-dashed border-line-strong p-3 text-center text-xs text-ink-subtle">
             No lessons yet.
           </li>
         )}
@@ -160,12 +161,12 @@ export default function ModuleCard({ module, index, onChanged, onDeleted, onMove
           onChange={(e) => setNewLessonTitle(e.target.value)}
           placeholder="New lesson title"
           maxLength={200}
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+          className="flex-1 rounded-control border border-line-strong px-3 py-1.5 text-sm"
         />
         <button
           type="submit"
           disabled={adding || !newLessonTitle.trim()}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
+          className="rounded-control border border-line-strong bg-surface px-3 py-1.5 text-sm font-medium hover:bg-surface-sunken disabled:opacity-50"
         >
           {adding ? "Adding…" : "Add lesson"}
         </button>

@@ -50,18 +50,18 @@ export default function MockTestPanel({ courseId }) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="rounded-surface border border-line bg-surface p-4">
       <h2 className="font-semibold">Mock tests</h2>
-      {error && <div className="mt-2 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-2 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       <ul className="mt-3 space-y-2">
         {tests.map((t) => (
           <li
             key={t.id}
-            className="flex items-center justify-between rounded-lg border border-slate-100 p-3"
+            className="flex items-center justify-between rounded-control border border-line p-3"
           >
             <div>
-              <p className="text-sm font-medium text-slate-800">{t.title}</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-sm font-medium text-ink">{t.title}</p>
+              <p className="text-xs text-ink-subtle">
                 {t.questions?.length || "—"} questions · {t.durationMinutes} min · pass at{" "}
                 {t.passingScore}%
               </p>
@@ -69,7 +69,7 @@ export default function MockTestPanel({ courseId }) {
             <button
               type="button"
               onClick={() => setActive(t)}
-              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+              className="rounded-control bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover"
             >
               Start
             </button>

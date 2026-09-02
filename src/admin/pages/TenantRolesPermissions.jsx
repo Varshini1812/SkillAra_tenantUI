@@ -9,11 +9,14 @@ import ConfirmDialog from "../components/ui/ConfirmDialog.jsx";
 import Breadcrumb from "../components/ui/Breadcrumb.jsx";
 import FilterBar from "../components/ui/FilterBar.jsx";
 import Pagination from "../components/ui/Pagination.jsx";
-import { EmptyState, OrgStatusBadge, RoleTypeBadge, TableSkeleton } from "../components/ui/OrgBadges.jsx";
-import { TableAction, TableActions, ViewIcon, EditIcon, CloneIcon, ToggleOffIcon, ToggleOnIcon, DeleteIcon } from "../components/ui/TableActions.jsx";
+import { OrgStatusBadge, RoleTypeBadge } from "../components/ui/OrgBadges.jsx";
+import { Button, EmptyState, PageHeader, TableSkeleton } from "../components/ui/primitives.jsx";
+import { TableAction, TableActions } from "../components/ui/TableActions.jsx";
 import { useToast } from "../components/ui/Toast.jsx";
 import { usePagination } from "../hooks/usePagination.js";
 import { fetchUsers } from "../api/admin.js";
+import Icon from "../components/ui/Icon.jsx";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, TABLE_SHELL } from "../components/ui/styles.js";
 
 const inputClass = "admin-input";
 
@@ -241,71 +244,75 @@ export default function TenantRolesPermissions() {
 
   return (
     <div>
-      <Breadcrumb items={[{ label: "Organization", to: "/admin" }, { label: "Roles & Permissions" }]} />
+      <PageHeader
+        breadcrumb={
+          <Breadcrumb
+            items={[{ label: "Organization", to: "/admin" }, { label: "Roles and permissions" }]}
+          />
+        }
+        title="Roles and permissions"
+        description="What each role in your organization can reach. A role is its permission map — the menu and the API both follow it."
+        actions={
+          <Button onClick={() => openPanel("create")}>
+            <Icon name="plus" size={15} />
+            Create role
+          </Button>
+        }
+      />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Roles & Permissions</h1>
-          <p className="mt-1 text-slate-500">Manage organization roles and permission assignments</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => openPanel("create")}
-          className="admin-btn-primary"
-        >
-          + Create Role
-        </button>
-      </div>
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchLabel="Search roles"
+        searchPlaceholder="Search roles by name or description"
+        filters={[
+          {
+            id: "status",
+            label: "Status",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            defaultValue: "all",
+            options: [
+              { value: "all", label: "All statuses" },
+              { value: "active", label: "Active" },
+              { value: "inactive", label: "Inactive" },
+            ],
+          },
+          {
+            id: "type",
+            label: "Role type",
+            value: typeFilter,
+            onChange: setTypeFilter,
+            defaultValue: "all",
+            options: [
+              { value: "all", label: "All types" },
+              { value: "system", label: "System" },
+              { value: "custom", label: "Custom" },
+            ],
+          },
+        ]}
+        sort={{
+          label: "Sort roles",
+          value: sortBy,
+          onChange: setSortBy,
+          options: [
+            { value: "name", label: "Sort: name" },
+            { value: "permissions", label: "Sort: permissions" },
+            { value: "users", label: "Sort: users" },
+          ],
+        }}
+      />
 
-      <FilterBar onClear={clearFilters} showClear={hasActiveFilters}>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search roles..."
-          className="admin-input admin-filter-search"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="admin-input admin-filter-select text-slate-700"
-          aria-label="Filter by status"
-        >
-          <option value="all">All status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="admin-input admin-filter-select text-slate-700"
-          aria-label="Filter by type"
-        >
-          <option value="all">All types</option>
-          <option value="system">System</option>
-          <option value="custom">Custom</option>
-        </select>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="admin-input admin-filter-select text-slate-700"
-          aria-label="Sort roles"
-        >
-          <option value="name">Sort: Name</option>
-          <option value="permissions">Sort: Permissions</option>
-          <option value="users">Sort: Users</option>
-        </select>
-      </FilterBar>
-
-      <div className="admin-table mt-4">
+      <div className={`${TABLE_SHELL} mt-4`}>
         {rolesLoading || usersLoading ? (
-          <TableSkeleton rows={6} cols={7} />
+          <TableSkeleton rows={6} columns={7} />
         ) : paged.length === 0 ? (
           <EmptyState title="No roles found" description="Try adjusting your search or filters." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-left text-sm">
-              <thead className="sticky top-0 bg-white">
-                <tr className="border-b border-slate-200 text-slate-500">
+              <thead className="sticky top-0 bg-surface">
+                <tr className="border-b border-line text-ink-subtle">
                   <th className="px-5 py-3 font-medium">Role Name</th>
                   <th className="px-5 py-3 font-medium">Description</th>
                   <th className="px-5 py-3 font-medium">Type</th>
@@ -317,33 +324,33 @@ export default function TenantRolesPermissions() {
               </thead>
               <tbody>
                 {paged.map((role) => (
-                  <tr key={role.id} className="admin-table-row border-b border-slate-100 last:border-0">
-                    <td className="px-5 py-4 font-medium text-slate-900">{role.name}</td>
-                    <td className="max-w-[200px] truncate px-5 py-4 text-slate-500">{role.description}</td>
+                  <tr key={role.id} className="border-b border-line last:border-0">
+                    <td className="px-5 py-4 font-medium text-ink">{role.name}</td>
+                    <td className="max-w-[200px] truncate px-5 py-4 text-ink-subtle">{role.description}</td>
                     <td className="px-5 py-4"><RoleTypeBadge type={role.roleType} /></td>
-                    <td className="px-5 py-4 text-slate-500">{role.usersAssigned || 0}</td>
+                    <td className="px-5 py-4 text-ink-subtle">{role.usersAssigned || 0}</td>
                     <td className="px-5 py-4">
-                      <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs text-indigo-600">
+                      <span className="rounded-full bg-brand-muted px-2 py-0.5 text-xs text-brand">
                         {countPermissions(role.permissions)}
                       </span>
                     </td>
                     <td className="px-5 py-4"><OrgStatusBadge status={role.status} /></td>
                     <td className="px-5 py-4">
                       <TableActions>
-                        <TableAction variant="view" onClick={() => openPanel("view", role.id)} title="View"><ViewIcon /></TableAction>
-                        <TableAction variant="edit" onClick={() => openPanel("edit", role.id)} title="Edit"><EditIcon /></TableAction>
+                        <TableAction variant="view" onClick={() => openPanel("view", role.id)} title="View"><Icon name="view" size={14} /></TableAction>
+                        <TableAction variant="edit" onClick={() => openPanel("edit", role.id)} title="Edit"><Icon name="edit" size={14} /></TableAction>
                         <TableAction variant="muted" onClick={() => {
                           setCloneSource(role);
                           setForm({ name: `${role.name} Copy`, description: role.description, roleType: "custom", status: "active", permissions: { ...role.permissions } });
                           setSearchParams({ panel: "create" });
-                        }} title="Clone"><CloneIcon /></TableAction>
+                        }} title="Clone"><Icon name="copy" size={14} /></TableAction>
                         {role.status === "active" ? (
-                          <TableAction variant="warn" onClick={() => handleToggleStatus(role)} title="Disable"><ToggleOffIcon /></TableAction>
+                          <TableAction variant="warn" onClick={() => handleToggleStatus(role)} title="Disable"><Icon name="toggleOff" size={14} /></TableAction>
                         ) : (
-                          <TableAction variant="success" onClick={() => handleToggleStatus(role)} title="Enable"><ToggleOnIcon /></TableAction>
+                          <TableAction variant="success" onClick={() => handleToggleStatus(role)} title="Enable"><Icon name="toggleOn" size={14} /></TableAction>
                         )}
                         {role.roleType === "custom" && (
-                          <TableAction variant="warn" onClick={() => setDeleteTarget(role)} title="Delete"><DeleteIcon /></TableAction>
+                          <TableAction variant="warn" onClick={() => setDeleteTarget(role)} title="Delete"><Icon name="trash" size={14} /></TableAction>
                         )}
                       </TableActions>
                     </td>
@@ -372,8 +379,8 @@ export default function TenantRolesPermissions() {
         footer={
           panel !== "view" ? (
             <>
-              <button type="button" onClick={closePanel} className="admin-btn-secondary">Cancel</button>
-              <button type="button" onClick={saveRole} className="admin-btn-primary">
+              <button type="button" onClick={closePanel} className={`${BTN_SECONDARY}`}>Cancel</button>
+              <button type="button" onClick={saveRole} className={`${BTN_PRIMARY}`}>
                 {panel === "create" ? "Create Role" : "Save Changes"}
               </button>
             </>
@@ -382,31 +389,31 @@ export default function TenantRolesPermissions() {
       >
         {panel === "view" && activeRole ? (
           <div className="space-y-6">
-            <div className="admin-card space-y-3 p-4">
+            <div className={`${CARD} space-y-3 p-4`}>
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-xl font-semibold text-slate-900">{activeRole.name}</h3>
+                <h3 className="text-xl font-semibold text-ink">{activeRole.name}</h3>
                 <RoleTypeBadge type={activeRole.roleType} />
                 <OrgStatusBadge status={activeRole.status} />
               </div>
-              <p className="text-sm text-slate-500">{activeRole.description}</p>
+              <p className="text-sm text-ink-subtle">{activeRole.description}</p>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-slate-500">Users assigned</span><p className="text-slate-800">{activeRole.usersAssigned || 0}</p></div>
-                <div><span className="text-slate-500">Permissions</span><p className="text-slate-800">{countPermissions(activeRole.permissions)}</p></div>
-                <div><span className="text-slate-500">Created</span><p className="text-slate-800">{formatDate(activeRole.createdAt)}</p></div>
-                <div><span className="text-slate-500">Updated</span><p className="text-slate-800">{formatDate(activeRole.updatedAt)}</p></div>
+                <div><span className="text-ink-subtle">Users assigned</span><p className="text-ink">{activeRole.usersAssigned || 0}</p></div>
+                <div><span className="text-ink-subtle">Permissions</span><p className="text-ink">{countPermissions(activeRole.permissions)}</p></div>
+                <div><span className="text-ink-subtle">Created</span><p className="text-ink">{formatDate(activeRole.createdAt)}</p></div>
+                <div><span className="text-ink-subtle">Updated</span><p className="text-ink">{formatDate(activeRole.updatedAt)}</p></div>
               </div>
             </div>
             <div>
-              <h4 className="mb-2 text-sm font-medium text-slate-700">Assigned users ({assignedUsers.length})</h4>
+              <h4 className="mb-2 text-sm font-medium text-ink-muted">Assigned users ({assignedUsers.length})</h4>
               {assignedUsers.length === 0 ? (
-                <p className="text-sm text-slate-500">No users assigned to this role</p>
+                <p className="text-sm text-ink-subtle">No users assigned to this role</p>
               ) : (
                 <ul className="space-y-2">
                   {assignedUsers.map((u) => (
-                    <li key={u.id} className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
+                    <li key={u.id} className="flex items-center justify-between rounded-control border border-line bg-surface px-3 py-2 text-sm">
                       <div>
-                        <p className="text-slate-800">{u.firstName} {u.lastName}</p>
-                        <p className="text-xs text-slate-500">{u.email}</p>
+                        <p className="text-ink">{u.firstName} {u.lastName}</p>
+                        <p className="text-xs text-ink-subtle">{u.email}</p>
                       </div>
                       <OrgStatusBadge status={u.status} />
                     </li>
@@ -419,7 +426,7 @@ export default function TenantRolesPermissions() {
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="mb-1 block text-sm text-slate-500">Role name *</label>
+              <label className="mb-1 block text-sm text-ink-subtle">Role name *</label>
               <input
                 value={form.name}
                 onChange={(e) =>
@@ -429,17 +436,17 @@ export default function TenantRolesPermissions() {
                 className={inputClass}
                 aria-invalid={Boolean(formErrors.name)}
               />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-ink-subtle">
                 {USER_LIMITS.roleName.min}–{USER_LIMITS.roleName.max} characters
               </p>
               {formErrors.name && (
-                <p className="mt-1 text-xs text-red-600" role="alert">
+                <p className="mt-1 text-xs text-danger" role="alert">
                   {formErrors.name}
                 </p>
               )}
             </div>
             <div>
-              <label className="mb-1 block text-sm text-slate-500">Description</label>
+              <label className="mb-1 block text-sm text-ink-subtle">Description</label>
               <textarea
                 value={form.description}
                 onChange={(e) =>
@@ -452,22 +459,22 @@ export default function TenantRolesPermissions() {
                 className={inputClass}
                 aria-invalid={Boolean(formErrors.description)}
               />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-ink-subtle">
                 Optional · max {USER_LIMITS.roleDescription.max} characters
               </p>
               {formErrors.description && (
-                <p className="mt-1 text-xs text-red-600" role="alert">
+                <p className="mt-1 text-xs text-danger" role="alert">
                   {formErrors.description}
                 </p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="mb-1 block text-sm text-slate-500">Role type</label>
-                <input value={form.roleType === "system" ? "System" : "Custom"} disabled className={`${inputClass} text-slate-500`} />
+                <label className="mb-1 block text-sm text-ink-subtle">Role type</label>
+                <input value={form.roleType === "system" ? "System" : "Custom"} disabled className={`${inputClass} text-ink-subtle`} />
               </div>
               <div>
-                <label className="mb-1 block text-sm text-slate-500">Status</label>
+                <label className="mb-1 block text-sm text-ink-subtle">Status</label>
                 <select value={form.status} onChange={(e) => setFormField("status", e.target.value)} className={inputClass}>
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -489,7 +496,7 @@ export default function TenantRolesPermissions() {
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete role?"
-        message={<>Permanently delete <strong className="text-slate-800">{deleteTarget?.name}</strong>? This cannot be undone.</>}
+        message={<>Permanently delete <strong className="text-ink">{deleteTarget?.name}</strong>? This cannot be undone.</>}
         confirmLabel="Delete"
         danger
         onConfirm={confirmDelete}

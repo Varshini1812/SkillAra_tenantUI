@@ -11,10 +11,10 @@ import { getErrorMessage } from "../../api/client.js";
 import { can } from "../../utils/permissions.js";
 
 const STATUS_STYLES = {
-  NOT_SUBMITTED: { label: "Not submitted", chip: "bg-slate-100 text-slate-600" },
-  PENDING: { label: "In review", chip: "bg-indigo-100 text-indigo-700" },
-  CHANGES_REQUESTED: { label: "Changes requested", chip: "bg-amber-100 text-amber-800" },
-  APPROVED: { label: "Approved", chip: "bg-emerald-100 text-emerald-700" },
+  NOT_SUBMITTED: { label: "Not submitted", chip: "bg-surface-sunken text-ink-muted" },
+  PENDING: { label: "In review", chip: "bg-brand-muted text-brand-hover" },
+  CHANGES_REQUESTED: { label: "Changes requested", chip: "bg-warning-subtle text-warning" },
+  APPROVED: { label: "Approved", chip: "bg-success-subtle text-success" },
 };
 
 const ACTION_LABELS = {
@@ -91,7 +91,7 @@ export default function CourseReviewPanel({ courseId, user, review, onReviewChan
     }
     return run(
       () => submitCourseForReview(courseId, { reviewerId, note: note.trim() }),
-      "Sent for review. The reviewer has been notified."
+"Sent for review. The reviewer has been notified."
     );
   };
 
@@ -102,54 +102,54 @@ export default function CourseReviewPanel({ courseId, user, review, onReviewChan
     }
     return run(
       () => requestCourseChanges(courseId, note.trim()),
-      "Sent back to the instructor with your notes."
+"Sent back to the instructor with your notes."
     );
   };
 
   const approve = () =>
     run(
       () => approveCourseReview(courseId, note.trim()),
-      "Approved. The instructor can publish this course now."
+"Approved. The instructor can publish this course now."
     );
 
   const style = STATUS_STYLES[status] || STATUS_STYLES.NOT_SUBMITTED;
   const awaitingSubmission = status === "NOT_SUBMITTED" || status === "CHANGES_REQUESTED";
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
+    <section className="rounded-surface border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-slate-800">Content review</h2>
+        <h2 className="text-sm font-semibold text-ink">Content review</h2>
         <span className={`rounded px-2 py-0.5 text-xs font-semibold ${style.chip}`}>
           {style.label}
         </span>
       </div>
 
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-ink-subtle">
         A course has to be approved by a content reviewer before it can be published.
       </p>
 
       {review?.note && (
-        <div className="mt-3 rounded-lg bg-slate-50 p-3">
-          <p className="text-xs font-medium text-slate-500">Latest reviewer note</p>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{review.note}</p>
+        <div className="mt-3 rounded-control bg-surface-sunken p-3">
+          <p className="text-xs font-medium text-ink-subtle">Latest reviewer note</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-ink-muted">{review.note}</p>
         </div>
       )}
 
-      {error && <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-3 rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
       {notice && (
-        <div className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</div>
+        <div className="mt-3 rounded-control bg-success-subtle p-3 text-sm text-success">{notice}</div>
       )}
 
       {/* Author side — pick a reviewer and send it over. */}
       {canSubmit && awaitingSubmission && (
         <div className="mt-4 space-y-3">
           <label className="block">
-            <span className="text-xs font-medium text-slate-600">Send to</span>
+            <span className="text-xs font-medium text-ink-muted">Send to</span>
             <select
               value={reviewerId}
               onChange={(e) => setReviewerId(e.target.value)}
               disabled={busy || reviewers.length === 0}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm"
             >
               {reviewers.length === 0 && <option value="">No reviewer available</option>}
               {reviewers.map((r) => (
@@ -161,14 +161,14 @@ export default function CourseReviewPanel({ courseId, user, review, onReviewChan
           </label>
 
           <label className="block">
-            <span className="text-xs font-medium text-slate-600">Note for the reviewer (optional)</span>
+            <span className="text-xs font-medium text-ink-muted">Note for the reviewer (optional)</span>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
               disabled={busy}
               placeholder="Anything the reviewer should look at first?"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm"
             />
           </label>
 
@@ -176,13 +176,13 @@ export default function CourseReviewPanel({ courseId, user, review, onReviewChan
             type="button"
             onClick={submit}
             disabled={busy || reviewers.length === 0}
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="w-full rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
           >
             {status === "CHANGES_REQUESTED" ? "Re-submit for review" : "Submit for review"}
           </button>
 
           {reviewers.length === 0 && (
-            <p className="text-xs text-amber-700">
+            <p className="text-xs text-warning">
               Nobody in this organization holds the Content Reviewer role yet. Ask an admin to
               assign it in Roles &amp; permissions.
             </p>
@@ -191,16 +191,16 @@ export default function CourseReviewPanel({ courseId, user, review, onReviewChan
       )}
 
       {canSubmit && status === "PENDING" && (
-        <p className="mt-4 rounded-lg bg-indigo-50 p-3 text-sm text-indigo-700">
+        <p className="mt-4 rounded-control bg-brand-subtle p-3 text-sm text-brand-hover">
           Waiting on the reviewer. You&apos;ll get a notification when they respond.
         </p>
       )}
 
       {/* Reviewer side — approve, or send it back with what needs fixing. */}
       {canDecide && status === "PENDING" && (
-        <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
+        <div className="mt-4 space-y-3 border-t border-line pt-4">
           <label className="block">
-            <span className="text-xs font-medium text-slate-600">
+            <span className="text-xs font-medium text-ink-muted">
               Your notes — required to request changes
             </span>
             <textarea
@@ -209,7 +209,7 @@ export default function CourseReviewPanel({ courseId, user, review, onReviewChan
               rows={4}
               disabled={busy}
               placeholder="Plagiarism findings, corrections, or anything the instructor must fix."
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm"
             />
           </label>
 
@@ -218,7 +218,7 @@ export default function CourseReviewPanel({ courseId, user, review, onReviewChan
               type="button"
               onClick={approve}
               disabled={busy}
-              className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="flex-1 rounded-control bg-success px-4 py-2 text-sm font-medium text-white hover:bg-success disabled:opacity-50"
             >
               Approve
             </button>
@@ -226,7 +226,7 @@ export default function CourseReviewPanel({ courseId, user, review, onReviewChan
               type="button"
               onClick={requestChanges}
               disabled={busy}
-              className="flex-1 rounded-lg border border-amber-500 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+              className="flex-1 rounded-control border border-warning px-4 py-2 text-sm font-medium text-warning hover:bg-warning-subtle disabled:opacity-50"
             >
               Request changes
             </button>
@@ -235,18 +235,18 @@ export default function CourseReviewPanel({ courseId, user, review, onReviewChan
       )}
 
       {review?.history?.length > 0 && (
-        <ol className="mt-4 space-y-2 border-t border-slate-100 pt-4">
+        <ol className="mt-4 space-y-2 border-t border-line pt-4">
           {[...review.history].reverse().map((event, index) => (
             <li key={`${event.at}-${index}`} className="text-xs">
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-ink-muted">
                 {ACTION_LABELS[event.action] || event.action}
               </span>
-              <span className="text-slate-400">
+              <span className="text-ink-subtle">
                 {" "}
                 · {event.actorName || "Someone"} ·{" "}
                 {event.at ? new Date(event.at).toLocaleString() : ""}
               </span>
-              {event.note && <p className="mt-0.5 text-slate-600">{event.note}</p>}
+              {event.note && <p className="mt-0.5 text-ink-muted">{event.note}</p>}
             </li>
           ))}
         </ol>

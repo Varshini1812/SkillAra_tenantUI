@@ -16,18 +16,18 @@ function MyLearningContent() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="text-center text-slate-400">Loading...</div>;
-  if (error) return <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>;
+  if (loading) return <div className="text-center text-ink-subtle">Loading...</div>;
+  if (error) return <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>;
 
   return (
     <div>
       <h1 className="text-2xl font-bold">My Learning</h1>
-      <p className="text-slate-500">Continue where you left off</p>
+      <p className="text-ink-subtle">Continue where you left off</p>
 
       {enrollments.length === 0 ? (
         <div className="mt-12 text-center">
-          <p className="text-slate-400">You haven&apos;t enrolled in any courses yet.</p>
-          <Link to="/courses" className="mt-4 inline-block text-indigo-600 hover:underline">
+          <p className="text-ink-subtle">You haven&apos;t enrolled in any courses yet.</p>
+          <Link to="/courses" className="mt-4 inline-block text-brand hover:underline">
             Browse courses
           </Link>
         </div>
@@ -39,23 +39,23 @@ function MyLearningContent() {
             return (
               <div
                 key={e.id}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5"
+                className="flex items-center justify-between rounded-surface border border-line bg-surface p-5"
               >
                 <div>
                   <h3 className="font-semibold">{course?.title || "Course"}</h3>
                   <div className="mt-2 flex items-center gap-3">
-                    <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-2 w-32 overflow-hidden rounded-full bg-surface-sunken">
                       <div
-                        className="h-full rounded-full bg-indigo-600 transition-all"
+                        className="h-full rounded-full bg-brand transition-all"
                         style={{ width: `${e.mastery || 0}%` }}
                       />
                     </div>
-                    <span className="text-sm text-slate-500">{e.mastery || 0}% complete</span>
+                    <span className="text-sm text-ink-subtle">{e.mastery || 0}% complete</span>
                   </div>
                 </div>
                 <Link
                   to={`/learn/${courseId}`}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover"
                 >
                   Continue
                 </Link>

@@ -7,6 +7,7 @@ import { generateMockTest } from "../api/mockTests.js";
 import { getErrorMessage } from "../api/client.js";
 import { usePermissions } from "../hooks/usePermissions.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import Icon from "../admin/components/ui/Icon.jsx";
 
 function CourseSummaryPanel({ courseId }) {
   const [summary, setSummary] = useState("");
@@ -37,42 +38,42 @@ function CourseSummaryPanel({ courseId }) {
   }, [courseId]);
 
   return (
-    <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+    <div className="rounded-surface border border-brand-border bg-brand-subtle p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="flex items-center gap-1.5 font-semibold text-slate-900">
-          <span aria-hidden="true">✨</span> Course summary
+        <h2 className="flex items-center gap-1.5 font-semibold text-ink">
+          <Icon name="sparkles" size={15} /> Course summary
         </h2>
         {summary && (
           <button
             type="button"
             onClick={() => generate(true)}
             disabled={loading}
-            className="text-xs font-medium text-indigo-600 hover:underline disabled:opacity-50"
+            className="text-xs font-medium text-brand hover:underline disabled:opacity-50"
           >
             {loading ? "Regenerating…" : "Regenerate"}
           </button>
         )}
       </div>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
 
       {summary ? (
         <>
-          <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">{summary}</p>
+          <p className="mt-2 whitespace-pre-wrap text-sm text-ink-muted">{summary}</p>
           {generatedAt && (
-            <p className="mt-2 text-[11px] text-slate-400">
+            <p className="mt-2 text-[11px] text-ink-subtle">
               Generated {new Date(generatedAt).toLocaleDateString()}
             </p>
           )}
         </>
       ) : (
         <div className="mt-2">
-          {!loaded && <p className="text-sm text-slate-500">Get a quick AI-written overview of this course.</p>}
+          {!loaded && <p className="text-sm text-ink-subtle">Get a quick AI-written overview of this course.</p>}
           <button
             type="button"
             onClick={() => generate(false)}
             disabled={loading}
-            className="mt-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="mt-2 rounded-control bg-brand px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-hover disabled:opacity-50"
           >
             {loading ? "Generating…" : loaded ? "Try again" : "Generate summary"}
           </button>
@@ -114,31 +115,31 @@ function MockTestGenerator({ courseId, courseTitle }) {
   };
 
   return (
-    <form onSubmit={submit} className="rounded-xl border border-slate-200 bg-white p-4">
+    <form onSubmit={submit} className="rounded-surface border border-line bg-surface p-4">
       <h2 className="font-semibold">Generate a mock test with AI</h2>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-ink-subtle">
         Draws from every lesson in "{courseTitle}", saves it, and publishes it straight away.
       </p>
 
-      {error && <div className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-3 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       {created && (
-        <div className="mt-3 rounded-lg bg-green-50 p-2 text-sm text-green-700">
-          "{created.title}" saved as a draft with {created.questions?.length || questionCount} questions. Redirecting to course editor...
+        <div className="mt-3 rounded-control bg-success-subtle p-2 text-sm text-success">
+"{created.title}" saved as a draft with {created.questions?.length || questionCount} questions. Redirecting to course editor...
         </div>
       )}
 
       <div className="mt-3 space-y-3">
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Title (optional)
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={`Mock Test: ${courseTitle}`}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <label className="block text-xs font-medium text-slate-600">
+          <label className="block text-xs font-medium text-ink-muted">
             Question count
             <input
               type="number"
@@ -146,17 +147,17 @@ function MockTestGenerator({ courseId, courseTitle }) {
               max="50"
               value={questionCount}
               onChange={(e) => setQuestionCount(e.target.value)}
-              className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </label>
-          <label className="block text-xs font-medium text-slate-600">
+          <label className="block text-xs font-medium text-ink-muted">
             Duration (minutes)
             <input
               type="number"
               min="1"
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value)}
-              className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </label>
         </div>
@@ -165,7 +166,7 @@ function MockTestGenerator({ courseId, courseTitle }) {
       <button
         type="submit"
         disabled={generating}
-        className="mt-3 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
+        className="mt-3 rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
       >
         {generating ? "Generating…" : "Generate with AI"}
       </button>
@@ -174,11 +175,11 @@ function MockTestGenerator({ courseId, courseTitle }) {
 }
 
 const QUICK_LINKS = [
-  { to: "/mock-tests", label: "Mock Tests", icon: "📝" },
-  { to: "/mock-interviews", label: "Mock Interviews", icon: "🎤" },
-  { to: "/live-sessions", label: "Live Sessions", icon: "📺" },
-  { to: "/mentorship", label: "Mentorship", icon: "🧑‍🏫" },
-  { to: "/forum", label: "Forum", icon: "💬" },
+  { to: "/mock-tests", label: "Mock Tests", icon: "clipboardCheck" },
+  { to: "/mock-interviews", label: "Mock Interviews", icon: "mic" },
+  { to: "/live-sessions", label: "Live Sessions", icon: "tv" },
+  { to: "/mentorship", label: "Mentorship", icon: "mentor" },
+  { to: "/forum", label: "Forum", icon: "chat" },
 ];
 
 function AiToolsContent() {
@@ -215,28 +216,28 @@ function AiToolsContent() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">AI Tools</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-ink-subtle">
           Pick a course to get an AI summary{canManage ? ", generate a mock test with AI" : ""}, and jump
           straight into practice.
         </p>
       </div>
 
-      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
 
       {loading ? (
-        <p className="text-sm text-slate-400">Loading…</p>
+        <p className="text-sm text-ink-subtle">Loading…</p>
       ) : courses.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+        <p className="rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
           {canManage ? "You don't have any courses yet." : "You're not enrolled in any courses yet."}
         </p>
       ) : (
         <>
-          <label className="block max-w-sm text-xs font-medium text-slate-600">
+          <label className="block max-w-sm text-xs font-medium text-ink-muted">
             Course
             <select
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm"
             >
               {courses.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -251,14 +252,14 @@ function AiToolsContent() {
               <CourseSummaryPanel courseId={courseId} />
               {canManage && <MockTestGenerator courseId={courseId} courseTitle={selectedCourse.title} />}
 
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="rounded-surface border border-line bg-surface p-4">
                 <h2 className="font-semibold">More for this course</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {QUICK_LINKS.map((l) => (
                     <Link
                       key={l.to}
                       to={l.to}
-                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium hover:bg-slate-50"
+                      className="rounded-control border border-line-strong px-3 py-1.5 text-xs font-medium hover:bg-surface-sunken"
                     >
                       {l.icon} {l.label}
                     </Link>
