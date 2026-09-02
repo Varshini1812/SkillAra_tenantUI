@@ -10,10 +10,10 @@ import {
 import { getErrorMessage } from "../../api/client.js";
 
 const STATUS_STYLE = {
-  SCHEDULED: "bg-slate-100 text-slate-600",
-  LIVE: "bg-emerald-100 text-emerald-700",
-  ENDED: "bg-slate-100 text-slate-500",
-  CANCELLED: "bg-rose-100 text-rose-700",
+  SCHEDULED: "bg-surface-sunken text-ink-muted",
+  LIVE: "bg-success-subtle text-success",
+  ENDED: "bg-surface-sunken text-ink-subtle",
+  CANCELLED: "bg-danger-subtle text-danger",
 };
 
 function toLocalInputValue(date) {
@@ -98,60 +98,60 @@ export default function CourseLiveSessions({ courseId }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="rounded-surface border border-line bg-surface p-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">Live sessions</h2>
         {!creating && (
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-900"
+            className="rounded-control bg-ink px-3 py-1.5 text-sm font-medium text-white hover:bg-ink"
           >
             Schedule
           </button>
         )}
       </div>
 
-      {error && <div className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-3 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
 
       {creating && (
-        <form onSubmit={submit} className="mt-3 space-y-3 rounded-lg border border-slate-100 p-3">
-          <label className="block text-xs font-medium text-slate-600">
+        <form onSubmit={submit} className="mt-3 space-y-3 rounded-control border border-line p-3">
+          <label className="block text-xs font-medium text-ink-muted">
             Title
             <input
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </label>
           <div className="grid grid-cols-2 gap-3">
-            <label className="block text-xs font-medium text-slate-600">
+            <label className="block text-xs font-medium text-ink-muted">
               Start
               <input
                 type="datetime-local"
                 required
                 value={start}
                 onChange={(e) => setStart(e.target.value)}
-                className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+                className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
               />
             </label>
-            <label className="block text-xs font-medium text-slate-600">
+            <label className="block text-xs font-medium text-ink-muted">
               End
               <input
                 type="datetime-local"
                 required
                 value={end}
                 onChange={(e) => setEnd(e.target.value)}
-                className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+                className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
               />
             </label>
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={() => setCreating(false)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50">
+            <button type="button" onClick={() => setCreating(false)} className="rounded-control border border-line-strong px-3 py-1.5 text-sm hover:bg-surface-sunken">
               Cancel
             </button>
-            <button type="submit" className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700">
+            <button type="submit" className="rounded-control bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover">
               Schedule session
             </button>
           </div>
@@ -159,18 +159,18 @@ export default function CourseLiveSessions({ courseId }) {
       )}
 
       {loading ? (
-        <p className="mt-4 text-sm text-slate-400">Loading…</p>
+        <p className="mt-4 text-sm text-ink-subtle">Loading…</p>
       ) : sessions.length === 0 ? (
-        <p className="mt-4 rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+        <p className="mt-4 rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
           No live sessions scheduled.
         </p>
       ) : (
         <ul className="mt-4 space-y-2">
           {sessions.map((s) => (
-            <li key={s.id} className="flex items-center justify-between rounded-lg border border-slate-100 p-3">
+            <li key={s.id} className="flex items-center justify-between rounded-control border border-line p-3">
               <div>
-                <p className="text-sm font-medium text-slate-800">{s.title}</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-sm font-medium text-ink">{s.title}</p>
+                <p className="text-xs text-ink-subtle">
                   {new Date(s.scheduledStart).toLocaleString()} ·{" "}
                   <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${STATUS_STYLE[s.status]}`}>
                     {s.status}
@@ -182,14 +182,14 @@ export default function CourseLiveSessions({ courseId }) {
                   <button
                     type="button"
                     onClick={() => join(s.id, s.title)}
-                    className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700"
+                    className="rounded-control bg-success px-3 py-1 text-xs font-medium text-white hover:bg-success"
                   >
                     {s.status === "LIVE" ? "Rejoin" : "Start"}
                   </button>
-                  <button type="button" onClick={() => endSession(s.id)} className="rounded-lg border border-slate-300 px-3 py-1 text-xs hover:bg-slate-50">
+                  <button type="button" onClick={() => endSession(s.id)} className="rounded-control border border-line-strong px-3 py-1 text-xs hover:bg-surface-sunken">
                     End
                   </button>
-                  <button type="button" onClick={() => cancel(s.id)} className="rounded-lg border border-rose-200 px-3 py-1 text-xs text-rose-600 hover:bg-rose-50">
+                  <button type="button" onClick={() => cancel(s.id)} className="rounded-control border border-danger-border px-3 py-1 text-xs text-danger hover:bg-danger-subtle">
                     Cancel
                   </button>
                 </div>

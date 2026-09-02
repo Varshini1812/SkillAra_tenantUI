@@ -1,6 +1,15 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import Icon from "./Icon.jsx";
 
 const ToastContext = createContext(null);
+
+const STYLES = {
+  success: "border-success-border bg-success-subtle text-success",
+  error: "border-danger-border bg-danger-subtle text-danger",
+  info: "border-brand-border bg-brand-subtle text-brand-hover",
+};
+
+const ICONS = { success: "success", error: "danger", info: "info" };
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
@@ -20,38 +29,32 @@ export function ToastProvider({ children }) {
 
   const value = useMemo(() => ({ toast }), [toast]);
 
-  const styles = {
-    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    error: "border-red-200 bg-red-50 text-red-800",
-    info: "border-indigo-200 bg-indigo-50 text-indigo-800",
-  };
-
-  const icons = { success: "✓", error: "!", info: "i" };
-
   return (
     <ToastContext.Provider value={value}>
       {children}
+      {/* Polite live region: announced without stealing focus (`toast-accessibility`). */}
       <div
-        className="pointer-events-none fixed bottom-4 right-4 z-[100] flex max-w-sm flex-col gap-2"
+        className="pointer-events-none fixed left-1/2 top-6 z-[100] flex w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2 flex-col gap-2"
         aria-live="polite"
+        aria-atomic="false"
       >
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`wizard-toast-in pointer-events-auto flex items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-lg ${styles[t.type]}`}
             role="status"
+            className={`animate-fade-rise pointer-events-auto flex items-start gap-2.5 rounded-surface border px-4 py-3 text-sm shadow-pop ${
+              STYLES[t.type] || STYLES.info
+            }`}
           >
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/60 text-xs font-bold">
-              {icons[t.type]}
-            </span>
-            <p className="flex-1">{t.message}</p>
+            <Icon name={ICONS[t.type] || "info"} size={16} className="mt-0.5" />
+            <p className="min-w-0 flex-1 break-token">{t.message}</p>
             <button
               type="button"
               onClick={() => dismiss(t.id)}
-              className="shrink-0 opacity-60 hover:opacity-100"
-              aria-label="Dismiss"
+              aria-label="Dismiss notification"
+              className="-m-1 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-control opacity-70 transition-opacity duration-150 ease-standard hover:opacity-100"
             >
-              ×
+              <Icon name="close" size={14} />
             </button>
           </div>
         ))}

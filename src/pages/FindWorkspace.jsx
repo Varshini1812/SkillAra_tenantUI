@@ -1,13 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { checkWorkspace } from "../api/auth.js";
-import PlatformShowcase from "../components/workspace/PlatformShowcase.jsx";
-import WorkspaceBackground from "../components/workspace/WorkspaceBackground.jsx";
-import { buildTenantUrl, getRootDomain, getTenantDisplayHost, setDevTenant } from "../utils/tenant.js";
+import {
+  buildTenantUrl,
+  getRootDomain,
+  getTenantDisplayHost,
+  setDevTenant,
+} from "../utils/tenant.js";
+import Icon from "../admin/components/ui/Icon.jsx";
+import { SkillAraMark } from "../admin/components/SkillAraBrand.jsx";
+import { Badge, Button, Field, Skeleton } from "../admin/components/ui/primitives.jsx";
 
 const SUBDOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
 
+const CAPABILITIES = [
+  { icon: "courses", title: "Courses", desc: "Structured learning paths and lessons" },
+  { icon: "mentor", title: "Mentorship", desc: "One-to-one guidance and mock interviews" },
+  { icon: "clipboardCheck", title: "Assessments", desc: "Quizzes, mock tests and certificates" },
+  { icon: "activity", title: "Progress", desc: "Track completion across your cohort" },
+];
+
+/**
+ * Root-domain entry point: this page is SkillAra's own, not a tenant's, so it
+ * uses the product palette rather than any organization's branding.
+ */
 function WorkspaceForm() {
   const root = getRootDomain() || "skillara.com";
+  const inputId = useId();
+
   const [workspace, setWorkspace] = useState("");
   const [status, setStatus] = useState("idle");
   const [tenantName, setTenantName] = useState("");
@@ -17,12 +36,12 @@ function WorkspaceForm() {
     if (!sub) {
       setStatus("idle");
       setTenantName("");
-      return;
+      return undefined;
     }
     if (!SUBDOMAIN_RE.test(sub)) {
       setStatus("invalid");
       setTenantName("");
-      return;
+      return undefined;
     }
 
     setStatus("checking");
@@ -53,110 +72,162 @@ function WorkspaceForm() {
     window.location.href = `${buildTenantUrl(sub)}/login`;
   };
 
-  const displayHost = workspace.trim() ? getTenantDisplayHost(workspace.trim().toLowerCase()) : "";
+  const displayHost = workspace.trim()
+    ? getTenantDisplayHost(workspace.trim().toLowerCase())
+    : "";
+
+  const borderClass =
+    status === "invalid" && workspace.trim()
+      ? "border-danger"
+      : status === "valid"
+        ? "border-success"
+        : "border-line-strong focus-within:border-brand";
 
   return (
-    <div className="workspace-form-card relative rounded-2xl border border-white/10 bg-[#161b26]/90 p-8 shadow-2xl backdrop-blur-xl">
-      {/* Glow ring behind card */}
-      <div className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-b from-violet-500/20 via-transparent to-blue-500/10 opacity-60" />
+    <div className="mx-auto w-full max-w-sm">
+      <span className="flex h-11 w-11 items-center justify-center rounded-surface bg-brand-subtle text-brand">
+        <Icon name="search" size={22} />
+      </span>
 
-      <div className="relative">
-        <div className="flex items-center gap-2 text-white">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/20 text-base">
-            📍
-          </span>
-          <h1 className="text-xl font-semibold">Find your workspace</h1>
-        </div>
-        <p className="mt-2 text-sm text-slate-400">
-          Enter the name your school or team uses on SkillAra.
-        </p>
+      <h1 className="mt-5 text-2xl font-semibold tracking-tight text-ink">Find your workspace</h1>
+      <p className="mt-1.5 text-[0.875rem] text-ink-muted">
+        Enter the name your academy or team uses on SkillAra.
+      </p>
 
-        <form onSubmit={handleContinue} className="mt-8">
-          <label className="block text-sm font-medium text-slate-300">Workspace name</label>
-          <div className="mt-2 flex overflow-hidden rounded-xl border border-white/10 bg-[#0f1117] focus-within:border-violet-500 focus-within:ring-1 focus-within:ring-violet-500">
+      <form onSubmit={handleContinue} className="mt-6" noValidate>
+        <Field label="Workspace name" htmlFor={inputId} required>
+          <div
+            className={`flex overflow-hidden rounded-control border bg-surface transition-[border-color,box-shadow] duration-200 ease-standard focus-within:ring-[3px] focus-within:ring-brand-muted ${borderClass}`}
+          >
             <input
+              id={inputId}
               value={workspace}
               onChange={(e) =>
                 setWorkspace(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
               }
-              placeholder="acmebootcamp"
-              className="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-white placeholder:text-slate-600 focus:ring-0"
+              placeholder="acme-academy"
               autoFocus
               autoComplete="off"
               spellCheck={false}
+              aria-describedby={`${inputId}-status`}
+              className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2.5 font-mono text-base text-ink placeholder:text-ink-subtle focus:outline-none"
             />
-            <span className="flex items-center border-l border-white/10 px-4 text-sm text-slate-500">
+            <span className="flex items-center border-l border-line bg-surface-sunken px-3 text-[0.8125rem] font-medium text-ink-muted">
               .{root}
             </span>
           </div>
+        </Field>
 
+        {/* Result is announced as it resolves, and always pairs a word and an
+            icon with its colour (`color-not-only`). */}
+        <div id={`${inputId}-status`} aria-live="polite" className="mt-2 min-h-6">
           {status === "checking" && (
-            <p className="mt-2 text-sm text-slate-500">Checking workspace…</p>
+            <span className="flex items-center gap-2">
+              <Skeleton className="h-5 w-20" />
+              <span className="text-xs text-ink-subtle">Checking…</span>
+            </span>
           )}
           {status === "valid" && (
-            <p className="mt-2 flex items-center gap-1.5 text-sm text-emerald-400">
-              <span>✓</span>
-              <span>
-                <strong>{displayHost}</strong> is a workspace
-                {tenantName ? ` — ${tenantName}` : ""}
+            <span className="flex flex-wrap items-center gap-2">
+              <Badge variant="success">Found</Badge>
+              <span className="break-token text-xs text-ink-muted">
+                <span className="font-medium text-ink">{displayHost}</span>
+                {tenantName ? ` · ${tenantName}` : ""}
               </span>
-            </p>
+            </span>
           )}
           {status === "invalid" && workspace.trim() && (
-            <p className="mt-2 text-sm text-red-400">
-              No workspace found at <strong>{displayHost || `?.${root}`}</strong>
-            </p>
+            <span className="flex flex-wrap items-center gap-2">
+              <Badge variant="error">Not found</Badge>
+              <span className="break-token text-xs text-ink-muted">
+                Nothing at {displayHost || `?.${root}`}
+              </span>
+            </span>
           )}
+        </div>
 
-          <button
-            type="submit"
-            disabled={status !== "valid"}
-            className="mt-6 w-full rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-900/30 transition hover:from-violet-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
-          >
-            Continue
-          </button>
-        </form>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={status !== "valid"}
+          className="mt-4 w-full"
+        >
+          Continue
+          <Icon name="chevronRight" size={16} />
+        </Button>
+      </form>
 
-        <p className="mt-6 text-center text-xs text-slate-500">
-          Don&apos;t know it? Ask your instructor or admin for the link.
-        </p>
-      </div>
+      <p className="mt-6 text-center text-xs text-ink-subtle">
+        Don&apos;t know it? Ask your instructor or administrator for the link.
+      </p>
     </div>
   );
 }
 
 export default function FindWorkspace() {
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <WorkspaceBackground />
-
-      {/* Top bar */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-5 lg:px-10">
-        <div className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-blue-600 text-sm font-bold text-white shadow-lg shadow-violet-900/40">
-            S
+    <div className="slim-scroll font-sans flex min-h-dvh items-stretch bg-surface text-ink">
+      {/* Brand panel — decorative, hidden below lg, pinned to the viewport so it
+          can never grow the page into a second scrollbar. */}
+      <aside
+        className="relative hidden flex-col justify-between overflow-hidden px-10 py-10 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-[46%] xl:w-[48%]"
+        style={{
+          backgroundColor: "var(--color-brand-active)",
+          backgroundImage:
+            "radial-gradient(115% 85% at 108% -10%, var(--color-brand-hover) 0%, transparent 62%)," +
+            "radial-gradient(75% 55% at -10% 110%, rgba(13,148,136,0.30) 0%, transparent 58%)",
+        }}
+      >
+        <div className="relative flex shrink-0 items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-control bg-white text-brand-active">
+            <SkillAraMark className="h-5 w-5" />
           </span>
-          <span className="text-lg font-bold text-white">SkillAra</span>
+          <span className="text-lg font-bold tracking-tight text-white">SkillAra</span>
         </div>
-        <p className="hidden text-xs text-slate-500 sm:block">
-          Your organization&apos;s learning hub
+
+        <div className="relative flex flex-1 flex-col justify-center py-10">
+          <div className="max-w-lg">
+            <h2 className="text-[2.25rem] font-bold leading-[1.12] tracking-tight text-white xl:text-[2.5rem]">
+              Your academy,
+              <br />
+              wherever you learn.
+            </h2>
+            <p className="mt-4 max-w-md text-base leading-relaxed text-white/75">
+              Every organization on SkillAra gets its own workspace. Enter yours to sign in.
+            </p>
+          </div>
+
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+            {CAPABILITIES.map((c) => (
+              <li
+                key={c.title}
+                className="rounded-surface border border-white/15 bg-white/[0.06] p-3.5"
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name={c.icon} size={16} className="text-white/70" />
+                  <p className="text-[0.875rem] font-semibold text-white">{c.title}</p>
+                </div>
+                <p className="mt-1 text-[0.8125rem] leading-5 text-white/70">{c.desc}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className="relative shrink-0 text-xs font-medium tracking-wide text-white/70">
+          Multi-tenant learning platform · Data isolated per organization
         </p>
-      </header>
+      </aside>
 
-      {/* Main content */}
-      <main className="relative z-10 mx-auto flex max-w-6xl flex-col gap-10 px-6 pb-12 pt-4 lg:flex-row lg:items-center lg:gap-16 lg:px-10 lg:pb-16 lg:pt-8">
-        <div className="flex-1 lg:max-w-xl">
-          <PlatformShowcase />
+      <div className="flex w-full flex-col justify-center px-6 py-10 sm:px-8 lg:flex-1">
+        <div className="mb-8 flex items-center gap-2.5 lg:hidden">
+          <span className="flex h-9 w-9 items-center justify-center rounded-control bg-brand text-brand-fg">
+            <SkillAraMark className="h-4.5 w-4.5" />
+          </span>
+          <span className="text-xl font-bold text-ink">SkillAra</span>
         </div>
-        <div className="w-full shrink-0 lg:max-w-md">
-          <WorkspaceForm />
-        </div>
-      </main>
 
-      {/* Bottom tagline */}
-      <footer className="relative z-10 border-t border-white/5 px-6 py-4 text-center text-xs text-slate-600 lg:px-10">
-        Courses · AI Tutoring · Mock Tests · Mentorship · Community — all in one platform.
-      </footer>
+        <WorkspaceForm />
+      </div>
     </div>
   );
 }

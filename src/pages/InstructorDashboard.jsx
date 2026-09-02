@@ -6,21 +6,21 @@ import { getErrorMessage } from "../api/client.js";
 import { usePermissions } from "../hooks/usePermissions.js";
 
 const REVIEW_CHIP = {
-  PENDING: { label: "In review", chip: "bg-indigo-100 text-indigo-700" },
-  CHANGES_REQUESTED: { label: "Changes requested", chip: "bg-amber-100 text-amber-800" },
-  APPROVED: { label: "Ready to publish", chip: "bg-emerald-100 text-emerald-700" },
+  PENDING: { label: "In review", chip: "bg-brand-muted text-brand-hover" },
+  CHANGES_REQUESTED: { label: "Changes requested", chip: "bg-warning-subtle text-warning" },
+  APPROVED: { label: "Ready to publish", chip: "bg-success-subtle text-success" },
 };
 
 function Stat({ label, value, to, tone = "slate" }) {
   const tones = {
-    slate: "text-slate-900",
-    indigo: "text-indigo-700",
-    amber: "text-amber-700",
-    emerald: "text-emerald-700",
+    slate: "text-ink",
+    indigo: "text-brand-hover",
+    amber: "text-warning",
+    emerald: "text-success",
   };
   const card = (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
+    <div className="rounded-surface border border-line bg-surface p-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">{label}</p>
       <p className={`mt-1 text-2xl font-bold ${tones[tone]}`}>{value}</p>
     </div>
   );
@@ -53,7 +53,7 @@ export default function InstructorDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="text-slate-500">Loading your dashboard…</p>;
+  if (loading) return <p className="text-ink-subtle">Loading your dashboard…</p>;
 
   const published = courses.filter((c) => c.status === "PUBLISHED");
   const drafts = courses.filter((c) => c.status !== "PUBLISHED" && c.status !== "ARCHIVED");
@@ -67,15 +67,15 @@ export default function InstructorDashboard() {
   return (
     <section className="space-y-6">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-indigo-600">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand">
           Teaching overview
         </p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">
+        <h1 className="mt-1 text-2xl font-bold text-ink">
           Welcome back{user?.name ? `, ${user.name}` : ""}
         </h1>
       </div>
 
-      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Stat label="My courses" value={courses.length} to="/teach" />
@@ -86,25 +86,25 @@ export default function InstructorDashboard() {
       </div>
 
       {actionable.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white">
-          <div className="border-b border-slate-100 px-4 py-3">
-            <h2 className="text-sm font-semibold text-slate-800">Waiting on you</h2>
+        <div className="rounded-surface border border-line bg-surface">
+          <div className="border-b border-line px-4 py-3">
+            <h2 className="text-sm font-semibold text-ink">Waiting on you</h2>
           </div>
-          <ul className="divide-y divide-slate-50">
+          <ul className="divide-y divide-surface-sunken">
             {actionable.map((course) => {
               const chip = REVIEW_CHIP[course.review?.status];
               return (
                 <li key={course.id}>
                   <Link
                     to={`/teach/${course.id}`}
-                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50"
+                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-sunken"
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium text-slate-800">
+                      <span className="block truncate text-sm font-medium text-ink">
                         {course.title}
                       </span>
                       {course.review?.note && (
-                        <span className="mt-0.5 block line-clamp-1 text-xs text-slate-500">
+                        <span className="mt-0.5 block line-clamp-1 text-xs text-ink-subtle">
                           {course.review.note}
                         </span>
                       )}
@@ -122,33 +122,33 @@ export default function InstructorDashboard() {
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-          <h2 className="text-sm font-semibold text-slate-800">My courses</h2>
-          <Link to="/teach" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+      <div className="rounded-surface border border-line bg-surface">
+        <div className="flex items-center justify-between border-b border-line px-4 py-3">
+          <h2 className="text-sm font-semibold text-ink">My courses</h2>
+          <Link to="/teach" className="text-xs font-medium text-brand hover:text-brand-hover">
             Manage all
           </Link>
         </div>
 
         {courses.length === 0 ? (
-          <p className="px-4 py-8 text-center text-sm text-slate-400">
+          <p className="px-4 py-8 text-center text-sm text-ink-subtle">
             You haven&apos;t created a course yet.{" "}
             {can("courses", "create") && (
-              <Link to="/teach" className="text-indigo-600 hover:underline">
+              <Link to="/teach" className="text-brand hover:underline">
                 Create your first one.
               </Link>
             )}
           </p>
         ) : (
-          <ul className="divide-y divide-slate-50">
+          <ul className="divide-y divide-surface-sunken">
             {courses.slice(0, 8).map((course) => (
               <li key={course.id}>
                 <Link
                   to={`/teach/${course.id}`}
-                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50"
+                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-sunken"
                 >
-                  <span className="min-w-0 truncate text-sm text-slate-800">{course.title}</span>
-                  <span className="shrink-0 text-xs text-slate-400">
+                  <span className="min-w-0 truncate text-sm text-ink">{course.title}</span>
+                  <span className="shrink-0 text-xs text-ink-subtle">
                     {course.status} · {course.stats?.lessonCount || 0} lessons ·{" "}
                     {course.stats?.enrolledCount || 0} enrolled
                   </span>

@@ -44,7 +44,7 @@ export default function NotificationBell() {
     <Link
       to="/notifications"
       aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
-      className="relative shrink-0 rounded-lg border border-slate-300 p-2 text-slate-600 hover:bg-slate-50"
+      className="relative shrink-0 rounded-control border border-line-strong p-2 text-ink-muted hover:bg-surface-sunken"
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
         <path
@@ -54,7 +54,7 @@ export default function NotificationBell() {
         />
       </svg>
       {unread > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+        <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white">
           {unread > 99 ? "99+" : unread}
         </span>
       )}

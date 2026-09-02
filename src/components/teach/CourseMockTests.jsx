@@ -60,37 +60,37 @@ function ManualBuilder({ courseId, onCreated, onCancel }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-lg border border-slate-200 p-4">
-      {error && <div className="rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+    <form onSubmit={submit} className="space-y-3 rounded-control border border-line p-4">
+      {error && <div className="rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Title
           <input
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Description
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Duration (minutes)
           <input
             type="number"
             min="1"
             value={durationMinutes}
             onChange={(e) => setDurationMinutes(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Passing score (%)
           <input
             type="number"
@@ -98,21 +98,21 @@ function ManualBuilder({ courseId, onCreated, onCancel }) {
             max="100"
             value={passingScore}
             onChange={(e) => setPassingScore(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
       </div>
 
       <div className="space-y-3">
         {questions.map((q, i) => (
-          <div key={i} className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+          <div key={i} className="rounded-control border border-line bg-surface-sunken p-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">Question {i + 1}</span>
+              <span className="text-xs font-semibold text-ink-subtle">Question {i + 1}</span>
               {questions.length > 1 && (
                 <button
                   type="button"
                   onClick={() => setQuestions((prev) => prev.filter((_, idx) => idx !== i))}
-                  className="text-xs text-rose-600 hover:underline"
+                  className="text-xs text-danger hover:underline"
                 >
                   Remove
                 </button>
@@ -123,7 +123,7 @@ function ManualBuilder({ courseId, onCreated, onCancel }) {
               placeholder="Question text"
               value={q.question}
               onChange={(e) => updateQuestion(i, { question: e.target.value })}
-              className="mt-2 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-2 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
             <div className="mt-2 grid grid-cols-2 gap-2">
               {q.options.map((opt, oi) => (
@@ -132,7 +132,7 @@ function ManualBuilder({ courseId, onCreated, onCancel }) {
                   placeholder={`Option ${oi + 1}`}
                   value={opt}
                   onChange={(e) => updateOption(i, oi, e.target.value)}
-                  className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+                  className="rounded border border-line-strong px-2 py-1.5 text-sm"
                 />
               ))}
             </div>
@@ -140,7 +140,7 @@ function ManualBuilder({ courseId, onCreated, onCancel }) {
               required
               value={q.correctAnswer}
               onChange={(e) => updateQuestion(i, { correctAnswer: e.target.value })}
-              className="mt-2 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-2 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             >
               <option value="">Correct answer…</option>
               {q.options.filter(Boolean).map((opt, oi) => (
@@ -153,14 +153,14 @@ function ManualBuilder({ courseId, onCreated, onCancel }) {
               placeholder="Explanation (optional)"
               value={q.explanation}
               onChange={(e) => updateQuestion(i, { explanation: e.target.value })}
-              className="mt-2 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-2 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </div>
         ))}
         <button
           type="button"
           onClick={() => setQuestions((prev) => [...prev, emptyQuestion()])}
-          className="text-sm font-medium text-indigo-600 hover:underline"
+          className="text-sm font-medium text-brand hover:underline"
         >
           + Add question
         </button>
@@ -170,14 +170,14 @@ function ManualBuilder({ courseId, onCreated, onCancel }) {
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+          className="rounded-control border border-line-strong px-3 py-1.5 text-sm hover:bg-surface-sunken"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-control bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
         >
           {saving ? "Saving…" : "Create mock test"}
         </button>
@@ -213,22 +213,22 @@ function AiGenerateForm({ courseId, onCreated, onCancel }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-lg border border-slate-200 p-4">
-      {error && <div className="rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
-      <p className="text-xs text-slate-500">
+    <form onSubmit={submit} className="space-y-3 rounded-control border border-line p-4">
+      {error && <div className="rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
+      <p className="text-xs text-ink-subtle">
         Generates questions from this course's lesson content using AI, then saves and publishes
         the test.
       </p>
-      <label className="block text-xs font-medium text-slate-600">
+      <label className="block text-xs font-medium text-ink-muted">
         Title (optional)
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+          className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
         />
       </label>
       <div className="grid grid-cols-2 gap-3">
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Question count
           <input
             type="number"
@@ -236,17 +236,17 @@ function AiGenerateForm({ courseId, onCreated, onCancel }) {
             max="50"
             value={questionCount}
             onChange={(e) => setQuestionCount(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
-        <label className="block text-xs font-medium text-slate-600">
+        <label className="block text-xs font-medium text-ink-muted">
           Duration (minutes)
           <input
             type="number"
             min="1"
             value={durationMinutes}
             onChange={(e) => setDurationMinutes(e.target.value)}
-            className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
           />
         </label>
       </div>
@@ -254,14 +254,14 @@ function AiGenerateForm({ courseId, onCreated, onCancel }) {
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+          className="rounded-control border border-line-strong px-3 py-1.5 text-sm hover:bg-surface-sunken"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={generating}
-          className="rounded-lg bg-purple-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
+          className="rounded-control bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
         >
           {generating ? "Generating…" : "Generate with AI"}
         </button>
@@ -280,16 +280,16 @@ function AttemptsList({ mockTestId }) {
       .catch((err) => setError(getErrorMessage(err)));
   }, [mockTestId]);
 
-  if (error) return <p className="mt-2 text-xs text-red-600">{error}</p>;
-  if (!attempts) return <p className="mt-2 text-xs text-slate-400">Loading attempts…</p>;
-  if (attempts.length === 0) return <p className="mt-2 text-xs text-slate-400">No attempts yet.</p>;
+  if (error) return <p className="mt-2 text-xs text-danger">{error}</p>;
+  if (!attempts) return <p className="mt-2 text-xs text-ink-subtle">Loading attempts…</p>;
+  if (attempts.length === 0) return <p className="mt-2 text-xs text-ink-subtle">No attempts yet.</p>;
 
   return (
-    <ul className="mt-2 space-y-1 text-xs text-slate-600">
+    <ul className="mt-2 space-y-1 text-xs text-ink-muted">
       {attempts.map((a) => (
-        <li key={a._id} className="flex justify-between rounded bg-slate-50 px-2 py-1">
+        <li key={a._id} className="flex justify-between rounded bg-surface-sunken px-2 py-1">
           <span>{a.userId?.name || a.userId?.email || "Student"}</span>
-          <span className={a.passed ? "text-emerald-600" : "text-rose-600"}>{a.percentage}%</span>
+          <span className={a.passed ? "text-success" : "text-danger"}>{a.percentage}%</span>
         </li>
       ))}
     </ul>
@@ -332,22 +332,22 @@ export default function CourseMockTests({ courseId }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
+    <div className="rounded-surface border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-semibold text-slate-900">Mock tests</h2>
+        <h2 className="font-semibold text-ink">Mock tests</h2>
         {!mode && (
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setMode("ai")}
-              className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-sm font-medium text-purple-700 hover:bg-purple-100"
+              className="rounded-control border border-brand-border bg-brand-subtle px-3 py-1.5 text-sm font-medium text-brand-hover hover:bg-brand-muted"
             >
               Generate with AI
             </button>
             <button
               type="button"
               onClick={() => setMode("manual")}
-              className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-900"
+              className="rounded-control bg-ink px-3 py-1.5 text-sm font-medium text-white hover:bg-ink"
             >
               New mock test
             </button>
@@ -355,7 +355,7 @@ export default function CourseMockTests({ courseId }) {
         )}
       </div>
 
-      {error && <div className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-3 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
 
       {mode === "manual" && (
         <div className="mt-3">
@@ -369,25 +369,25 @@ export default function CourseMockTests({ courseId }) {
       )}
 
       {loading ? (
-        <p className="mt-4 text-sm text-slate-400">Loading…</p>
+        <p className="mt-4 text-sm text-ink-subtle">Loading…</p>
       ) : tests.length === 0 ? (
         !mode && (
-          <p className="mt-4 rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+          <p className="mt-4 rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
             No mock tests yet.
           </p>
         )
       ) : (
         <ul className="mt-4 space-y-2">
           {tests.map((t) => (
-            <li key={t.id} className="rounded-lg border border-slate-100 p-3">
+            <li key={t.id} className="rounded-control border border-line p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-800">{t.title}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-sm font-medium text-ink">{t.title}</p>
+                  <p className="text-xs text-ink-subtle">
                     {t.questions?.length} questions · {t.durationMinutes} min ·{" "}
                     <span
                       className={`font-medium ${
-                        t.status === "PUBLISHED" ? "text-emerald-600" : "text-slate-500"
+                        t.status === "PUBLISHED" ? "text-success" : "text-ink-subtle"
                       }`}
                     >
                       {t.status}
@@ -399,7 +399,7 @@ export default function CourseMockTests({ courseId }) {
                     <button
                       type="button"
                       onClick={() => handlePublish(t.id)}
-                      className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700"
+                      className="rounded-control bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-hover"
                     >
                       Publish
                     </button>
@@ -407,7 +407,7 @@ export default function CourseMockTests({ courseId }) {
                   <button
                     type="button"
                     onClick={() => setExpanded((cur) => (cur === t.id ? null : t.id))}
-                    className="rounded-lg border border-slate-300 px-3 py-1 text-xs hover:bg-slate-50"
+                    className="rounded-control border border-line-strong px-3 py-1 text-xs hover:bg-surface-sunken"
                   >
                     {expanded === t.id ? "Hide attempts" : "Attempts"}
                   </button>

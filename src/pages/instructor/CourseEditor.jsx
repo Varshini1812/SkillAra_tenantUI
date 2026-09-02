@@ -17,6 +17,7 @@ import CourseReviewPanel from "../../components/teach/CourseReviewPanel.jsx";
 import { usePermissions } from "../../hooks/usePermissions.js";
 import CourseMockTests from "../../components/teach/CourseMockTests.jsx";
 import CourseLiveSessions from "../../components/teach/CourseLiveSessions.jsx";
+import Icon from "../../admin/components/ui/Icon.jsx";
 
 const LEVELS = ["ALL_LEVELS", "BEGINNER", "INTERMEDIATE", "ADVANCED"];
 
@@ -165,8 +166,8 @@ export default function CourseEditor() {
     }
   };
 
-  if (loading) return <div className="text-center text-slate-400">Loading course…</div>;
-  if (!course) return <div className="text-center text-red-500">{error || "Course not found"}</div>;
+  if (loading) return <div className="text-center text-ink-subtle">Loading course…</div>;
+  if (!course) return <div className="text-center text-danger">{error || "Course not found"}</div>;
 
   const isPublished = course.status === "PUBLISHED";
   const blocked = course.moderation?.isBlocked;
@@ -186,24 +187,23 @@ export default function CourseEditor() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <Link to="/teach" className="text-sm text-slate-500 hover:text-indigo-600">
-            ← Back to my courses
+          <Link to="/teach" className="text-sm text-ink-subtle hover:text-brand"><Icon name="arrowLeft" size={15} /> Back to my courses
           </Link>
           <h1 className="mt-1 truncate text-2xl font-bold">{course.title}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
             <span
               className={`rounded px-2 py-0.5 font-semibold ${
-                isPublished ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"
+                isPublished ? "bg-success-subtle text-success" : "bg-surface-sunken text-ink-muted"
               }`}
             >
               {course.status}
             </span>
             {blocked && (
-              <span className="rounded bg-rose-100 px-2 py-0.5 font-semibold text-rose-700">
+              <span className="rounded bg-danger-subtle px-2 py-0.5 font-semibold text-danger">
                 Blocked
               </span>
             )}
-            <span className="text-slate-400">
+            <span className="text-ink-subtle">
               {course.stats?.lessonCount || 0} lessons · {course.stats?.enrolledCount || 0} enrolled
             </span>
           </div>
@@ -212,7 +212,7 @@ export default function CourseEditor() {
         <div className="flex shrink-0 flex-wrap gap-2">
           <Link
             to={`/courses/${id}`}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
+            className="rounded-control border border-line-strong px-4 py-2 text-sm hover:bg-surface-sunken"
           >
             Preview
           </Link>
@@ -222,8 +222,8 @@ export default function CourseEditor() {
             onClick={togglePublish}
             disabled={blocked || (!isPublished && !approved)}
             title={isPublished ? undefined : publishBlockedReason}
-            className={`rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
-              isPublished ? "bg-slate-600 hover:bg-slate-700" : "bg-indigo-600 hover:bg-indigo-700"
+            className={`rounded-control px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
+              isPublished ? "bg-ink-muted hover:bg-ink-muted" : "bg-brand hover:bg-brand-hover"
             }`}
           >
             {isPublished ? "Unpublish" : "Publish"}
@@ -233,14 +233,14 @@ export default function CourseEditor() {
       </div>
 
       {blocked && (
-        <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
+        <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">
           An administrator blocked this course
           {course.moderation.reason ? `: ${course.moderation.reason}` : "."} Contact your
           organization admin to resolve it.
         </div>
       )}
-      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-      {notice && <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
+      {notice && <div className="rounded-control bg-success-subtle p-3 text-sm text-success">{notice}</div>}
 
       {!isPublished && (
         <CourseReviewPanel
@@ -253,15 +253,17 @@ export default function CourseEditor() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* ---------------- details ---------------- */}
-        <form onSubmit={saveDetails} className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 lg:col-span-1">
+        <form onSubmit={saveDetails} className="space-y-4 rounded-surface border border-line bg-surface p-4 lg:col-span-1">
           <h2 className="font-semibold">Course details</h2>
 
           <div>
-            <div className="aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
+            <div className="aspect-video overflow-hidden rounded-control bg-gradient-to-br from-brand to-brand">
               {course.thumbnailUrl ? (
                 <img src={course.thumbnailUrl} alt="" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full items-center justify-center text-3xl text-white/80">📚</div>
+                <div className="flex h-full items-center justify-center text-white/80">
+            <Icon name="books" size={30} />
+          </div>
               )}
             </div>
             <input
@@ -269,56 +271,56 @@ export default function CourseEditor() {
               type="file"
               accept="image/*"
               onChange={(e) => handleThumbnail(e.target.files?.[0])}
-              className="mt-2 block w-full text-xs file:mr-2 file:rounded file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-indigo-700"
+              className="mt-2 block w-full text-xs file:mr-2 file:rounded file:border-0 file:bg-brand-subtle file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-brand-hover"
             />
           </div>
 
-          <label className="block text-xs font-medium text-slate-600">
+          <label className="block text-xs font-medium text-ink-muted">
             Title
             <input
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
               maxLength={200}
-              className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </label>
 
-          <label className="block text-xs font-medium text-slate-600">
+          <label className="block text-xs font-medium text-ink-muted">
             Subtitle
             <input
               value={form.subtitle}
               onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
               maxLength={300}
-              className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </label>
 
-          <label className="block text-xs font-medium text-slate-600">
+          <label className="block text-xs font-medium text-ink-muted">
             Description
             <textarea
               rows={5}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </label>
 
           <div className="grid grid-cols-2 gap-3">
-            <label className="block text-xs font-medium text-slate-600">
+            <label className="block text-xs font-medium text-ink-muted">
               Category
               <input
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+                className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
               />
             </label>
-            <label className="block text-xs font-medium text-slate-600">
+            <label className="block text-xs font-medium text-ink-muted">
               Level
               <select
                 value={form.level}
                 onChange={(e) => setForm({ ...form, level: e.target.value })}
-                className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+                className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
               >
                 {LEVELS.map((l) => (
                   <option key={l} value={l}>
@@ -327,54 +329,54 @@ export default function CourseEditor() {
                 ))}
               </select>
             </label>
-            <label className="block text-xs font-medium text-slate-600">
+            <label className="block text-xs font-medium text-ink-muted">
               Price
               <input
                 type="number"
                 min="0"
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
-                className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+                className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
               />
             </label>
-            <label className="block text-xs font-medium text-slate-600">
+            <label className="block text-xs font-medium text-ink-muted">
               Currency
               <input
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
                 maxLength={3}
-                className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm uppercase"
+                className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm uppercase"
               />
             </label>
           </div>
 
-          <label className="block text-xs font-medium text-slate-600">
-            Tags <span className="font-normal text-slate-400">(one per line)</span>
+          <label className="block text-xs font-medium text-ink-muted">
+            Tags <span className="font-normal text-ink-subtle">(one per line)</span>
             <textarea
               rows={3}
               value={form.tags}
               onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </label>
 
-          <label className="block text-xs font-medium text-slate-600">
-            What learners will achieve <span className="font-normal text-slate-400">(one per line)</span>
+          <label className="block text-xs font-medium text-ink-muted">
+            What learners will achieve <span className="font-normal text-ink-subtle">(one per line)</span>
             <textarea
               rows={3}
               value={form.outcomes}
               onChange={(e) => setForm({ ...form, outcomes: e.target.value })}
-              className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </label>
 
-          <label className="block text-xs font-medium text-slate-600">
-            Requirements <span className="font-normal text-slate-400">(one per line)</span>
+          <label className="block text-xs font-medium text-ink-muted">
+            Requirements <span className="font-normal text-ink-subtle">(one per line)</span>
             <textarea
               rows={3}
               value={form.requirements}
               onChange={(e) => setForm({ ...form, requirements: e.target.value })}
-              className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
             />
           </label>
 
@@ -383,7 +385,7 @@ export default function CourseEditor() {
               <button
                 type="button"
                 onClick={archive}
-                className="text-xs font-medium text-rose-600 hover:underline"
+                className="text-xs font-medium text-danger hover:underline"
               >
                 Archive course
               </button>
@@ -394,7 +396,7 @@ export default function CourseEditor() {
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
               >
                 {saving ? "Saving…" : "Save details"}
               </button>
@@ -406,7 +408,7 @@ export default function CourseEditor() {
         <div className="space-y-4 lg:col-span-2">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">Curriculum</h2>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-ink-subtle">
               A course needs at least one lesson before it can be published.
             </span>
           </div>
@@ -436,7 +438,7 @@ export default function CourseEditor() {
           ))}
 
           {(course.modules || []).length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">
+            <div className="rounded-surface border border-dashed border-line-strong p-8 text-center text-sm text-ink-subtle">
               No modules yet. Add your first one below.
             </div>
           )}
@@ -447,12 +449,12 @@ export default function CourseEditor() {
               onChange={(e) => setNewModuleTitle(e.target.value)}
               placeholder="New module title"
               maxLength={200}
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="flex-1 rounded-control border border-line-strong px-3 py-2 text-sm"
             />
             <button
               type="submit"
               disabled={!newModuleTitle.trim()}
-              className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 disabled:opacity-50"
+              className="rounded-control bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-ink disabled:opacity-50"
             >
               Add module
             </button>

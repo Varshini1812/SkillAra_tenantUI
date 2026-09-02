@@ -8,6 +8,7 @@ import {
 import { fetchMentors } from "../../api/mentorship.js";
 import { getErrorMessage } from "../../api/client.js";
 import Breadcrumb from "../components/ui/Breadcrumb.jsx";
+import { PageHeader } from "../components/ui/primitives.jsx";
 
 const STATUS_FILTERS = [
   { value: "", label: "All" },
@@ -17,9 +18,9 @@ const STATUS_FILTERS = [
 ];
 
 const STATUS_BADGE = {
-  OPEN: "bg-slate-100 text-slate-600",
-  ASSIGNED: "bg-indigo-100 text-indigo-700",
-  CLOSED: "bg-emerald-100 text-emerald-700",
+  OPEN: "bg-surface-sunken text-ink-muted",
+  ASSIGNED: "bg-brand-muted text-brand-hover",
+  CLOSED: "bg-success-subtle text-success",
 };
 
 function fmt(iso) {
@@ -75,15 +76,16 @@ export default function MentorshipQueue() {
 
   return (
     <div>
-      <Breadcrumb items={[{ label: "Dashboard", to: "/admin" }, { label: "Mentorship queue" }]} />
+      <PageHeader
+        breadcrumb={
+          <Breadcrumb items={[{ label: "Dashboard", to: "/admin" }, { label: "Mentorship queue" }]} />
+        }
+        title="Mentorship queue"
+        description="Ticket load across every mentor in your organization."
+      />
 
-      <div className="mt-4">
-        <h1 className="text-2xl font-bold text-slate-900">Mentorship queue</h1>
-        <p className="text-sm text-slate-500">Ticket load across every mentor in your organization.</p>
-      </div>
-
-      {error && <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-      {notice && <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{notice}</div>}
+      {error && <div className="mt-4 rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
+      {notice && <div className="mt-4 rounded-control bg-success-subtle p-3 text-sm text-success">{notice}</div>}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-4">
         {[
@@ -95,16 +97,16 @@ export default function MentorshipQueue() {
             value: summary?.oldestOpenTicketAt ? fmt(summary.oldestOpenTicketAt) : "—",
           },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{stat.label}</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{stat.value}</p>
+          <div key={stat.label} className="rounded-surface border border-line bg-surface p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">{stat.label}</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{stat.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="mt-6 overflow-x-auto rounded-surface border border-line bg-surface">
         <table className="w-full min-w-[600px] text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-surface-sunken text-left text-xs uppercase tracking-wide text-ink-subtle">
             <tr>
               <th className="px-4 py-3">Mentor</th>
               <th className="px-4 py-3">Open tickets</th>
@@ -112,20 +114,20 @@ export default function MentorshipQueue() {
               <th className="px-4 py-3">Avg. close time</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-line">
             {!summary?.perMentor?.length ? (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={4} className="px-4 py-8 text-center text-ink-subtle">
                   No mentor has taken a ticket yet.
                 </td>
               </tr>
             ) : (
               summary.perMentor.map((m) => (
-                <tr key={m.mentorId} className="hover:bg-slate-50/50">
-                  <td className="px-4 py-3 font-medium text-slate-800">{m.name || m.email}</td>
-                  <td className="px-4 py-3 text-slate-600">{m.openCount}</td>
-                  <td className="px-4 py-3 text-slate-600">{m.closedCount}</td>
-                  <td className="px-4 py-3 text-slate-600">{m.avgCloseHours ? `${m.avgCloseHours.toFixed(1)}h` : "—"}</td>
+                <tr key={m.mentorId} className="hover:bg-surface-sunken/50">
+                  <td className="px-4 py-3 font-medium text-ink">{m.name || m.email}</td>
+                  <td className="px-4 py-3 text-ink-muted">{m.openCount}</td>
+                  <td className="px-4 py-3 text-ink-muted">{m.closedCount}</td>
+                  <td className="px-4 py-3 text-ink-muted">{m.avgCloseHours ? `${m.avgCloseHours.toFixed(1)}h` : "—"}</td>
                 </tr>
               ))
             )}
@@ -139,8 +141,8 @@ export default function MentorshipQueue() {
             key={f.value}
             type="button"
             onClick={() => setStatus(f.value)}
-            className={`rounded-lg px-3 py-1.5 text-sm transition ${
-              status === f.value ? "bg-indigo-50 font-medium text-indigo-700" : "text-slate-600 hover:bg-slate-50"
+            className={`rounded-control px-3 py-1.5 text-sm transition ${
+              status === f.value ? "bg-brand-subtle font-medium text-brand-hover" : "text-ink-muted hover:bg-surface-sunken"
             }`}
           >
             {f.label}
@@ -148,9 +150,9 @@ export default function MentorshipQueue() {
         ))}
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="mt-4 overflow-x-auto rounded-surface border border-line bg-surface">
         <table className="w-full min-w-[760px] text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-surface-sunken text-left text-xs uppercase tracking-wide text-ink-subtle">
             <tr>
               <th className="px-4 py-3">Ticket</th>
               <th className="px-4 py-3">Student</th>
@@ -159,29 +161,29 @@ export default function MentorshipQueue() {
               <th className="px-4 py-3 text-right">Assign</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-line">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-10 text-center text-ink-subtle">
                   Loading…
                 </td>
               </tr>
             ) : tickets.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-10 text-center text-ink-subtle">
                   No tickets found.
                 </td>
               </tr>
             ) : (
               tickets.map((t) => (
-                <tr key={t.id} className="hover:bg-slate-50/50">
+                <tr key={t.id} className="hover:bg-surface-sunken/50">
                   <td className="px-4 py-3">
-                    <Link to={`/mentorship/${t.id}`} className="font-medium hover:text-indigo-600">
+                    <Link to={`/mentorship/${t.id}`} className="font-medium hover:text-brand">
                       {t.subject}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{t.studentId?.name || t.studentId?.email || "—"}</td>
-                  <td className="px-4 py-3 text-slate-600">{t.mentorId?.name || t.mentorId?.email || "—"}</td>
+                  <td className="px-4 py-3 text-ink-muted">{t.studentId?.name || t.studentId?.email || "—"}</td>
+                  <td className="px-4 py-3 text-ink-muted">{t.mentorId?.name || t.mentorId?.email || "—"}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded px-2 py-0.5 text-xs font-semibold ${STATUS_BADGE[t.status]}`}>{t.status}</span>
                   </td>
@@ -191,7 +193,7 @@ export default function MentorshipQueue() {
                         <select
                           value={assignChoice[t.id] || ""}
                           onChange={(e) => setAssignChoice((prev) => ({ ...prev, [t.id]: e.target.value }))}
-                          className="rounded border border-slate-300 px-2 py-1 text-xs"
+                          className="rounded border border-line-strong px-2 py-1 text-xs"
                         >
                           <option value="">Select mentor…</option>
                           {mentors.map((m) => (
@@ -203,7 +205,7 @@ export default function MentorshipQueue() {
                         <button
                           type="button"
                           onClick={() => doAssign(t.id)}
-                          className="rounded border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-50"
+                          className="rounded border border-line-strong px-2 py-1 text-xs font-medium hover:bg-surface-sunken"
                         >
                           Assign
                         </button>

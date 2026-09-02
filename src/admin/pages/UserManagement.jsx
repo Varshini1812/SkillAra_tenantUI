@@ -7,12 +7,14 @@ import UserFormDrawer, { EMPTY_USER_FORM } from "../components/users/UserFormDra
 import UserDetailDrawer from "../components/users/UserDetailDrawer.jsx";
 import Drawer from "../components/ui/Drawer.jsx";
 import Breadcrumb from "../components/ui/Breadcrumb.jsx";
+import Tabs from "../components/ui/Tabs.jsx";
 import FilterBar from "../components/ui/FilterBar.jsx";
 import ImportMenu from "../components/ui/ImportMenu.jsx";
 import Pagination from "../components/ui/Pagination.jsx";
-import { TableAction, TableActions, ViewIcon, EditIcon, ToggleOffIcon, ToggleOnIcon, SendIcon, DeleteIcon } from "../components/ui/TableActions.jsx";
+import { TableAction, TableActions } from "../components/ui/TableActions.jsx";
 import ConfirmDialog from "../components/ui/ConfirmDialog.jsx";
-import { EmptyState, OrgStatusBadge, TableSkeleton } from "../components/ui/OrgBadges.jsx";
+import { OrgStatusBadge } from "../components/ui/OrgBadges.jsx";
+import { Button, EmptyState, PageHeader, TableSkeleton } from "../components/ui/primitives.jsx";
 import { useToast } from "../components/ui/Toast.jsx";
 import { usePagination } from "../hooks/usePagination.js";
 import { useTenantRoles } from "../hooks/useTenantRoles.js";
@@ -61,6 +63,8 @@ const AUDIENCE_TABS = [
 import { useAdminAuth } from "../context/AdminAuthContext.jsx";
 import { downloadUserImportSample } from "../utils/userImportSample.js";
 import { findMasterItemByName } from "../utils/masterDataHelpers.js";
+import Icon from "../components/ui/Icon.jsx";
+import { BTN_PRIMARY, BTN_SECONDARY, TABLE_SHELL } from "../components/ui/styles.js";
 
 function parseCsvRow(line) {
   const values = [];
@@ -640,142 +644,151 @@ export default function UserManagement() {
 
   return (
     <div>
-      <Breadcrumb items={[{ label: "Organization", to: "/admin" }, { label: "Users" }]} />
+      <PageHeader
+        breadcrumb={
+          <Breadcrumb items={[{ label: "Organization", to: "/admin" }, { label: "Users" }]} />
+        }
+        title="User management"
+        description="Manage organization members. The organization owner is changed from the platform admin panel."
+        actions={
+          <>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={handleImportUsers}
+            />
+            <ImportMenu
+              importing={importing}
+              onImportClick={() => importInputRef.current?.click()}
+              onDownloadSample={handleDownloadSample}
+            />
+            <Button onClick={openCreate}>
+              <Icon name="plus" size={15} />
+              Create user
+            </Button>
+          </>
+        }
+      />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">User Management</h1>
-          <p className="mt-1 text-slate-500">
-            Manage organization members. The organization owner is updated via the platform admin panel.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <input
-            ref={importInputRef}
-            type="file"
-            accept=".csv,text/csv"
-            className="hidden"
-            onChange={handleImportUsers}
-          />
-          <ImportMenu
-            importing={importing}
-            onImportClick={() => importInputRef.current?.click()}
-            onDownloadSample={handleDownloadSample}
-          />
-          <button type="button" onClick={openCreate} className="admin-btn-primary">
-            + Create user
-          </button>
-        </div>
-      </div>
-
-      {/* Students and staff are managed differently enough to deserve their own lists. */}
-      <div className="mb-3 flex flex-wrap gap-1">
-        {AUDIENCE_TABS.map((t) => {
+      {/* Students and staff are managed differently enough to deserve their own
+          lists, so this is a real tablist rather than a row of buttons. */}
+      <Tabs
+        ariaLabel="Filter users by audience"
+        panelId="users-panel"
+        value={audience}
+        onChange={(next) => {
+          setAudience(next);
+          setRoleFilter("all");
+        }}
+        tabs={AUDIENCE_TABS.map((t) => {
           const staffRoleIds = new Set(allRoles.filter(isStaffRole).map((r) => r.id));
-          const n =
-            t.value === "all"
-              ? users.length
-              : users.filter((u) =>
-                  t.value === "staff" ? staffRoleIds.has(u.roleId) : !staffRoleIds.has(u.roleId)
-                ).length;
-          return (
-            <button
-              key={t.value}
-              type="button"
-              onClick={() => {
-                setAudience(t.value);
-                setRoleFilter("all");
-              }}
-              className={`rounded-lg px-3 py-1.5 text-sm transition ${
-                audience === t.value
-                  ? "bg-indigo-50 font-medium text-indigo-700"
-                  : "text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              {t.label}
-              <span className="ml-1.5 text-xs text-slate-400">{n}</span>
-            </button>
-          );
+          return {
+            ...t,
+            count:
+              t.value === "all"
+                ? users.length
+                : users.filter((u) =>
+                    t.value === "staff" ? staffRoleIds.has(u.roleId) : !staffRoleIds.has(u.roleId)
+                  ).length,
+          };
         })}
-      </div>
+      />
 
-      <FilterBar onClear={clearFilters} showClear={hasActiveFilters}>
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name, email, phone, department..."
-          className="admin-input admin-filter-search min-w-[220px]"
-        />
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="admin-input admin-filter-select text-slate-700"
-          aria-label="Filter by role"
-        >
-          <option value="all">All roles</option>
-          {assignableRoles
-            .filter((r) => audience === "all" || isStaffRole(r) === (audience === "staff"))
-            .map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="admin-input admin-filter-select text-slate-700"
-          aria-label="Filter by status"
-        >
-          <option value="all">All status</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-          <option value="PENDING">Pending</option>
-          <option value="BLOCKED">Blocked</option>
-        </select>
-        <select
-          value={deptFilter}
-          onChange={(e) => setDeptFilter(e.target.value)}
-          className="admin-input admin-filter-select text-slate-700"
-          aria-label="Filter by department"
-        >
-          <option value="all">All departments</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>{d.name}</option>
-          ))}
-        </select>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="admin-input admin-filter-select text-slate-700"
-          aria-label="Sort users"
-        >
-          <option value="name">Sort: Name</option>
-          <option value="created">Sort: Created</option>
-          <option value="role">Sort: Role</option>
-          <option value="status">Sort: Status</option>
-        </select>
-      </FilterBar>
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchLabel="Search users"
+        searchPlaceholder="Search name, email, phone or department"
+        filters={[
+          {
+            id: "role",
+            label: "Role",
+            value: roleFilter,
+            onChange: setRoleFilter,
+            defaultValue: "all",
+            options: [
+              { value: "all", label: "All roles" },
+              ...assignableRoles
+                .filter((r) => audience === "all" || isStaffRole(r) === (audience === "staff"))
+                .map((r) => ({ value: r.id, label: r.name })),
+            ],
+          },
+          {
+            id: "status",
+            label: "Status",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            defaultValue: "all",
+            options: [
+              { value: "all", label: "All statuses" },
+              { value: "ACTIVE", label: "Active" },
+              { value: "INACTIVE", label: "Inactive" },
+              { value: "PENDING", label: "Pending" },
+              { value: "BLOCKED", label: "Blocked" },
+            ],
+          },
+          {
+            id: "department",
+            label: "Department",
+            value: deptFilter,
+            onChange: setDeptFilter,
+            defaultValue: "all",
+            options: [
+              { value: "all", label: "All departments" },
+              ...departments.map((d) => ({ value: d.id, label: d.name })),
+            ],
+          },
+        ]}
+        sort={{
+          label: "Sort users",
+          value: sortBy,
+          onChange: setSortBy,
+          options: [
+            { value: "name", label: "Sort: name" },
+            { value: "created", label: "Sort: created" },
+            { value: "role", label: "Sort: role" },
+            { value: "status", label: "Sort: status" },
+          ],
+        }}
+      />
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="mt-4 rounded-control border border-danger-border bg-danger-subtle p-3 text-sm text-danger">{error}</div>
       )}
 
-      <div className="admin-table mt-4">
+      <div id="users-panel" role="tabpanel" className={`${TABLE_SHELL} mt-4`}>
         {loading ? (
-          <TableSkeleton rows={8} cols={5} />
+          <TableSkeleton rows={8} columns={5} />
         ) : paged.length === 0 ? (
-          <EmptyState
-            icon="👥"
-            title="No users found"
-            description="Create your first user or adjust filters."
-            action={
-              <button type="button" onClick={openCreate} className="admin-btn-primary">
-                + Create user
-              </button>
-            }
-          />
+          hasActiveFilters ? (
+            <EmptyState
+              icon="search"
+              title="No users match those filters"
+              description="Try a different search term, or clear the filters to see everyone."
+              action={
+                <Button variant="secondary" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState
+              icon="users"
+              title="No users yet"
+              description="Add your first member, or import a list from a spreadsheet."
+              action={
+                <Button onClick={openCreate}>
+                  <Icon name="plus" size={15} />
+                  Create user
+                </Button>
+              }
+            />
+          )
         ) : (
           <div className="overflow-x-auto">
-            <table className="admin-data-table">
+            <table className="data-table">
               <thead>
                 <tr>
                   <th className="col-user">User</th>
@@ -790,14 +803,14 @@ export default function UserManagement() {
                 {paged.map((user) => {
                   const role = allRoles.find((r) => r.id === user.roleId);
                   return (
-                    <tr key={user.id} className="admin-table-row border-b border-slate-100 last:border-0">
+                    <tr key={user.id} className="border-b border-line last:border-0">
                       <td className="col-user">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-medium text-indigo-600">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-muted text-xs font-medium text-brand">
                             {(user.firstName?.[0] || "?").toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate font-medium text-slate-900">{user.firstName} {user.lastName}</p>
+                            <p className="truncate font-medium text-ink">{user.firstName} {user.lastName}</p>
                           </div>
                         </div>
                       </td>
@@ -806,24 +819,24 @@ export default function UserManagement() {
                       </td>
                       <td>{user.department || "—"}</td>
                       <td>
-                        <span className="inline-flex rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-medium text-violet-600">
+                        <span className="inline-flex rounded-full bg-brand-muted px-2.5 py-0.5 text-xs font-medium text-brand">
                           {role?.name || "—"}
                         </span>
                       </td>
                       <td><OrgStatusBadge status={user.status} /></td>
                       <td className="col-actions-wide">
                         <TableActions>
-                          <TableAction variant="view" onClick={() => openView(user)} title="View"><ViewIcon /></TableAction>
-                          <TableAction variant="edit" onClick={() => openEdit(user)} title="Edit"><EditIcon /></TableAction>
+                          <TableAction variant="view" onClick={() => openView(user)} title="View"><Icon name="view" size={14} /></TableAction>
+                          <TableAction variant="edit" onClick={() => openEdit(user)} title="Edit"><Icon name="edit" size={14} /></TableAction>
                           {user.status === "ACTIVE" ? (
-                            <TableAction variant="warn" onClick={() => updateUserStatus(user, "DISABLED")} title="Deactivate"><ToggleOffIcon /></TableAction>
+                            <TableAction variant="warn" onClick={() => updateUserStatus(user, "DISABLED")} title="Deactivate"><Icon name="toggleOff" size={14} /></TableAction>
                           ) : (
-                            <TableAction variant="success" onClick={() => updateUserStatus(user, "ACTIVE")} title="Activate"><ToggleOnIcon /></TableAction>
+                            <TableAction variant="success" onClick={() => updateUserStatus(user, "ACTIVE")} title="Activate"><Icon name="toggleOn" size={14} /></TableAction>
                           )}
                           {user.status === "PENDING" && (
-                            <TableAction variant="muted" onClick={() => handleResendInvite(user)} title="Resend invite"><SendIcon /></TableAction>
+                            <TableAction variant="muted" onClick={() => handleResendInvite(user)} title="Resend invite"><Icon name="mail" size={14} /></TableAction>
                           )}
-                          <TableAction variant="warn" onClick={() => setDeleteTarget(user)} title="Delete"><DeleteIcon /></TableAction>
+                          <TableAction variant="danger" onClick={() => setDeleteTarget(user)} title="Delete"><Icon name="trash" size={14} /></TableAction>
                         </TableActions>
                       </td>
                     </tr>
@@ -852,10 +865,10 @@ export default function UserManagement() {
         width="max-w-xl"
         footer={
           <>
-            <button type="button" onClick={closePanel} className="admin-btn-secondary" disabled={submitting}>
+            <button type="button" onClick={closePanel} className={`${BTN_SECONDARY}`} disabled={submitting}>
               Cancel
             </button>
-            <button type="submit" form="create-user-form" disabled={submitting} className="admin-btn-primary">
+            <button type="submit" form="create-user-form" disabled={submitting} className={`${BTN_PRIMARY}`}>
               {submitting ? "Saving..." : "Create user"}
             </button>
           </>
@@ -883,10 +896,10 @@ export default function UserManagement() {
         width="max-w-xl"
         footer={
           <>
-            <button type="button" onClick={closePanel} className="admin-btn-secondary" disabled={submitting}>
+            <button type="button" onClick={closePanel} className={`${BTN_SECONDARY}`} disabled={submitting}>
               Cancel
             </button>
-            <button type="submit" form="edit-user-form" disabled={submitting} className="admin-btn-primary">
+            <button type="submit" form="edit-user-form" disabled={submitting} className={`${BTN_PRIMARY}`}>
               {submitting ? "Saving..." : "Save changes"}
             </button>
           </>

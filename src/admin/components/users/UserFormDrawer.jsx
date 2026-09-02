@@ -1,8 +1,9 @@
 import { mapTenantRoleToApiRole } from "../../data/tenantRolesPermissions.js";
 import { USER_LIMITS } from "../../utils/userValidation.js";
+import { INPUT } from "../../components/ui/styles.js";
 
-const inputClass = "admin-input";
-const labelClass = "mb-1 block text-sm text-slate-500";
+const inputClass = INPUT;
+const labelClass = "mb-1 block text-sm text-ink-subtle";
 
 export default function UserFormDrawer({
   mode,
@@ -27,7 +28,7 @@ export default function UserFormDrawer({
   return (
     <form id={formId} onSubmit={onSubmit} className="space-y-4" noValidate>
       <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-2xl text-slate-500">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-surface-sunken text-2xl text-ink-subtle">
           {form.profilePhoto ? (
             <img src={form.profilePhoto} alt="" className="h-full w-full rounded-full object-cover" />
           ) : (
@@ -43,8 +44,8 @@ export default function UserFormDrawer({
             className={inputClass}
             aria-invalid={Boolean(errors.profilePhoto)}
           />
-          <p className="mt-1 text-xs text-slate-500">Optional · must be a valid http(s) URL</p>
-          {errors.profilePhoto && <p className="mt-1 text-xs text-red-600">{errors.profilePhoto}</p>}
+          <p className="mt-1 text-xs text-ink-subtle">Optional · must be a valid http(s) URL</p>
+          {errors.profilePhoto && <p className="mt-1 text-xs text-danger">{errors.profilePhoto}</p>}
         </div>
       </div>
 
@@ -57,10 +58,10 @@ export default function UserFormDrawer({
             className={inputClass}
             aria-invalid={Boolean(errors.firstName)}
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-ink-subtle">
             {USER_LIMITS.firstName.min}–{USER_LIMITS.firstName.max} characters
           </p>
-          {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>}
+          {errors.firstName && <p className="mt-1 text-xs text-danger">{errors.firstName}</p>}
         </div>
         <div>
           <label className={labelClass}>Last name *</label>
@@ -70,10 +71,10 @@ export default function UserFormDrawer({
             className={inputClass}
             aria-invalid={Boolean(errors.lastName)}
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-ink-subtle">
             At least {USER_LIMITS.lastName.min} character · max {USER_LIMITS.lastName.max}
           </p>
-          {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>}
+          {errors.lastName && <p className="mt-1 text-xs text-danger">{errors.lastName}</p>}
         </div>
       </div>
 
@@ -87,7 +88,7 @@ export default function UserFormDrawer({
           className={`${inputClass} disabled:opacity-60`}
           aria-invalid={Boolean(errors.email)}
         />
-        {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+        {errors.email && <p className="mt-1 text-xs text-danger">{errors.email}</p>}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -99,10 +100,10 @@ export default function UserFormDrawer({
             className={inputClass}
             aria-invalid={Boolean(errors.phone)}
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-ink-subtle">
             Optional · {USER_LIMITS.phone.minDigits}–{USER_LIMITS.phone.maxDigits} digits
           </p>
-          {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+          {errors.phone && <p className="mt-1 text-xs text-danger">{errors.phone}</p>}
         </div>
         <div>
           <label className={labelClass}>Employee ID</label>
@@ -114,10 +115,10 @@ export default function UserFormDrawer({
             className={inputClass}
             aria-invalid={Boolean(errors.employeeId)}
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-ink-subtle">
             Optional · letters, numbers, hyphens, underscores
           </p>
-          {errors.employeeId && <p className="mt-1 text-xs text-red-600">{errors.employeeId}</p>}
+          {errors.employeeId && <p className="mt-1 text-xs text-danger">{errors.employeeId}</p>}
         </div>
       </div>
 
@@ -135,7 +136,7 @@ export default function UserFormDrawer({
             ))}
           </select>
           {activeDepartments.length === 0 && (
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-ink-subtle">
               No departments yet. Add them under Master data.
             </p>
           )}
@@ -155,9 +156,9 @@ export default function UserFormDrawer({
             <option key={r.id} value={r.id}>{r.name}</option>
           ))}
         </select>
-        {errors.roleId && <p className="mt-1 text-xs text-red-600">{errors.roleId}</p>}
+        {errors.roleId && <p className="mt-1 text-xs text-danger">{errors.roleId}</p>}
         {form.roleId && (
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-ink-subtle">
             {assignableRoles.find((r) => r.id === form.roleId)?.description}
           </p>
         )}
@@ -179,7 +180,7 @@ export default function UserFormDrawer({
 
       {mode === "create" && (
         <>
-          <label className="flex items-start gap-2 text-sm text-slate-700">
+          <label className="flex items-start gap-2 text-sm text-ink-muted">
             <input
               type="checkbox"
               checked={form.sendInvite}
@@ -188,7 +189,7 @@ export default function UserFormDrawer({
             />
             <span>
               <span className="font-medium">Send invitation email</span>
-              <span className="mt-1 block text-xs text-slate-500">
+              <span className="mt-1 block text-xs text-ink-subtle">
                 User is created as pending. They receive an invitation link to set up their account password on first sign-in.
               </span>
             </span>
@@ -205,10 +206,10 @@ export default function UserFormDrawer({
                 className={inputClass}
                 aria-invalid={Boolean(errors.password)}
               />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-ink-subtle">
                 At least {USER_LIMITS.password.min} characters
               </p>
-              {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+              {errors.password && <p className="mt-1 text-xs text-danger">{errors.password}</p>}
             </div>
           )}
         </>
@@ -218,7 +219,7 @@ export default function UserFormDrawer({
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+          className="w-full rounded-control bg-brand py-2.5 text-sm font-medium text-white hover:bg-brand disabled:opacity-50"
         >
           {loading ? "Saving..." : mode === "create" ? "Create user" : "Save changes"}
         </button>

@@ -1,20 +1,39 @@
 import { Link } from "react-router-dom";
+import Icon from "./Icon.jsx";
 
+/**
+ * `items` is ordered root-first. The last item is the current page and is not a
+ * link — it carries `aria-current="page"` instead.
+ */
 export default function Breadcrumb({ items = [] }) {
+  if (items.length === 0) return null;
+
   return (
-    <nav className="mb-4 flex items-center gap-2 text-sm text-slate-900" aria-label="Breadcrumb">
-      {items.map((item, i) => (
-        <span key={item.label} className="flex items-center gap-2">
-          {i > 0 && <span className="text-slate-600">/</span>}
-          {item.to ? (
-            <Link to={item.to} className="hover:text-indigo-400">
-              {item.label}
-            </Link>
-          ) : (
-            <span className="text-slate-300">{item.label}</span>
-          )}
-        </span>
-      ))}
+    <nav aria-label="Breadcrumb">
+      <ol className="flex flex-wrap items-center gap-1.5 text-sm">
+        {items.map((item, i) => {
+          const last = i === items.length - 1;
+          return (
+            <li key={item.label} className="flex items-center gap-1.5">
+              {i > 0 && (
+                <Icon name="chevronRight" size={14} className="text-ink-subtle" />
+              )}
+              {item.to && !last ? (
+                <Link
+                  to={item.to}
+                  className="rounded-control text-ink-muted transition-colors duration-150 ease-standard hover:text-brand-hover hover:underline underline-offset-2"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <span aria-current={last ? "page" : undefined} className="font-semibold text-ink">
+                  {item.label}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
     </nav>
   );
 }

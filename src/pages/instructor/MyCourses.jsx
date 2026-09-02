@@ -32,12 +32,12 @@ function stageOf(course) {
 }
 
 const STAGE = {
-  draft: { label: "Draft", chip: "bg-slate-100 text-slate-600", next: "Add lessons, then send for review" },
-  "in-review": { label: "In review", chip: "bg-indigo-100 text-indigo-700", next: "Waiting on your reviewer" },
-  changes: { label: "Changes requested", chip: "bg-amber-100 text-amber-800", next: "Reviewer left notes for you" },
-  approved: { label: "Ready to publish", chip: "bg-emerald-100 text-emerald-700", next: "Approved — publish when you're ready" },
-  live: { label: "Live", chip: "bg-emerald-600 text-white", next: "" },
-  archived: { label: "Archived", chip: "bg-slate-200 text-slate-500", next: "" },
+  draft: { label: "Draft", chip: "bg-surface-sunken text-ink-muted", next: "Add lessons, then send for review" },
+"in-review": { label: "In review", chip: "bg-brand-muted text-brand-hover", next: "Waiting on your reviewer" },
+  changes: { label: "Changes requested", chip: "bg-warning-subtle text-warning", next: "Reviewer left notes for you" },
+  approved: { label: "Ready to publish", chip: "bg-success-subtle text-success", next: "Approved — publish when you're ready" },
+  live: { label: "Live", chip: "bg-success text-white", next: "" },
+  archived: { label: "Archived", chip: "bg-surface-sunken text-ink-subtle", next: "" },
 };
 
 /** Stages where the ball is in the author's court. */
@@ -86,25 +86,25 @@ function NewCourseDialog({ onClose, onCreated }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/50 p-4 sm:items-center">
       <form
         onSubmit={submit}
-        className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="w-full max-w-2xl overflow-hidden rounded-surface bg-surface "
       >
-        <div className="border-b border-slate-100 px-6 py-5">
-          <h2 className="text-lg font-semibold text-slate-900">Create a course</h2>
-          <p className="mt-1 text-sm text-slate-500">
+        <div className="border-b border-line px-6 py-5">
+          <h2 className="text-lg font-semibold text-ink">Create a course</h2>
+          <p className="mt-1 text-sm text-ink-subtle">
             Only the title is required — everything here can be changed later.
           </p>
         </div>
 
         <div className="grid gap-5 px-6 py-5 sm:grid-cols-2">
           {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 sm:col-span-2">{error}</div>
+            <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger sm:col-span-2">{error}</div>
           )}
 
           <label className="block sm:col-span-2">
-            <span className="text-sm font-medium text-slate-700">Title</span>
+            <span className="text-sm font-medium text-ink-muted">Title</span>
             <input
               value={form.title}
               onChange={set("title")}
@@ -112,42 +112,42 @@ function NewCourseDialog({ onClose, onCreated }) {
               maxLength={200}
               autoFocus
               placeholder="Node.js for Beginners"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </label>
 
           <label className="block sm:col-span-2">
-            <span className="text-sm font-medium text-slate-700">
-              Subtitle <span className="font-normal text-slate-400">optional</span>
+            <span className="text-sm font-medium text-ink-muted">
+              Subtitle <span className="font-normal text-ink-subtle">optional</span>
             </span>
             <input
               value={form.subtitle}
               onChange={set("subtitle")}
               maxLength={300}
               placeholder="Build and ship your first backend service"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">
-              Category <span className="font-normal text-slate-400">optional</span>
+            <span className="text-sm font-medium text-ink-muted">
+              Category <span className="font-normal text-ink-subtle">optional</span>
             </span>
             <input
               value={form.category}
               onChange={set("category")}
               maxLength={120}
               placeholder="Backend Development"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">Level</span>
+            <span className="text-sm font-medium text-ink-muted">Level</span>
             <select
               value={form.level}
               onChange={set("level")}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             >
               {LEVELS.map((l) => (
                 <option key={l.value} value={l.value}>
@@ -158,38 +158,38 @@ function NewCourseDialog({ onClose, onCreated }) {
           </label>
 
           <label className="block sm:col-span-2">
-            <span className="text-sm font-medium text-slate-700">
-              Description <span className="font-normal text-slate-400">optional</span>
+            <span className="text-sm font-medium text-ink-muted">
+              Description <span className="font-normal text-ink-subtle">optional</span>
             </span>
             <textarea
               value={form.description}
               onChange={set("description")}
               rows={4}
               placeholder="Who is this course for, and what will they be able to do by the end?"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </label>
 
           {/* Publishing goes through content review, so say so before they start. */}
-          <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-500 sm:col-span-2">
-            <span className="font-medium text-slate-700">What happens next:</span> add modules and
+          <div className="rounded-control bg-surface-sunken p-3 text-xs text-ink-subtle sm:col-span-2">
+            <span className="font-medium text-ink-muted">What happens next:</span> add modules and
             lessons, then send the course to a content reviewer. Once they approve it you can
             publish it to the catalog.
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 bg-slate-50 px-6 py-4">
+        <div className="flex justify-end gap-2 border-t border-line bg-surface-sunken px-6 py-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm hover:bg-slate-50"
+            className="rounded-control border border-line-strong bg-surface px-4 py-2 text-sm hover:bg-surface-sunken"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving || !form.title.trim()}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
           >
             {saving ? "Creating…" : "Create and open editor"}
           </button>
@@ -204,21 +204,21 @@ function CourseRow({ course }) {
   return (
     <Link
       to={`/teach/${course.id}`}
-      className="flex items-center gap-4 px-4 py-3.5 transition hover:bg-slate-50"
+      className="flex items-center gap-4 px-4 py-3.5 transition hover:bg-surface-sunken"
     >
-      <div className="hidden h-12 w-20 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 sm:block">
+      <div className="hidden h-12 w-20 shrink-0 overflow-hidden rounded-control bg-gradient-to-br from-brand to-brand sm:block">
         {course.thumbnailUrl && (
           <img src={course.thumbnailUrl} alt="" className="h-full w-full object-cover" />
         )}
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-slate-900">{course.title}</p>
-        <p className="mt-0.5 truncate text-xs text-slate-500">
+        <p className="truncate text-sm font-medium text-ink">{course.title}</p>
+        <p className="mt-0.5 truncate text-xs text-ink-subtle">
           {course.category || "Uncategorised"} · {course.stats?.lessonCount || 0} lessons ·{" "}
           {course.stats?.enrolledCount || 0} enrolled
         </p>
-        {stage.next && <p className="mt-0.5 truncate text-xs text-slate-400">{stage.next}</p>}
+        {stage.next && <p className="mt-0.5 truncate text-xs text-ink-subtle">{stage.next}</p>}
       </div>
 
       <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${stage.chip}`}>
@@ -279,11 +279,11 @@ export default function MyCourses() {
     <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My courses</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-ink">My courses</h1>
+          <p className="mt-1 text-sm text-ink-subtle">
             {courses.length} course{courses.length === 1 ? "" : "s"}
             {counts.attention > 0 && (
-              <span className="text-amber-700"> · {counts.attention} waiting on you</span>
+              <span className="text-warning"> · {counts.attention} waiting on you</span>
             )}
           </p>
         </div>
@@ -292,7 +292,7 @@ export default function MyCourses() {
           {can("courses", "approve") && (
             <Link
               to="/review-queue"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
+              className="rounded-control border border-line-strong px-4 py-2 text-sm hover:bg-surface-sunken"
             >
               Review queue
             </Link>
@@ -300,7 +300,7 @@ export default function MyCourses() {
           <button
             type="button"
             onClick={() => setDialogOpen(true)}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover"
           >
             New course
           </button>
@@ -316,14 +316,14 @@ export default function MyCourses() {
                 key={t.value || "all"}
                 type="button"
                 onClick={() => setTab(t.value)}
-                className={`rounded-lg px-3 py-1.5 text-sm transition ${
+                className={`rounded-control px-3 py-1.5 text-sm transition ${
                   tab === t.value
-                    ? "bg-indigo-50 font-medium text-indigo-700"
-                    : "text-slate-600 hover:bg-slate-100"
+                    ? "bg-brand-subtle font-medium text-brand-hover"
+                    : "text-ink-muted hover:bg-surface-sunken"
                 }`}
               >
                 {t.label}
-                <span className="ml-1.5 text-xs text-slate-400">{n}</span>
+                <span className="ml-1.5 text-xs text-ink-subtle">{n}</span>
               </button>
             );
           })}
@@ -334,37 +334,37 @@ export default function MyCourses() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search your courses…"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-64"
+          className="w-full rounded-control border border-line-strong px-3 py-2 text-sm sm:w-64"
         />
       </div>
 
-      {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
 
       {loading ? (
-        <p className="py-16 text-center text-sm text-slate-400">Loading your courses…</p>
+        <p className="py-16 text-center text-sm text-ink-subtle">Loading your courses…</p>
       ) : courses.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 px-6 py-16 text-center">
-          <p className="text-sm font-medium text-slate-700">You haven&apos;t created a course yet</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">
+        <div className="rounded-surface border border-dashed border-line-strong px-6 py-16 text-center">
+          <p className="text-sm font-medium text-ink-muted">You haven&apos;t created a course yet</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-ink-subtle">
             Start with a title, add your modules and lessons, then send it to a content reviewer
             for approval.
           </p>
           <button
             type="button"
             onClick={() => setDialogOpen(true)}
-            className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="mt-4 rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover"
           >
             Create your first course
           </button>
         </div>
       ) : visible.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-200 py-16 text-center text-sm text-slate-400">
+        <p className="rounded-surface border border-dashed border-line py-16 text-center text-sm text-ink-subtle">
           {tab === "attention"
             ? "Nothing is waiting on you right now."
             : "No courses match this filter."}
         </p>
       ) : (
-        <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="divide-y divide-line overflow-hidden rounded-surface border border-line bg-surface">
           {visible.map((course) => (
             <CourseRow key={course.id} course={course} />
           ))}

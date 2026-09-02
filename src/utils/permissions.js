@@ -87,14 +87,16 @@ export function getRoleLabel(user) {
   return user?.roleName || ROLE_LABELS[role] || role || "—";
 }
 
-export function getRoleBadgeClass(user) {
+export function getRoleBadgeClass(userOrRole) {
+  const role = typeof userOrRole === "string" ? userOrRole : getUserRole(userOrRole);
   const styles = {
-    [ROLE.TENANT_ADMIN]: "bg-violet-100 text-violet-700 ring-violet-200",
-    [ROLE.ORG_ADMIN]: "bg-indigo-100 text-indigo-700 ring-indigo-200",
-    [ROLE.TUTOR]: "bg-amber-100 text-amber-700 ring-amber-200",
-    [ROLE.STUDENT]: "bg-emerald-100 text-emerald-700 ring-emerald-200",
+    [ROLE.TENANT_ADMIN]: "bg-brand-subtle text-brand-hover ring-brand-border",
+    [ROLE.ORG_ADMIN]: "bg-brand-subtle text-brand-hover ring-brand-border",
+    [ROLE.INSTRUCTOR]: "bg-warning-subtle text-warning ring-warning-border",
+    [ROLE.MENTOR]: "bg-success-subtle text-success ring-success-border",
+    [ROLE.STUDENT]: "bg-surface-sunken text-ink-muted ring-line",
   };
-  return styles[getUserRole(user)] || "bg-slate-100 text-slate-600 ring-slate-200";
+  return styles[role] || "bg-surface-sunken text-ink-muted ring-line";
 }
 
 /**

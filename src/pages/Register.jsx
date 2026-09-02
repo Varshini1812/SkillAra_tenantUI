@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { getErrorMessage } from "../api/client.js";
 import AuthShell from "../components/AuthShell.jsx";
 import { buildRootUrl } from "../utils/tenant.js";
+import Icon from "../admin/components/ui/Icon.jsx";
+import { Button, Input } from "../admin/components/ui/primitives.jsx";
 
 export default function Register() {
   const { register, tenantInfo, tenantHost } = useAuth();
@@ -42,74 +44,81 @@ export default function Register() {
 
   return (
     <AuthShell>
-      <div className="rounded-2xl border border-white/10 bg-[#161b26] p-8 shadow-2xl">
+      <div className="rounded-surface border border-line bg-surface p-6 sm:p-7">
         <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600/20 text-2xl">
-            🎓
-          </div>
-          <h1 className="mt-4 text-xl font-semibold text-white">Join {tenantName}</h1>
-          {tenantHost && <p className="mt-1 text-sm text-slate-400">{tenantHost}</p>}
-          <p className="mt-2 text-sm text-slate-500">Complete your invitation to activate your account</p>
+          <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-surface bg-brand-subtle text-brand">
+            <Icon name="user" size={22} />
+          </span>
+          <h1 className="mt-4 text-xl font-semibold tracking-tight text-ink">Join {tenantName}</h1>
+          {tenantHost && (
+            <p className="break-token mt-1 font-mono text-xs text-ink-subtle">{tenantHost}</p>
+          )}
+          <p className="mt-2 text-[0.8125rem] text-ink-muted">
+            Set a password to activate your account.
+          </p>
         </div>
 
         {inviteMissing ? (
-          <div className="mt-8 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-            This page requires a valid invitation link from your organization admin.
-          </div>
+          <p
+            role="alert"
+            className="mt-6 flex items-start gap-2 rounded-control border border-warning-border bg-warning-subtle p-3 text-[0.8125rem] text-warning"
+          >
+            <Icon name="warning" size={15} className="mt-0.5 shrink-0" />
+            <span>This page needs a valid invitation link from your organization admin.</span>
+          </p>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
             {error && (
-              <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-                {error}
-              </div>
+              <p
+                role="alert"
+                className="flex items-start gap-2 rounded-control border border-danger-border bg-danger-subtle p-3 text-[0.8125rem] text-danger"
+              >
+                <Icon name="danger" size={15} className="mt-0.5 shrink-0" />
+                <span>{error}</span>
+              </p>
             )}
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300">Password</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0f1117] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
+            <Input
+              label="Password"
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              hint="At least 6 characters."
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300">Confirm password</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-                className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0f1117] px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
+            <Input
+              label="Confirm password"
+              type="password"
+              required
+              minLength={6}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
+            />
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
-            >
-              {loading ? "Activating..." : "Activate account"}
-            </button>
+            <Button type="submit" size="lg" loading={loading} className="w-full">
+              {loading ? "Activating…" : "Activate account"}
+            </Button>
           </form>
         )}
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 border-t border-line pt-4 text-center text-[0.8125rem] text-ink-muted">
           Already have an account?{" "}
-          <Link to="/login" className="font-medium text-blue-400 hover:underline">
+          <Link to="/login" className="font-medium text-brand hover:underline underline-offset-2">
             Sign in
           </Link>
         </p>
 
-        <p className="mt-3 text-center text-sm">
-          <a href={buildRootUrl("/login")} className="text-slate-400 hover:text-white">
-            ← Switch workspace
+        <p className="mt-2 text-center">
+          <a
+            href={buildRootUrl("/login")}
+            className="inline-flex items-center gap-1 text-xs text-ink-subtle transition-colors duration-150 ease-standard hover:text-ink"
+          >
+            <Icon name="chevronLeft" size={13} />
+            Switch workspace
           </a>
         </p>
       </div>

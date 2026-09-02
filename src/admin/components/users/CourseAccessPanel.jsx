@@ -7,13 +7,14 @@ import {
   grantCourseAccess,
 } from "../../../api/enrollments.js";
 import { getErrorMessage } from "../../../api/client.js";
+import { BTN_PRIMARY, INPUT } from "../../components/ui/styles.js";
 
 const STATUS = {
-  ACTIVE: { label: "Enrolled", chip: "bg-emerald-100 text-emerald-700" },
-  COMPLETED: { label: "Completed", chip: "bg-emerald-100 text-emerald-700" },
-  PENDING_APPROVAL: { label: "Awaiting approval", chip: "bg-amber-100 text-amber-800" },
-  PENDING_PAYMENT: { label: "Awaiting approval", chip: "bg-amber-100 text-amber-800" },
-  REJECTED: { label: "Declined", chip: "bg-rose-100 text-rose-700" },
+  ACTIVE: { label: "Enrolled", chip: "bg-success-subtle text-success" },
+  COMPLETED: { label: "Completed", chip: "bg-success-subtle text-success" },
+  PENDING_APPROVAL: { label: "Awaiting approval", chip: "bg-warning-subtle text-warning" },
+  PENDING_PAYMENT: { label: "Awaiting approval", chip: "bg-warning-subtle text-warning" },
+  REJECTED: { label: "Declined", chip: "bg-danger-subtle text-danger" },
 };
 
 /**
@@ -92,35 +93,35 @@ export default function CourseAccessPanel({ user }) {
   };
 
   return (
-    <section className="mt-6 border-t border-slate-100 pt-5">
-      <h3 className="text-sm font-semibold text-slate-800">Course access</h3>
-      <p className="mt-1 text-xs text-slate-500">
+    <section className="mt-6 border-t border-line pt-5">
+      <h3 className="text-sm font-semibold text-ink">Course access</h3>
+      <p className="mt-1 text-xs text-ink-subtle">
         Free courses are self-service. Paid ones need approval — or enrol this person directly
         here.
       </p>
 
-      {error && <div className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+      {error && <div className="mt-3 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       {notice && (
-        <div className="mt-3 rounded-lg bg-green-50 p-2 text-sm text-green-700">{notice}</div>
+        <div className="mt-3 rounded-control bg-success-subtle p-2 text-sm text-success">{notice}</div>
       )}
 
       {loading ? (
-        <p className="mt-3 text-sm text-slate-400">Loading course access…</p>
+        <p className="mt-3 text-sm text-ink-subtle">Loading course access…</p>
       ) : enrollments.length === 0 ? (
-        <p className="mt-3 rounded-lg border border-dashed border-slate-200 p-3 text-sm text-slate-400">
+        <p className="mt-3 rounded-control border border-dashed border-line p-3 text-sm text-ink-subtle">
           Not enrolled in any course yet.
         </p>
       ) : (
-        <ul className="mt-3 divide-y divide-slate-100 rounded-lg border border-slate-200">
+        <ul className="mt-3 divide-y divide-line rounded-control border border-line">
           {enrollments.map((e) => {
-            const badge = STATUS[e.status] || { label: e.status, chip: "bg-slate-100 text-slate-600" };
+            const badge = STATUS[e.status] || { label: e.status, chip: "bg-surface-sunken text-ink-muted" };
             return (
               <li key={e.id} className="flex items-center gap-3 px-3 py-2.5">
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm text-slate-800">
+                  <span className="block truncate text-sm text-ink">
                     {e.course?.title || "Unknown course"}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-ink-subtle">
                     {e.course?.price > 0 ? `${e.course.currency} ${e.course.price}` : "Free"}
                     {e.grantedByStaff ? " · added by staff" : ""}
                   </span>
@@ -133,7 +134,7 @@ export default function CourseAccessPanel({ user }) {
                     type="button"
                     onClick={() => remove(e)}
                     disabled={saving}
-                    className="shrink-0 text-xs font-medium text-rose-600 hover:underline disabled:opacity-50"
+                    className="shrink-0 text-xs font-medium text-danger hover:underline disabled:opacity-50"
                   >
                     Remove
                   </button>
@@ -149,7 +150,7 @@ export default function CourseAccessPanel({ user }) {
           value={courseId}
           onChange={(e) => setCourseId(e.target.value)}
           disabled={saving || addable.length === 0}
-          className="admin-input flex-1"
+          className={`${INPUT} flex-1`}
           aria-label="Course to add"
         >
           {addable.length === 0 ? (
@@ -170,7 +171,7 @@ export default function CourseAccessPanel({ user }) {
           type="button"
           onClick={grant}
           disabled={saving || !courseId}
-          className="admin-btn-primary shrink-0 disabled:opacity-50"
+          className={`${BTN_PRIMARY} shrink-0 disabled:opacity-50`}
         >
           {saving ? "Adding…" : "Add course"}
         </button>

@@ -1,4 +1,6 @@
+import Icon from "./Icon.jsx";
 import { useEffect, useRef, useState } from "react";
+import { BTN_SECONDARY } from "./styles.js";
 
 export default function ImportMenu({
   onImportClick,
@@ -29,35 +31,35 @@ export default function ImportMenu({
         type="button"
         disabled={disabled || importing}
         onClick={() => setOpen((value) => !value)}
-        className="admin-btn-secondary inline-flex items-center gap-2 px-4"
+        className={`${BTN_SECONDARY} gap-2`}
       >
         {importing ? "Importing..." : label}
-        <span className="text-xs text-slate-400">▾</span>
+        <Icon name="chevronDown" size={14} className="text-ink-subtle" />
       </button>
 
       {open && (
-        <div className="admin-import-menu">
+        <div className="absolute right-0 top-[calc(100%+0.375rem)] z-30 w-64 overflow-hidden rounded-surface border border-line bg-surface p-1 shadow-pop">
           <button
             type="button"
-            className="admin-import-menu-item"
+            className="flex w-full items-center gap-2 rounded-control px-2.5 py-2 text-left text-[0.8125rem] text-ink-muted transition-colors duration-200 ease-standard hover:bg-surface-sunken hover:text-ink"
             onClick={() => {
               setOpen(false);
               onImportClick();
             }}
           >
-            <span className="font-medium text-slate-800">Upload CSV file</span>
-            <span className="mt-0.5 block text-xs text-slate-500">Import users from a spreadsheet</span>
+            <span className="font-medium text-ink">Upload CSV file</span>
+            <span className="mt-0.5 block text-xs text-ink-subtle">Import users from a spreadsheet</span>
           </button>
           <button
             type="button"
-            className="admin-import-menu-item"
+            className="flex w-full items-center gap-2 rounded-control px-2.5 py-2 text-left text-[0.8125rem] text-ink-muted transition-colors duration-200 ease-standard hover:bg-surface-sunken hover:text-ink"
             onClick={() => {
               setOpen(false);
               onDownloadSample();
             }}
           >
-            <span className="font-medium text-slate-800">Download sample file</span>
-            <span className="mt-0.5 block text-xs text-slate-500">
+            <span className="font-medium text-ink">Download sample file</span>
+            <span className="mt-0.5 block text-xs text-ink-subtle">
               Template with required column headers
             </span>
           </button>

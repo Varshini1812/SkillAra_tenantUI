@@ -15,9 +15,9 @@ export default function DevTenantBanner() {
   };
 
   return (
-    <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
-      <p className="text-sm font-medium text-amber-900">Local development</p>
-      <p className="mt-1 text-sm text-amber-800">
+    <div className="mb-6 rounded-surface border border-warning-border bg-warning-subtle p-4">
+      <p className="text-sm font-medium text-warning">Local development</p>
+      <p className="mt-1 text-sm text-warning">
         Use a tenant subdomain URL like{" "}
         <a href={buildTenantUrl("acme")} className="font-mono underline">
           acme.localhost:5173
@@ -29,15 +29,15 @@ export default function DevTenantBanner() {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="e.g. acme"
-          className="flex-1 rounded-lg border border-amber-300 px-3 py-2 text-sm"
+          className="flex-1 rounded-control border border-warning-border px-3 py-2 text-sm"
         />
         <button
           type="submit"
-          className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+          className="rounded-control bg-warning px-4 py-2 text-sm font-medium text-white hover:bg-warning"
         >
           Set & Reload
         </button>
-        {saved && <span className="self-center text-sm text-green-600">Reloading...</span>}
+        {saved && <span className="self-center text-sm text-success">Reloading...</span>}
       </form>
     </div>
   );

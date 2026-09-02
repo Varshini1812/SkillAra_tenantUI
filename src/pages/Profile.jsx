@@ -11,8 +11,8 @@ import { getRoleBadgeClass, ROLE_DESCRIPTIONS, getUserRole } from "../utils/perm
 function Field({ label, value }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-0.5 text-sm text-slate-800">{value || "—"}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">{label}</p>
+      <p className="mt-0.5 text-sm text-ink">{value || "—"}</p>
     </div>
   );
 }
@@ -36,7 +36,7 @@ export default function Profile() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  if (!user) return <div className="text-center text-slate-400">Loading…</div>;
+  if (!user) return <div className="text-center text-ink-subtle">Loading…</div>;
 
   const role = getUserRole(user);
   const dirty = form.name !== (user.name || "") || form.phone !== (user.phone || "");
@@ -77,14 +77,14 @@ export default function Profile() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">My profile</h1>
-        <p className="text-slate-500">Your account details and what your role allows.</p>
+        <h1 className="text-2xl font-bold text-ink">My profile</h1>
+        <p className="text-ink-subtle">Your account details and what your role allows.</p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
+      <div className="rounded-surface border border-line bg-surface p-5">
         <div className="flex items-center gap-4">
           <div className="relative group">
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-50 text-xl font-bold text-indigo-600 ring-1 ring-indigo-100">
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-subtle text-xl font-bold text-brand ring-1 ring-brand-muted">
               {user.profilePhoto ? (
                 <img src={user.profilePhoto} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -95,10 +95,10 @@ export default function Profile() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
               <div>
-                <p className="truncate text-lg font-semibold text-slate-900">
+                <p className="truncate text-lg font-semibold text-ink">
                   {user.name || user.email}
                 </p>
-                <p className="truncate text-sm text-slate-500">{user.email}</p>
+                <p className="truncate text-sm text-ink-subtle">{user.email}</p>
               </div>
               <div>
                 <input
@@ -112,7 +112,7 @@ export default function Profile() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingPhoto}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                  className="rounded-control border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink-muted hover:bg-surface-sunken disabled:opacity-50"
                 >
                   {uploadingPhoto ? "Uploading to B2..." : "Change photo"}
                 </button>
@@ -126,64 +126,64 @@ export default function Profile() {
           </div>
         </div>
 
-        <p className="mt-4 text-sm text-slate-500">
+        <p className="mt-4 text-sm text-ink-subtle">
           {ROLE_DESCRIPTIONS[role] || "Your access is defined by your organization role."}
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <form onSubmit={save} className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="font-semibold text-slate-900">Details</h2>
-          <p className="mt-0.5 text-sm text-slate-500">
+        <form onSubmit={save} className="rounded-surface border border-line bg-surface p-5">
+          <h2 className="font-semibold text-ink">Details</h2>
+          <p className="mt-0.5 text-sm text-ink-subtle">
             Name and phone are yours to change. Everything else is managed by your
             organization admin.
           </p>
 
-          {error && <div className="mt-3 rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</div>}
+          {error && <div className="mt-3 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
           {notice && (
-            <div className="mt-3 rounded-lg bg-green-50 p-2 text-sm text-green-700">{notice}</div>
+            <div className="mt-3 rounded-control bg-success-subtle p-2 text-sm text-success">{notice}</div>
           )}
 
-          <label className="mt-4 block text-xs font-medium text-slate-600">
+          <label className="mt-4 block text-xs font-medium text-ink-muted">
             Full name
             <input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               maxLength={100}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm"
             />
           </label>
 
-          <label className="mt-3 block text-xs font-medium text-slate-600">
+          <label className="mt-3 block text-xs font-medium text-ink-muted">
             Phone
             <input
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               maxLength={20}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-sm"
             />
           </label>
 
-          <label className="mt-3 block text-xs font-medium text-slate-600">
+          <label className="mt-3 block text-xs font-medium text-ink-muted">
             Email
             <input
               value={user.email}
               disabled
-              className="mt-1 w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500"
+              className="mt-1 w-full cursor-not-allowed rounded-control border border-line bg-surface-sunken px-3 py-2 text-sm text-ink-subtle"
             />
           </label>
 
           <button
             type="submit"
             disabled={saving || !dirty}
-            className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="mt-4 rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save changes"}
           </button>
         </form>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="font-semibold text-slate-900">Organization</h2>
+        <div className="rounded-surface border border-line bg-surface p-5">
+          <h2 className="font-semibold text-ink">Organization</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field label="Organization" value={tenantInfo?.tenant_name || tenantHost} />
             <Field label="Role" value={roleLabel} />
@@ -193,7 +193,7 @@ export default function Profile() {
           </div>
 
           {user.isDefaultPassword && (
-            <div className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+            <div className="mt-4 rounded-control bg-warning-subtle p-3 text-sm text-warning">
               You are still using a temporary password. Change it from the sign-in flow.
             </div>
           )}
