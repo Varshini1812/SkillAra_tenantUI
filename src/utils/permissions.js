@@ -49,6 +49,16 @@ export function canAuthorCourses(user) {
   return can(user, "courses", "create");
 }
 
+export function isContentReviewerOnly(user) {
+  if (!user) return false;
+  return can(user, "courses", "approve") && !can(user, "courses", "create");
+}
+
+export function isMentorOnly(user) {
+  if (!user) return false;
+  return can(user, "mentorship", "claim") && !can(user, "courses", "create");
+}
+
 /**
  * True when the user's role grants `action` on `moduleId`.
  * The organization owner is allowed everything without consulting the map, because
@@ -57,6 +67,13 @@ export function canAuthorCourses(user) {
 export function can(user, moduleId, action = "view") {
   if (!user) return false;
   if (user.isTenantAdmin || getUserRole(user) === ROLE.TENANT_ADMIN) return true;
+
+  if (moduleId === "forum") {
+    if (action === "view") return true;
+    if (action === "moderate") {
+      return can(user, "courses", "approve") || can(user, "courses", "create") || canAccessAdminPanel(user);
+    }
+  }
 
   const actions = user.permissions?.[moduleId];
   if (!Array.isArray(actions)) return false;
@@ -72,7 +89,7 @@ export const ROLE_LABELS = {
   [ROLE.TENANT_ADMIN]: "Organization Owner",
   [ROLE.ORG_ADMIN]: "Organization Admin",
   [ROLE.TUTOR]: "Instructor",
-  [ROLE.STUDENT]: "Student",
+  [ROLE.STUDENT]: "Learner",
 };
 
 export const ROLE_DESCRIPTIONS = {
@@ -110,25 +127,25 @@ const APP_NAV = [
     items: [
       { to: "/dashboard", label: "My Dashboard", icon: "home" },
       { to: "/courses", label: "Browse courses", icon: "courses" },
-      { to: "/my-learning", label: "My learning", icon: "learning", requires: ["courses", "view"] },
-    ],
-  },
-  {
-    section: "Community",
-    items: [
-      { to: "/ai-tools", label: "AI Tools", icon: "ai" },
-      { to: "/mentorship", label: "Mentorship", icon: "mentors", requires: ["mentorship", "view"] },
-      { to: "/mock-interviews", label: "Mock Interviews", icon: "sessions", requires: ["mock-interviews", "view"] },
-      { to: "/mock-tests", label: "Mock Tests", icon: "quiz", requires: ["mock-tests", "view"] },
-      { to: "/live-sessions", label: "Live Sessions", icon: "live", requires: ["live-sessions", "view"] },
-      { to: "/forum", label: "Forum", icon: "forum" },
+      { to: "/my-learning", label: "My learning", icon: "learning", requires: ["courses", "view"], excludeForReviewers: true, excludeForMentors: true },
     ],
   },
   {
     section: "Teach",
     items: [
       { to: "/teach", label: "My courses", icon: "teach", requires: ["courses", "create"] },
+      { to: "/ai-tools", label: "AI Tools", icon: "ai", requires: ["courses", "create"] },
       { to: "/review-queue", label: "Review queue", icon: "moderate", requires: ["courses", "approve"] },
+    ],
+  },
+  {
+    section: "Community",
+    items: [
+      { to: "/mentorship", label: "Mentorship", icon: "mentors", requires: ["mentorship", "view"], excludeForReviewers: true },
+      { to: "/mock-interviews", label: "Mock Interviews", icon: "sessions", requires: ["mock-interviews", "view"], excludeForReviewers: true },
+      { to: "/mock-tests", label: "Mock Tests", icon: "quiz", requires: ["mock-tests", "view"], excludeForReviewers: true, excludeForMentors: true },
+      { to: "/live-sessions", label: "Live Sessions", icon: "live", requires: ["live-sessions", "view"], excludeForReviewers: true },
+      { to: "/forum", label: "Forum", icon: "forum", excludeForMentors: true },
     ],
   },
   {
@@ -152,6 +169,8 @@ function itemVisible(user, item) {
   if (item.roles && !item.roles.includes(role)) return false;
   if (item.gate === "admin" && !canAccessAdminPanel(user)) return false;
   if (item.requires && !can(user, item.requires[0], item.requires[1])) return false;
+  if (item.excludeForReviewers && isContentReviewerOnly(user)) return false;
+  if (item.excludeForMentors && isMentorOnly(user)) return false;
   return true;
 }
 

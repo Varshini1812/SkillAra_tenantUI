@@ -87,13 +87,19 @@ function MockTestGenerator({ courseId, courseTitle }) {
   const [title, setTitle] = useState("");
   const [questionCount, setQuestionCount] = useState(10);
   const [durationMinutes, setDurationMinutes] = useState(30);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [created, setCreated] = useState(null);
 
   const navigate = useNavigate();
-  const submit = async (e) => {
+
+  const handleInitialClick = (e) => {
     e.preventDefault();
+    setShowConfirm(true);
+  };
+
+  const confirmAndGenerate = async () => {
     setGenerating(true);
     setError("");
     setCreated(null);
@@ -106,7 +112,8 @@ function MockTestGenerator({ courseId, courseTitle }) {
       });
       setCreated(test);
       setTitle("");
-      setTimeout(() => navigate(`/teach/${courseId}`), 1500);
+      setShowConfirm(false);
+      setTimeout(() => navigate(`/teach/${courseId}`), 1800);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -115,27 +122,27 @@ function MockTestGenerator({ courseId, courseTitle }) {
   };
 
   return (
-    <form onSubmit={submit} className="rounded-surface border border-line bg-surface p-4">
-      <h2 className="font-semibold">Generate a mock test with AI</h2>
+    <div className="rounded-surface border border-line bg-surface p-4">
+      <h2 className="font-semibold text-ink">Generate a mock test with AI</h2>
       <p className="mt-1 text-xs text-ink-subtle">
-        Draws from every lesson in "{courseTitle}", saves it, and publishes it straight away.
+        Draws from lesson content in "{courseTitle}" to generate a draft practice test for instructor review.
       </p>
 
       {error && <div className="mt-3 rounded-control bg-danger-subtle p-2 text-sm text-danger">{error}</div>}
       {created && (
-        <div className="mt-3 rounded-control bg-success-subtle p-2 text-sm text-success">
-"{created.title}" saved as a draft with {created.questions?.length || questionCount} questions. Redirecting to course editor...
+        <div className="mt-3 rounded-control bg-success-subtle p-2 text-sm text-success font-medium">
+          ✓ "{created.title}" saved as a draft with {created.questions?.length || questionCount} questions. Opening course editor...
         </div>
       )}
 
-      <div className="mt-3 space-y-3">
+      <form onSubmit={handleInitialClick} className="mt-3 space-y-3">
         <label className="block text-xs font-medium text-ink-muted">
-          Title (optional)
+          Test Title (optional)
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={`Mock Test: ${courseTitle}`}
-            className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
+            className="mt-1 w-full rounded border border-line-strong px-2.5 py-1.5 text-sm"
           />
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -147,7 +154,7 @@ function MockTestGenerator({ courseId, courseTitle }) {
               max="50"
               value={questionCount}
               onChange={(e) => setQuestionCount(e.target.value)}
-              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2.5 py-1.5 text-sm"
             />
           </label>
           <label className="block text-xs font-medium text-ink-muted">
@@ -157,20 +164,62 @@ function MockTestGenerator({ courseId, courseTitle }) {
               min="1"
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value)}
-              className="mt-1 w-full rounded border border-line-strong px-2 py-1.5 text-sm"
+              className="mt-1 w-full rounded border border-line-strong px-2.5 py-1.5 text-sm"
             />
           </label>
         </div>
-      </div>
 
-      <button
-        type="submit"
-        disabled={generating}
-        className="mt-3 rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
-      >
-        {generating ? "Generating…" : "Generate with AI"}
-      </button>
-    </form>
+        <button
+          type="submit"
+          className="mt-2 rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover"
+        >
+          Preview & Generate
+        </button>
+      </form>
+
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+          <div className="w-full max-w-md rounded-surface bg-surface p-6 shadow-xl border border-line">
+            <h3 className="text-lg font-bold text-ink">Confirm AI Test Generation</h3>
+            <p className="mt-2 text-sm text-ink-subtle">
+              You are about to generate an AI mock test for <strong className="text-ink">{courseTitle}</strong>:
+            </p>
+            <ul className="mt-3 space-y-1 rounded bg-surface-sunken p-3 text-xs text-ink-muted">
+              <li>• <strong>Title:</strong> {title.trim() || `Mock Test: ${courseTitle}`}</li>
+              <li>• <strong>Questions:</strong> {questionCount} questions</li>
+              <li>• <strong>Duration:</strong> {durationMinutes} mins</li>
+              <li className="pt-2 text-brand font-medium">• Saved as <strong>Draft</strong> for your review (will NOT be published automatically).</li>
+            </ul>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowConfirm(false)}
+                disabled={generating}
+                className="rounded-control border border-line-strong px-4 py-2 text-sm hover:bg-surface-sunken"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmAndGenerate}
+                disabled={generating}
+                className="flex items-center gap-2 rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover disabled:opacity-50"
+              >
+                {generating ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Generating Draft…
+                  </>
+                ) : (
+                  "Confirm & Generate"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -215,6 +264,12 @@ function AiToolsContent() {
   return (
     <div className="space-y-6">
       <div>
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-1.5 text-sm text-ink-subtle hover:text-brand transition mb-1"
+        >
+          <Icon name="arrowLeft" size={15} /> Back to Dashboard
+        </Link>
         <h1 className="text-2xl font-bold">AI Tools</h1>
         <p className="mt-1 text-sm text-ink-subtle">
           Pick a course to get an AI summary{canManage ? ", generate a mock test with AI" : ""}, and jump

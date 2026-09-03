@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   fetchOpenSlots,
   fetchMySlots,
@@ -15,6 +15,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { usePermissions } from "../hooks/usePermissions.js";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import LockedFeature from "../components/common/LockedFeature.jsx";
+import Icon from "../admin/components/ui/Icon.jsx";
 
 const STATUS_STYLE = {
   OPEN: "bg-surface-sunken text-ink-muted",
@@ -283,6 +284,12 @@ function MockInterviewsContent() {
   return (
     <div className="space-y-6">
       <div>
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-1.5 text-sm text-ink-subtle hover:text-brand transition mb-1"
+        >
+          <Icon name="arrowLeft" size={15} /> Back to Dashboard
+        </Link>
         <h1 className="text-2xl font-bold">Mock Interviews</h1>
         <p className="mt-1 text-sm text-ink-subtle">Book open interview practice time, or publish your own.</p>
       </div>

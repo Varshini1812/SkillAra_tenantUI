@@ -302,7 +302,11 @@ function MentorshipTicketContent() {
 
   return (
     <div className="space-y-6">
-      <Link to="/mentorship" className="text-sm text-ink-subtle hover:text-brand"><Icon name="arrowLeft" size={15} /> Back to Mentorship
+      <Link
+        to="/mentorship"
+        className="inline-flex items-center gap-1.5 text-sm text-ink-subtle hover:text-brand transition mb-1"
+      >
+        <Icon name="arrowLeft" size={15} /> Back to Mentorship
       </Link>
 
       {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
@@ -314,7 +318,7 @@ function MentorshipTicketContent() {
             <h1 className="text-xl font-bold text-ink">{ticket.subject}</h1>
             {ticket.description && <p className="mt-2 whitespace-pre-wrap text-sm text-ink-muted">{ticket.description}</p>}
             <p className="mt-3 text-xs text-ink-subtle">
-              Student: {ticket.studentId.name || ticket.studentId.email}
+              Learner: {ticket.studentId.name || ticket.studentId.email}
               {ticket.mentorId && ` · Mentor: ${ticket.mentorId.name || ticket.mentorId.email}`}
             </p>
             {ticket.topicTags?.length > 0 && (
