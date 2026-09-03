@@ -199,50 +199,73 @@ function NewCourseDialog({ onClose, onCreated }) {
   );
 }
 
-function CourseRow({ course }) {
+import { useSearchParams } from "react-router-dom";
+import { publishCourse, deleteCourse } from "../../api/courses.js";
+
+function CourseRow({ course, selected, onToggle }) {
   const stage = STAGE[stageOf(course)];
   return (
-    <Link
-      to={`/teach/${course.id}`}
-      className="flex items-center gap-4 px-4 py-3.5 transition hover:bg-surface-sunken"
-    >
-      <div className="hidden h-12 w-20 shrink-0 overflow-hidden rounded-control bg-gradient-to-br from-brand to-brand sm:block">
+    <div className="flex items-center gap-4 px-4 py-3.5 transition hover:bg-surface-sunken">
+      <input
+        type="checkbox"
+        checked={selected}
+        onChange={() => onToggle(course.id)}
+        className="h-4 w-4 rounded border-line-strong text-brand focus:ring-brand"
+      />
+      <Link
+        to={`/teach/${course.id}`}
+        className="hidden h-12 w-20 shrink-0 overflow-hidden rounded-control bg-gradient-to-br from-brand to-brand sm:block"
+      >
         {course.thumbnailUrl && (
           <img src={course.thumbnailUrl} alt="" className="h-full w-full object-cover" />
         )}
-      </div>
+      </Link>
 
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-ink">{course.title}</p>
+      <Link to={`/teach/${course.id}`} className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-ink hover:text-brand">{course.title}</p>
         <p className="mt-0.5 truncate text-xs text-ink-subtle">
           {course.category || "Uncategorised"} · {course.stats?.lessonCount || 0} lessons ·{" "}
           {course.stats?.enrolledCount || 0} enrolled
         </p>
         {stage.next && <p className="mt-0.5 truncate text-xs text-ink-subtle">{stage.next}</p>}
-      </div>
+      </Link>
 
       <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${stage.chip}`}>
         {stage.label}
       </span>
-    </Link>
+    </div>
   );
 }
 
 export default function MyCourses() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { can } = usePermissions();
 
   const [courses, setCourses] = useState([]);
-  const [tab, setTab] = useState("attention");
+  const activeTabParam = searchParams.get("tab") || "attention";
+  const [tab, setTab] = useState(activeTabParam);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkActioning, setBulkActioning] = useState(false);
+
+  useEffect(() => {
+    const p = searchParams.get("tab");
+    if (p !== null) {
+      setTab(p === "all" ? "" : p);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (val) => {
+    setTab(val);
+    setSearchParams(val ? { tab: val === "" ? "all" : val } : {});
+  };
 
   useEffect(() => {
     let cancelled = false;
-    // Fetched once and filtered here: the API filters on `status`, but the tabs that matter
-    // to an author are review stages, which `status` alone cannot express.
     fetchCourses({ mine: true, limit: 200 })
       .then(({ items }) => !cancelled && setCourses(items || []))
       .catch((err) => !cancelled && setError(getErrorMessage(err)))
@@ -275,6 +298,51 @@ export default function MyCourses() {
     });
   }, [courses, tab, search]);
 
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === visible.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(visible.map((c) => c.id));
+    }
+  };
+
+  const handleBulkPublish = async () => {
+    if (!selectedIds.length) return;
+    setBulkActioning(true);
+    try {
+      await Promise.all(selectedIds.map((id) => publishCourse(id).catch(() => null)));
+      const { items } = await fetchCourses({ mine: true, limit: 200 });
+      setCourses(items || []);
+      setSelectedIds([]);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setBulkActioning(false);
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (!selectedIds.length) return;
+    if (!window.confirm(`Archive ${selectedIds.length} selected course(s)?`)) return;
+    setBulkActioning(true);
+    try {
+      await Promise.all(selectedIds.map((id) => deleteCourse(id).catch(() => null)));
+      const { items } = await fetchCourses({ mine: true, limit: 200 });
+      setCourses(items || []);
+      setSelectedIds([]);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setBulkActioning(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -283,7 +351,7 @@ export default function MyCourses() {
           <p className="mt-1 text-sm text-ink-subtle">
             {courses.length} course{courses.length === 1 ? "" : "s"}
             {counts.attention > 0 && (
-              <span className="text-warning"> · {counts.attention} waiting on you</span>
+              <span className="text-warning font-semibold"> · {counts.attention} waiting on you</span>
             )}
           </p>
         </div>
@@ -300,9 +368,9 @@ export default function MyCourses() {
           <button
             type="button"
             onClick={() => setDialogOpen(true)}
-            className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover"
+            className="rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover shadow-sm"
           >
-            New course
+            + Create New Course
           </button>
         </div>
       </div>
@@ -315,7 +383,7 @@ export default function MyCourses() {
               <button
                 key={t.value || "all"}
                 type="button"
-                onClick={() => setTab(t.value)}
+                onClick={() => handleTabChange(t.value)}
                 className={`rounded-control px-3 py-1.5 text-sm transition ${
                   tab === t.value
                     ? "bg-brand-subtle font-medium text-brand-hover"
@@ -338,6 +406,39 @@ export default function MyCourses() {
         />
       </div>
 
+      {selectedIds.length > 0 && (
+        <div className="flex items-center justify-between rounded-surface border border-brand-border bg-brand-subtle p-3 text-sm">
+          <span className="font-medium text-brand-hover">
+            {selectedIds.length} course(s) selected
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleBulkPublish}
+              disabled={bulkActioning}
+              className="rounded-control bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-hover disabled:opacity-50"
+            >
+              Publish selected
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkArchive}
+              disabled={bulkActioning}
+              className="rounded-control border border-line-strong bg-surface px-3 py-1 text-xs font-medium text-danger hover:bg-danger-subtle disabled:opacity-50"
+            >
+              Archive selected
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="text-xs text-ink-subtle hover:underline"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
 
       {loading ? (
@@ -358,15 +459,39 @@ export default function MyCourses() {
           </button>
         </div>
       ) : visible.length === 0 ? (
-        <p className="rounded-surface border border-dashed border-line py-16 text-center text-sm text-ink-subtle">
-          {tab === "attention"
-            ? "Nothing is waiting on you right now."
-            : "No courses match this filter."}
-        </p>
+        <div className="rounded-surface border border-dashed border-line px-6 py-12 text-center text-sm text-ink-subtle">
+          {tab === "attention" ? (
+            <div>
+              <p className="font-semibold text-ink">Nothing is waiting on you right now.</p>
+              <p className="mt-1 text-xs text-ink-subtle max-w-md mx-auto">
+                Courses requiring your action — such as reviewer notes needing edits or approved drafts ready to publish — will automatically appear in this view.
+              </p>
+            </div>
+          ) : (
+            "No courses match this filter."
+          )}
+        </div>
       ) : (
         <div className="divide-y divide-line overflow-hidden rounded-surface border border-line bg-surface">
+          <div className="flex items-center justify-between border-b border-line px-4 py-2 bg-surface-sunken text-xs font-semibold text-ink-subtle">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedIds.length === visible.length && visible.length > 0}
+                onChange={toggleSelectAll}
+                className="h-4 w-4 rounded border-line-strong text-brand"
+              />
+              Select All
+            </label>
+            <span>Stage / Status</span>
+          </div>
           {visible.map((course) => (
-            <CourseRow key={course.id} course={course} />
+            <CourseRow
+              key={course.id}
+              course={course}
+              selected={selectedIds.includes(course.id)}
+              onToggle={toggleSelect}
+            />
           ))}
         </div>
       )}

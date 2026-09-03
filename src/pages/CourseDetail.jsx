@@ -113,16 +113,22 @@ function LessonRow({ lesson, index }) {
   );
 }
 
+import { useLocation, useSearchParams } from "react-router-dom";
+
 export default function CourseDetail() {
   const { id } = useParams();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  const isEditorPreview = searchParams.get("from") === "editor" || location.state?.from === "editor";
 
   const load = () =>
     fetchCourse(id)
@@ -167,7 +173,28 @@ export default function CourseDetail() {
   const lessonCount = course.stats?.lessonCount || 0;
 
   return (
-    <div>
+    <div className="space-y-4">
+      {isEditorPreview ? (
+        <div className="flex items-center justify-between rounded-surface border border-brand-border bg-brand-subtle px-4 py-2.5 text-sm text-brand-hover shadow-sm">
+          <div className="flex items-center gap-2 font-medium">
+            <Icon name="sparkles" size={16} /> Viewing in Course Editor Preview Mode
+          </div>
+          <Link
+            to={`/teach/${id}`}
+            className="rounded-control bg-brand px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover shadow-sm"
+          >
+            ← Back to Course Editor
+          </Link>
+        </div>
+      ) : (
+        <Link
+          to="/courses"
+          className="inline-flex items-center gap-1.5 text-sm text-ink-subtle hover:text-brand transition mb-1"
+        >
+          <Icon name="arrowLeft" size={15} /> Back to Courses
+        </Link>
+      )}
+
       <div className="overflow-hidden rounded-surface bg-gradient-to-br from-brand to-brand-hover text-white">
         {course.thumbnailUrl && (
           <img src={course.thumbnailUrl} alt="" className="h-48 w-full object-cover opacity-90" />

@@ -81,7 +81,7 @@ export default function CourseStudents({ courseId }) {
     try {
       const result = await bulkEnroll(courseId, [...selected]);
       setNotice(
-        `${result.addedCount} student${result.addedCount === 1 ? "" : "s"} enrolled` +
+        `${result.addedCount} learner${result.addedCount === 1 ? "" : "s"} enrolled` +
           (result.skipped?.length ? ` · ${result.skipped.length} already enrolled` : "")
       );
       setSelected(new Set());
@@ -95,7 +95,7 @@ export default function CourseStudents({ courseId }) {
   };
 
   const remove = async (enrollment) => {
-    const name = enrollment.user?.name || enrollment.user?.email || "this student";
+    const name = enrollment.user?.name || enrollment.user?.email || "this learner";
     if (!window.confirm(`Remove ${name} from this course?`)) return;
     setError("");
     setNotice("");
@@ -112,17 +112,17 @@ export default function CourseStudents({ courseId }) {
     <div className="rounded-surface border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="font-semibold text-ink">Students</h2>
+          <h2 className="font-semibold text-ink">Enrolled Learners</h2>
           <p className="text-xs text-ink-subtle">
-            {enrollments.length} enrolled · learners can also enrol themselves from the catalog
+            {enrollments.length} enrolled · learners can also enroll themselves from the catalog
           </p>
         </div>
         <button
           type="button"
           onClick={openPicker}
-          className="rounded-control bg-ink px-3 py-1.5 text-sm font-medium text-white hover:bg-ink"
+          className="rounded-control bg-brand px-3.5 py-1.5 text-sm font-medium text-white hover:bg-brand-hover shadow-sm"
         >
-          Add students
+          + Add Learners
         </button>
       </div>
 

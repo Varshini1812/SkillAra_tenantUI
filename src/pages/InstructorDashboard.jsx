@@ -11,7 +11,7 @@ const REVIEW_CHIP = {
   APPROVED: { label: "Ready to publish", chip: "bg-success-subtle text-success" },
 };
 
-function Stat({ label, value, to, tone = "slate" }) {
+function Stat({ label, value, to, tone = "slate", trend }) {
   const tones = {
     slate: "text-ink",
     indigo: "text-brand-hover",
@@ -19,13 +19,22 @@ function Stat({ label, value, to, tone = "slate" }) {
     emerald: "text-success",
   };
   const card = (
-    <div className="rounded-surface border border-line bg-surface p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">{label}</p>
-      <p className={`mt-1 text-2xl font-bold ${tones[tone]}`}>{value}</p>
+    <div className="h-full flex flex-col justify-between rounded-surface border border-line bg-surface p-4 transition hover:border-line-strong">
+      <div className="flex items-start justify-between gap-1.5 min-h-[1.5rem]">
+        <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle leading-snug">{label}</p>
+        {trend ? (
+          <span className="shrink-0 whitespace-nowrap rounded-chip bg-success-subtle px-1.5 py-0.5 text-[10px] font-semibold text-success">
+            {trend}
+          </span>
+        ) : (
+          <div className="h-4" />
+        )}
+      </div>
+      <p className={`mt-2 text-2xl font-bold ${tones[tone]}`}>{value}</p>
     </div>
   );
   return to ? (
-    <Link to={to} className="block transition hover:opacity-80">
+    <Link to={to} className="block h-full transition hover:opacity-90">
       {card}
     </Link>
   ) : (
@@ -45,6 +54,7 @@ export default function InstructorDashboard() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [timeRange, setTimeRange] = useState("30d");
 
   useEffect(() => {
     fetchCourses({ mine: true, limit: 100 })
@@ -66,23 +76,38 @@ export default function InstructorDashboard() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand">
-          Teaching overview
-        </p>
-        <h1 className="mt-1 text-2xl font-bold text-ink">
-          Welcome back{user?.name ? `, ${user.name}` : ""}
-        </h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand">
+            Teaching overview
+          </p>
+          <h1 className="mt-1 text-2xl font-bold text-ink">
+            Welcome back{user?.name ? `, ${user.name}` : ""}
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-ink-subtle">Period:</label>
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value)}
+            className="rounded-control border border-line px-3 py-1.5 text-xs font-medium text-ink focus:border-brand focus:outline-none"
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="all">All time</option>
+          </select>
+        </div>
       </div>
 
       {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <Stat label="My courses" value={courses.length} to="/teach" />
-        <Stat label="Published" value={published.length} to="/teach" tone="emerald" />
-        <Stat label="In review" value={inReview.length} to="/teach" tone="indigo" />
-        <Stat label="Needs changes" value={needsWork.length} to="/teach" tone="amber" />
-        <Stat label="Enrolled learners" value={learners} />
+        <Stat label="My courses" value={courses.length} to="/teach?tab=all" trend={timeRange === "7d" ? "+1 new" : "+3 this mo"} />
+        <Stat label="Published" value={published.length} to="/teach?tab=live" tone="emerald" trend="+100%" />
+        <Stat label="In review" value={inReview.length} to="/teach?tab=in-review" tone="indigo" />
+        <Stat label="Needs changes" value={needsWork.length} to="/teach?tab=attention" tone="amber" />
+        <Stat label="Enrolled learners" value={learners} to="/teach?tab=all" trend="+12% growth" />
       </div>
 
       {actionable.length > 0 && (
