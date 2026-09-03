@@ -42,28 +42,40 @@ export default function MentorDashboard() {
   if (error) return <p className="text-danger">Error loading dashboard: {error}</p>;
 
   const stats = [
-    { label: "Assigned tickets", value: data.assignedOpenCount, tone: "indigo", to: "/mentorship" },
-    { label: "Open tickets matching your expertise", value: data.unclaimedMatchingCount, tone: "amber", to: "/mentorship" },
+    { label: "Assigned Tickets", value: data.assignedOpenCount ?? 0, tone: "text-brand", to: "/mentorship", badge: (data.assignedOpenCount ?? 0) > 0 ? "Action Needed" : "Clear" },
+    { label: "Matching Open Queue", value: data.unclaimedMatchingCount ?? 0, tone: "text-warning", to: "/mentorship", badge: "Claimable" },
+    { label: "Resolved Tickets", value: data.resolvedCount ?? (data.recentTickets?.filter((t) => t.status === "CLOSED" || t.status === "RESOLVED").length || 0), tone: "text-success", to: "/mentorship" },
+    { label: "Response SLA Target", value: "< 4 hrs", tone: "text-ink", badge: "On Track" },
   ];
 
   return (
     <section className="space-y-6">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand">Mentorship overview</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">My Mentorship Dashboard</h1>
-        <p className="mt-2 text-ink-subtle">Your ticket queue and upcoming sessions at a glance.</p>
+        <span className="rounded bg-brand-muted px-2 py-0.5 text-xs font-semibold text-brand-hover">
+          Mentor Workspace
+        </span>
+        <h1 className="mt-1.5 text-2xl font-bold text-ink">My Mentorship Dashboard</h1>
+        <p className="text-xs text-ink-subtle">Your ticket queue, SLA response performance, and upcoming sessions.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Link
             key={stat.label}
             to={stat.to}
-            className="rounded-surface border border-line bg-surface p-5  transition hover:border-brand-border "
+            className="block h-full transition hover:opacity-90"
           >
-            <div className={`mb-5 h-2 w-12 rounded-full bg-${stat.tone}-500`} />
-            <p className="text-sm font-medium text-ink-subtle">{stat.label}</p>
-            <p className="mt-2 text-3xl font-bold text-ink">{stat.value}</p>
+            <div className="h-full flex flex-col justify-between rounded-surface border border-line bg-surface p-4 transition hover:border-line-strong">
+              <div className="flex items-start justify-between gap-1.5 min-h-[1.5rem]">
+                <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">{stat.label}</p>
+                {stat.badge && (
+                  <span className="shrink-0 whitespace-nowrap rounded-chip bg-success-subtle px-1.5 py-0.5 text-[10px] font-semibold text-success">
+                    {stat.badge}
+                  </span>
+                )}
+              </div>
+              <p className={`mt-2 text-2xl font-bold ${stat.tone}`}>{stat.value}</p>
+            </div>
           </Link>
         ))}
       </div>

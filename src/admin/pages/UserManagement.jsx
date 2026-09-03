@@ -56,8 +56,8 @@ function isStaffRole(role) {
 }
 
 const AUDIENCE_TABS = [
-  { value: "students", label: "Students" },
-  { value: "staff", label: "Staff" },
+  { value: "students", label: "Learners" },
+  { value: "staff", label: "Instructors & Staff" },
   { value: "all", label: "Everyone" },
 ];
 import { useAdminAuth } from "../context/AdminAuthContext.jsx";

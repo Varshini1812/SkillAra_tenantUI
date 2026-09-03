@@ -357,26 +357,56 @@ function MentorsTab() {
         {loading ? (
           <p className="mt-3 text-sm text-ink-subtle">Loading…</p>
         ) : mentors.length === 0 ? (
-          <p className="mt-3 rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
-            No mentors listed yet.
-          </p>
+          <div className="mt-3 rounded-surface border border-dashed border-line-strong p-8 text-center">
+            <p className="text-sm font-medium text-ink-muted">No active mentors listed yet</p>
+            <p className="mt-1 text-xs text-ink-subtle max-w-sm mx-auto">
+              {canBeMentor
+                ? "Become a mentor to help learners solve problems, review code, and offer career guidance."
+                : "Mentors will appear here as soon as instructors publish their mentor profiles."}
+            </p>
+            {canBeMentor && !profile && (
+              <button
+                type="button"
+                onClick={() => {
+                  setBio("Experienced instructor ready to mentor students in software engineering.");
+                  setTags("React, JavaScript, Node.js");
+                  setYears("3");
+                  setIsActive(true);
+                }}
+                className="mt-4 rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover shadow-sm"
+              >
+                ⚡ Quick Fill & Set Up Profile
+              </button>
+            )}
+          </div>
         ) : (
           <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-            {mentors.map((m) => (
-              <li key={m.id} className="rounded-control border border-line p-3">
-                <p className="font-medium text-ink">{m.user?.name || m.user?.email}</p>
-                {m.bio && <p className="mt-1 text-xs text-ink-subtle">{m.bio}</p>}
-                {m.expertiseTags?.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {m.expertiseTags.map((tag) => (
-                      <span key={tag} className="rounded bg-brand-subtle px-1.5 py-0.5 text-[10px] text-brand-hover">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </li>
-            ))}
+            {mentors.map((m) => {
+              const tagsList = Array.isArray(m.expertiseTags)
+                ? m.expertiseTags
+                : typeof m.expertiseTags === "string"
+                ? m.expertiseTags.split(",")
+                : [];
+              const cleanTags = tagsList
+                .map((t) => (typeof t === "string" ? t.trim() : ""))
+                .filter((t) => t.length > 1);
+
+              return (
+                <li key={m.id} className="rounded-control border border-line p-3">
+                  <p className="font-medium text-ink">{m.user?.name || m.user?.email}</p>
+                  {m.bio && <p className="mt-1 text-xs text-ink-subtle">{m.bio}</p>}
+                  {cleanTags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {cleanTags.map((tag) => (
+                        <span key={tag} className="rounded bg-brand-subtle px-1.5 py-0.5 text-[10px] text-brand-hover">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

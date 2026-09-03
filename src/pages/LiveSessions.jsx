@@ -154,7 +154,9 @@ function NewSessionForm({ courses, onCreated }) {
 
 function LiveSessionsContent() {
   const { user, can } = usePermissions();
-  const canHost = can("live-sessions", "create");
+  const canAuthor = can("courses", "create");
+  const isMentor = can("mentorship", "claim") && !canAuthor;
+  const canHost = can("live-sessions", "create") || canAuthor || isMentor;
   const navigate = useNavigate();
 
   const [tab, setTab] = useState("upcoming");
@@ -234,9 +236,11 @@ function LiveSessionsContent() {
       <div>
         <h1 className="text-2xl font-bold">Live Sessions</h1>
         <p className="mt-1 text-sm text-ink-subtle">
-          {canHost
+          {canAuthor
             ? "Schedule and run live classes across all the courses you teach — no need to go into each course."
-            : "Upcoming and past live classes across all your courses."}
+            : isMentor
+            ? "Schedule and host live Q&A sessions, workshops, and mentorship calls for learners across the organization."
+            : "Upcoming and past live interactive classes across the course catalog."}
         </p>
       </div>
 
@@ -271,9 +275,25 @@ function LiveSessionsContent() {
             {loading ? (
               <p className="mt-3 text-sm text-ink-subtle">Loading…</p>
             ) : upcoming.length === 0 ? (
-              <p className="mt-3 rounded-control border border-dashed border-line-strong p-6 text-center text-sm text-ink-subtle">
-                No upcoming live sessions.
-              </p>
+              <div className="mt-3 rounded-surface border border-dashed border-line-strong p-8 text-center">
+                <p className="text-sm font-medium text-ink-muted">No upcoming live sessions</p>
+                <p className="mt-1 text-xs text-ink-subtle max-w-sm mx-auto">
+                  {canAuthor
+                    ? "Host live lectures, Q&A sessions, or code walkthroughs for students enrolled in your courses."
+                    : isMentor
+                    ? "Host live Q&A sessions, workshops, or mentorship calls for learners across the organization."
+                    : "Live interactive classes hosted by instructors and mentors will appear here."}
+                </p>
+                {canHost && (
+                  <button
+                    type="button"
+                    onClick={() => setTab("schedule")}
+                    className="mt-4 rounded-control bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover shadow-sm"
+                  >
+                    + Schedule Your First Session
+                  </button>
+                )}
+              </div>
             ) : (
               <ul className="mt-3 space-y-2">
                 {upcoming.map((s) => {

@@ -12,8 +12,9 @@ const STATUS_STYLE = {
 };
 
 function MockTestsContent() {
-  const { isInstructor, isStaff } = usePermissions();
-  const canManage = isInstructor || isStaff;
+  const { can } = usePermissions();
+  const canCreate = can("courses", "create");
+  const canManage = canCreate || can("courses", "edit");
 
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,9 +64,9 @@ function MockTestsContent() {
       <div>
         <h1 className="text-2xl font-bold">Mock Tests</h1>
         <p className="mt-1 text-sm text-ink-subtle">
-          {canManage
+          {canCreate
             ? "Every mock test across the courses you teach."
-            : "Practice tests across all the courses you're enrolled in."}
+            : "Practice mock tests available across the course catalog."}
         </p>
       </div>
 

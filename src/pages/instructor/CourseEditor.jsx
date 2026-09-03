@@ -17,6 +17,9 @@ import CourseReviewPanel from "../../components/teach/CourseReviewPanel.jsx";
 import { usePermissions } from "../../hooks/usePermissions.js";
 import CourseMockTests from "../../components/teach/CourseMockTests.jsx";
 import CourseLiveSessions from "../../components/teach/CourseLiveSessions.jsx";
+import CourseStudents from "../../components/teach/CourseStudents.jsx";
+import CourseAnnouncements from "../../components/teach/CourseAnnouncements.jsx";
+import CourseAnalyticsModal from "../../components/teach/CourseAnalyticsModal.jsx";
 import Icon from "../../admin/components/ui/Icon.jsx";
 
 const LEVELS = ["ALL_LEVELS", "BEGINNER", "INTERMEDIATE", "ADVANCED"];
@@ -41,6 +44,7 @@ export default function CourseEditor() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
 
   const load = useCallback(async () => {
     setError("");
@@ -175,7 +179,6 @@ export default function CourseEditor() {
   const canEdit = can("courses", "edit");
   const canPublish = can("courses", "publish");
   const canArchive = can("courses", "delete");
-  // Publishing is gated on a current content-review approval; the API enforces the same rule.
   const approved = review?.status === "APPROVED";
   const publishBlockedReason = blocked
     ? "An administrator has blocked this course"
@@ -183,11 +186,19 @@ export default function CourseEditor() {
       ? "A content reviewer has to approve this course before it can be published"
       : undefined;
 
+  const isAuthor = can("courses", "create");
+  const backTo = isAuthor ? "/teach" : "/review-queue";
+  const backLabel = isAuthor ? "Back to my courses" : "Back to review queue";
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <Link to="/teach" className="text-sm text-ink-subtle hover:text-brand"><Icon name="arrowLeft" size={15} /> Back to my courses
+          <Link
+            to={backTo}
+            className="inline-flex items-center gap-1.5 text-sm text-ink-subtle hover:text-brand transition mb-1"
+          >
+            <Icon name="arrowLeft" size={15} /> {backLabel}
           </Link>
           <h1 className="mt-1 truncate text-2xl font-bold">{course.title}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
@@ -210,8 +221,16 @@ export default function CourseEditor() {
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setShowAnalyticsModal(true)}
+            className="rounded-control border border-brand-border bg-brand-subtle px-3.5 py-2 text-sm font-semibold text-brand-hover hover:bg-brand-muted"
+          >
+            📊 Analytics & Performance
+          </button>
           <Link
-            to={`/courses/${id}`}
+            to={`/courses/${id}?from=editor`}
+            state={{ from: "editor" }}
             className="rounded-control border border-line-strong px-4 py-2 text-sm hover:bg-surface-sunken"
           >
             Preview
@@ -464,8 +483,18 @@ export default function CourseEditor() {
 
           <CourseLiveSessions courseId={id} />
 
+          <CourseAnnouncements courseId={id} />
+
+          <CourseStudents courseId={id} />
         </div>
       </div>
+
+      {showAnalyticsModal && (
+        <CourseAnalyticsModal
+          course={course}
+          onClose={() => setShowAnalyticsModal(false)}
+        />
+      )}
     </div>
   );
 }

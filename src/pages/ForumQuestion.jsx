@@ -147,7 +147,11 @@ function ForumQuestionContent() {
 
   return (
     <div className="space-y-6">
-      <Link to="/forum" className="text-sm text-ink-subtle hover:text-brand"><Icon name="arrowLeft" size={15} /> Back to forum
+      <Link
+        to="/forum"
+        className="inline-flex items-center gap-1.5 text-sm text-ink-subtle hover:text-brand transition mb-1"
+      >
+        <Icon name="arrowLeft" size={15} /> Back to Forum
       </Link>
 
       {error && <div className="rounded-control bg-danger-subtle p-3 text-sm text-danger">{error}</div>}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { fetchCourses } from "../api/courses.js";
@@ -13,11 +13,21 @@ const LEVELS = [
   { value: "ADVANCED", label: "Advanced" },
 ];
 
+const SORTS = [
+  { value: "newest", label: "Sort: Newest" },
+  { value: "enrolled", label: "Sort: Most Enrolled" },
+  { value: "title", label: "Sort: Title A-Z" },
+  { value: "price-asc", label: "Sort: Price (Low to High)" },
+  { value: "price-desc", label: "Sort: Price (High to Low)" },
+];
+
 export default function Courses() {
   const { canAuthorCourses } = usePermissions();
   const [courses, setCourses] = useState([]);
   const [search, setSearch] = useState("");
   const [level, setLevel] = useState("");
+  const [category, setCategory] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -28,13 +38,12 @@ export default function Courses() {
       setLoading(true);
       setError("");
       try {
-        // The API decides visibility from the caller's role — a student only ever
-        // receives published, unblocked courses.
         const { items } = await fetchCourses({
           search: search || undefined,
           level: level || undefined,
+          category: category || undefined,
         });
-        if (!cancelled) setCourses(items);
+        if (!cancelled) setCourses(items || []);
       } catch (err) {
         if (!cancelled) setError(getErrorMessage(err));
       } finally {
@@ -47,7 +56,33 @@ export default function Courses() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [search, level]);
+  }, [search, level, category]);
+
+  // Extract unique categories from returned items
+  const availableCategories = useMemo(() => {
+    const set = new Set();
+    courses.forEach((c) => {
+      if (c.category) set.add(c.category);
+    });
+    return Array.from(set).sort();
+  }, [courses]);
+
+  // Client-side sorting
+  const processedCourses = useMemo(() => {
+    const list = [...courses];
+    if (sortBy === "newest") {
+      list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    } else if (sortBy === "enrolled") {
+      list.sort((a, b) => (b.stats?.enrolledCount || 0) - (a.stats?.enrolledCount || 0));
+    } else if (sortBy === "title") {
+      list.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+    } else if (sortBy === "price-asc") {
+      list.sort((a, b) => (a.price || 0) - (b.price || 0));
+    } else if (sortBy === "price-desc") {
+      list.sort((a, b) => (b.price || 0) - (a.price || 0));
+    }
+    return list;
+  }, [courses, sortBy]);
 
   return (
     <div>
@@ -57,7 +92,28 @@ export default function Courses() {
           <p className="text-ink-subtle">Find your next skill to master</p>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="search"
+            placeholder="Search courses..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="rounded-control border border-line-strong px-4 py-2 text-sm sm:w-56"
+          />
+
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="rounded-control border border-line-strong px-3 py-2 text-sm"
+          >
+            <option value="">All categories</option>
+            {availableCategories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+
           <select
             value={level}
             onChange={(e) => setLevel(e.target.value)}
@@ -69,13 +125,19 @@ export default function Courses() {
               </option>
             ))}
           </select>
-          <input
-            type="search"
-            placeholder="Search courses..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-control border border-line-strong px-4 py-2 sm:w-64"
-          />
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="rounded-control border border-line-strong px-3 py-2 text-sm bg-surface font-medium"
+          >
+            {SORTS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+
           {canAuthorCourses && (
             <Link
               to="/teach"
@@ -91,11 +153,11 @@ export default function Courses() {
 
       {loading ? (
         <div className="mt-12 text-center text-ink-subtle">Loading courses...</div>
-      ) : courses.length === 0 ? (
-        <div className="mt-12 text-center text-ink-subtle">No courses found.</div>
+      ) : processedCourses.length === 0 ? (
+        <div className="mt-12 text-center text-ink-subtle">No courses found matching your criteria.</div>
       ) : (
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((c) => (
+          {processedCourses.map((c) => (
             <CourseCard key={c.id} course={c} showStatus={canAuthorCourses} />
           ))}
         </div>
