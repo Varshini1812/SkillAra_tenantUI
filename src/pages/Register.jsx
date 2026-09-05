@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getErrorMessage } from "../api/client.js";
 import AuthShell from "../components/AuthShell.jsx";
-import { buildRootUrl } from "../utils/tenant.js";
+import { buildRootUrl, clearTenantOverride } from "../utils/tenant.js";
 import Icon from "../admin/components/ui/Icon.jsx";
 import { Button, Input } from "../admin/components/ui/primitives.jsx";
 
@@ -115,6 +115,7 @@ export default function Register() {
         <p className="mt-2 text-center">
           <a
             href={buildRootUrl("/login")}
+              onClick={clearTenantOverride}
             className="inline-flex items-center gap-1 text-xs text-ink-subtle transition-colors duration-150 ease-standard hover:text-ink"
           >
             <Icon name="chevronLeft" size={13} />

@@ -19,6 +19,53 @@ function isPlatformHost(host) {
   return PLATFORM_DOMAINS.some((d) => host === d || host.endsWith(`.${d}`));
 }
 
+/**
+ * Workspace selected by `?tenant=acme` rather than by hostname.
+ *
+ * Subdomain routing needs a wildcard domain (*.skillara.com). On a bare
+ * hosting URL like skillara-tenant-ui.vercel.app there are no subdomains to
+ * be had, so a single origin has to serve every workspace. The value is
+ * remembered so the choice survives in-app navigation and reloads.
+ */
+const TENANT_QUERY_KEY = "tenant";
+const TENANT_STORAGE_KEY = "skillara_active_tenant";
+
+function readTenantParam() {
+  try {
+    const raw = new URLSearchParams(window.location.search).get(TENANT_QUERY_KEY);
+    const sub = String(raw || "").trim().toLowerCase();
+    return sub && !RESERVED.has(sub) ? sub : null;
+  } catch {
+    return null;
+  }
+}
+
+export function getTenantOverride() {
+  const fromQuery = readTenantParam();
+  if (fromQuery) {
+    try {
+      localStorage.setItem(TENANT_STORAGE_KEY, fromQuery);
+    } catch {
+      // private mode — the query param still carries this page load
+    }
+    return fromQuery;
+  }
+  try {
+    const stored = String(localStorage.getItem(TENANT_STORAGE_KEY) || "").trim().toLowerCase();
+    return stored && !RESERVED.has(stored) ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearTenantOverride() {
+  try {
+    localStorage.removeItem(TENANT_STORAGE_KEY);
+  } catch {
+    // nothing to clear
+  }
+}
+
 export function getRootDomain() {
   return (import.meta.env.VITE_ROOT_DOMAIN || "").trim().toLowerCase();
 }
@@ -83,7 +130,10 @@ export function buildTenantUrl(subdomain) {
     return port && port !== "80" && port !== "443" ? `${base}:${port}` : base;
   }
 
-  return `${protocol}//${subdomain}.${window.location.hostname}`;
+  // No root domain configured: there is no *.host to point at, so keep the
+  // current origin and carry the workspace in the query string.
+  const host = window.location.host;
+  return `${protocol}//${host}?${TENANT_QUERY_KEY}=${encodeURIComponent(subdomain)}`;
 }
 
 export function getTenantDisplayHost(subdomain) {
@@ -116,6 +166,9 @@ export function isRootApp() {
   const fromHost = getTenantFromHostname();
   if (fromHost) return false;
 
+  // Without a wildcard domain the workspace can only come from ?tenant=.
+  if (getTenantOverride()) return false;
+
   if (import.meta.env.DEV) {
     const host = window.location.hostname;
     if (host === "localhost" || host === "127.0.0.1") {
@@ -132,6 +185,8 @@ export function isRootApp() {
 export function getActiveTenantSubdomain(devOverride = "") {
   const fromHost = getTenantFromHostname();
   if (fromHost) return fromHost;
+  const override = getTenantOverride();
+  if (override) return override;
   const dev = (devOverride || localStorage.getItem("skillara_admin_tenant") || localStorage.getItem("skillara_dev_tenant") || "").trim().toLowerCase();
   return dev;
 }

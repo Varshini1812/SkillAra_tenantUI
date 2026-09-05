@@ -6,7 +6,7 @@ import { getErrorMessage } from "../api/client.js";
 import { setInitialPassword, workspaceLogin } from "../api/workspaceAuth.js";
 import { getTenantLogoUrl } from "../admin/utils/tenantLogo.js";
 import { useDocumentTitle } from "../admin/hooks/useDocumentTitle.js";
-import { buildRootUrl } from "../utils/tenant.js";
+import { buildRootUrl, clearTenantOverride } from "../utils/tenant.js";
 import { loadRememberedLogin, saveRememberedLogin } from "../lib/rememberLogin.js";
 import { readableTextOn } from "../utils/contrastColor.js";
 import { DEFAULT_TENANT_BRAND } from "../admin/constants/branding.js";
@@ -384,6 +384,7 @@ export default function TenantLogin() {
           <p className="mt-2 text-center text-xs">
             <a
               href={buildRootUrl("/login")}
+              onClick={clearTenantOverride}
               className="rounded-control font-medium text-ink-subtle transition-colors duration-150 ease-standard hover:text-ink hover:underline underline-offset-2"
             >
               Not your workspace? Switch workspace
