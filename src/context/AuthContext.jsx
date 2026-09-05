@@ -25,6 +25,7 @@ export function AuthProvider({ children }) {
   const [tenantInfo, setTenantInfo] = useState(null);
   const [tenantError, setTenantError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
   // expose raw access token for components that need it directly
   const accessToken = getAccessToken();
 
@@ -50,6 +51,16 @@ export function AuthProvider({ children }) {
 
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+    /**
+     * Only the backend answering "no such tenant" means the workspace is missing.
+     * A dead connection, a misconfigured API base URL or a 5xx is our problem,
+     * not a bad link — reporting those as "doesn't exist" sends users chasing a
+     * typo that isn't there.
+     */
+    const isMissing = (err) => err?.response?.status === 404;
+
+    let unreachable = false;
+
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
         const data = await resolveTenant(sub);
@@ -64,6 +75,7 @@ export function AuthProvider({ children }) {
           await sleep(600);
           continue;
         }
+        unreachable = !isMissing(err);
         break;
       }
     }
@@ -87,12 +99,13 @@ export function AuthProvider({ children }) {
         setTenantError(null);
         return;
       }
-    } catch {
-      // fall through to not_found
+      unreachable = false;
+    } catch (err) {
+      if (!isMissing(err)) unreachable = true;
     }
 
     setTenantInfo(null);
-    setTenantError("not_found");
+    setTenantError(unreachable ? "unreachable" : "not_found");
   }, []);
 
   const refreshUser = useCallback(async () => {
@@ -137,11 +150,20 @@ export function AuthProvider({ children }) {
 
   const register = async (payload) => apiRegister(payload);
 
+  /**
+   * Deliberately does NOT null `user` before navigating. Clearing it re-renders the
+   * whole tree as signed-out while the browser is still fetching /login, which flashed
+   * a stripped sidebar and a dashboard that could never load. The hard navigation
+   * discards all React state anyway, so the overlay below is the only thing that needs
+   * to change. `replace` keeps /dashboard out of history, so Back can't return to it.
+   */
   const logout = async () => {
-    await apiLogout();
-    setUser(null);
-    setSessionClaims(null);
-    window.location.href = "/login";
+    setLoggingOut(true);
+    try {
+      await apiLogout();
+    } finally {
+      window.location.replace("/login");
+    }
   };
 
   const updateDevTenant = (subdomain) => {
@@ -171,6 +193,19 @@ export function AuthProvider({ children }) {
     }),
     [user, sessionClaims, tenantSubdomain, tenantInfo, tenantError, loading, accessToken, resolveTenantContext, refreshUser, establishSession]
   );
+
+  if (loggingOut) {
+    return (
+      <div
+        className="flex min-h-dvh items-center justify-center bg-canvas"
+        role="status"
+        aria-label="Signing out"
+      >
+        <span className="h-7 w-7 animate-spin rounded-full border-[3px] border-line-strong border-t-brand" />
+        <span className="sr-only">Signing out…</span>
+      </div>
+    );
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

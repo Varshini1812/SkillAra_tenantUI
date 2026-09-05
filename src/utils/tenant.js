@@ -1,5 +1,24 @@
 const RESERVED = new Set(["www", "admin", "api"]);
 
+/**
+ * Hosting-platform domains that serve the app itself. `skillara-tenant-ui.vercel.app`
+ * is the deployment, not a workspace called "skillara-tenant-ui", so hosts under
+ * these always resolve to the root app (the workspace finder).
+ */
+const PLATFORM_DOMAINS = [
+  "vercel.app",
+  "netlify.app",
+  "pages.dev",
+  "onrender.com",
+  "github.io",
+  "web.app",
+  "firebaseapp.com",
+];
+
+function isPlatformHost(host) {
+  return PLATFORM_DOMAINS.some((d) => host === d || host.endsWith(`.${d}`));
+}
+
 export function getRootDomain() {
   return (import.meta.env.VITE_ROOT_DOMAIN || "").trim().toLowerCase();
 }
@@ -35,6 +54,8 @@ export function getTenantFromHostname() {
     }
     return null;
   }
+
+  if (isPlatformHost(host)) return null;
 
   const parts = host.split(".");
   if (parts.length >= 3) {

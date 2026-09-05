@@ -9,6 +9,20 @@ export function SkillAraMark({ className = "h-5 w-5", alt = "" }) {
   );
 }
 
+/**
+ * The mark sits on a light chip: the artwork is teal-on-transparent, so drawing
+ * it on `bg-brand` leaves only the gold star visible.
+ */
+export function SkillAraMarkChip({ size = "h-9 w-9", markSize = "h-6 w-6", className = "" }) {
+  return (
+    <span
+      className={`flex ${size} shrink-0 items-center justify-center rounded-control border border-line bg-white ${className}`.trim()}
+    >
+      <SkillAraMark className={markSize} />
+    </span>
+  );
+}
+
 export function SkillAraWordmark({ className = "text-sm font-semibold text-ink" }) {
   return <span className={className}>SkillAra</span>;
 }

@@ -132,7 +132,14 @@ function TenantRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route
+          path="dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="notifications"
           element={

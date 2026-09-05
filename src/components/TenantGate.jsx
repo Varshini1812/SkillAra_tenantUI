@@ -4,7 +4,7 @@ import { isRootApp } from "../utils/tenant.js";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.js";
 import api from "../api/client.js";
 import Icon from "../admin/components/ui/Icon.jsx";
-import { SkillAraMark } from "../admin/components/SkillAraBrand.jsx";
+import { SkillAraMarkChip } from "../admin/components/SkillAraBrand.jsx";
 import { Button, EmptyState, Field, Skeleton } from "../admin/components/ui/primitives.jsx";
 
 const CONTROL =
@@ -20,9 +20,7 @@ function GateShell({ children }) {
   return (
     <div className="slim-scroll font-sans flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-10 text-ink">
       <div className="mb-8 flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-control bg-brand">
-          <SkillAraMark className="h-5 w-5" />
-        </span>
+        <SkillAraMarkChip />
         <span className="text-lg font-bold tracking-tight text-ink">SkillAra</span>
       </div>
 
@@ -231,6 +229,17 @@ export default function TenantGate({ children }) {
     return (
       <GateMessage icon="lock" title="This subdomain is reserved">
         Use your organization&apos;s own workspace URL to sign in.
+      </GateMessage>
+    );
+  }
+
+  if (tenantError === "unreachable") {
+    return (
+      <GateMessage icon="danger" tone="danger" title="Can’t reach SkillAra">
+        We couldn&apos;t load{" "}
+        <span className="break-token font-semibold text-ink">{tenantSubdomain}</span> because the
+        service isn&apos;t responding. Refresh in a moment — if it keeps happening, tell your
+        administrator.
       </GateMessage>
     );
   }

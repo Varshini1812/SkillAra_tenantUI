@@ -7,7 +7,7 @@ import {
   setDevTenant,
 } from "../utils/tenant.js";
 import Icon from "../admin/components/ui/Icon.jsx";
-import { SkillAraMark } from "../admin/components/SkillAraBrand.jsx";
+import { SkillAraMark, SkillAraMarkChip } from "../admin/components/SkillAraBrand.jsx";
 import { Badge, Button, Field, Skeleton } from "../admin/components/ui/primitives.jsx";
 
 const SUBDOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
@@ -220,9 +220,7 @@ export default function FindWorkspace() {
 
       <div className="flex w-full flex-col justify-center px-6 py-10 sm:px-8 lg:flex-1">
         <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-          <span className="flex h-9 w-9 items-center justify-center rounded-control bg-brand text-brand-fg">
-            <SkillAraMark className="h-4.5 w-4.5" />
-          </span>
+          <SkillAraMarkChip />
           <span className="text-xl font-bold text-ink">SkillAra</span>
         </div>
 
