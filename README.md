@@ -1,4 +1,4 @@
-# SkillAra Client
+## SkillAra Client
 
 > For how the three SkillAra apps fit together, see the
 > [workspace README](../README.md).
