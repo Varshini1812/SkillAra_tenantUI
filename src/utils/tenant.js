@@ -1,6 +1,17 @@
 const RESERVED = new Set(["www", "admin", "api"]);
 
 /**
+ * A workspace slug is a single DNS label. Validating it here stops a malformed
+ * value — most often a URL path that leaked into ?tenant= — from being stored
+ * and then replayed on every subsequent page load.
+ */
+const SUBDOMAIN_RE = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+
+function isValidSubdomain(sub) {
+  return Boolean(sub) && SUBDOMAIN_RE.test(sub) && !RESERVED.has(sub);
+}
+
+/**
  * Hosting-platform domains that serve the app itself. `skillara-tenant-ui.vercel.app`
  * is the deployment, not a workspace called "skillara-tenant-ui", so hosts under
  * these always resolve to the root app (the workspace finder).
@@ -34,7 +45,7 @@ function readTenantParam() {
   try {
     const raw = new URLSearchParams(window.location.search).get(TENANT_QUERY_KEY);
     const sub = String(raw || "").trim().toLowerCase();
-    return sub && !RESERVED.has(sub) ? sub : null;
+    return isValidSubdomain(sub) ? sub : null;
   } catch {
     return null;
   }
@@ -52,7 +63,11 @@ export function getTenantOverride() {
   }
   try {
     const stored = String(localStorage.getItem(TENANT_STORAGE_KEY) || "").trim().toLowerCase();
-    return stored && !RESERVED.has(stored) ? stored : null;
+    if (isValidSubdomain(stored)) return stored;
+    // A value stored before this validation existed (e.g. "acme-bootcamp/login")
+    // would otherwise break every load until the user cleared their site data.
+    if (stored) localStorage.removeItem(TENANT_STORAGE_KEY);
+    return null;
   } catch {
     return null;
   }
@@ -116,24 +131,31 @@ export function isReservedSubdomain(sub) {
   return RESERVED.has(sub);
 }
 
-export function buildTenantUrl(subdomain) {
+/**
+ * `path` is built in here rather than appended by the caller: in the query
+ * form the workspace is the last thing in the URL, so appending "/login"
+ * outside would land it inside the ?tenant= value instead of the path.
+ */
+export function buildTenantUrl(subdomain, path = "/") {
   const root = getRootDomain();
   const port = window.location.port;
   const protocol = window.location.protocol;
+  const suffix = path.startsWith("/") ? path : `/${path}`;
 
   if (import.meta.env.DEV) {
-    return `${protocol}//${subdomain}.localhost${port ? `:${port}` : ""}`;
+    return `${protocol}//${subdomain}.localhost${port ? `:${port}` : ""}${suffix}`;
   }
 
   if (root) {
     const base = `${protocol}//${subdomain}.${root}`;
-    return port && port !== "80" && port !== "443" ? `${base}:${port}` : base;
+    const withPort = port && port !== "80" && port !== "443" ? `${base}:${port}` : base;
+    return `${withPort}${suffix}`;
   }
 
   // No root domain configured: there is no *.host to point at, so keep the
   // current origin and carry the workspace in the query string.
   const host = window.location.host;
-  return `${protocol}//${host}?${TENANT_QUERY_KEY}=${encodeURIComponent(subdomain)}`;
+  return `${protocol}//${host}${suffix}?${TENANT_QUERY_KEY}=${encodeURIComponent(subdomain)}`;
 }
 
 export function getTenantDisplayHost(subdomain) {

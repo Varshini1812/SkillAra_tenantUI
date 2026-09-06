@@ -69,7 +69,7 @@ function WorkspaceForm() {
     const sub = workspace.trim().toLowerCase();
     if (status !== "valid" || !sub) return;
     setDevTenant(sub);
-    window.location.href = `${buildTenantUrl(sub)}/login`;
+    window.location.href = buildTenantUrl(sub, "/login");
   };
 
   const displayHost = workspace.trim()
