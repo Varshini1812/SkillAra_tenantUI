@@ -159,15 +159,10 @@ export function buildTenantUrl(subdomain, path = "/") {
     return `${withPort}${suffix}`;
   }
 
-  for (const domain of PLATFORM_DOMAINS) {
-    if (host.endsWith(`.${domain}`)) {
-      const parts = host.split(".");
-      const baseAppHost = parts.length >= 3 ? parts.slice(-3).join(".") : host;
-      return `${protocol}//${subdomain}.${baseAppHost}${suffix}`;
-    }
-  }
-
-  return `${protocol}//${subdomain}.${host}${suffix}`;
+  // On Vercel / Netlify platform domains (*.vercel.app), subdomains are blocked by DNS.
+  // Build single-origin URL: https://skillara-tenant-ui.vercel.app/login?tenant=acme-bootcamp
+  const baseHost = window.location.host;
+  return `${protocol}//${baseHost}${suffix}?${TENANT_QUERY_KEY}=${encodeURIComponent(subdomain)}`;
 }
 
 export function getTenantDisplayHost(subdomain) {
