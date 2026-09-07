@@ -117,7 +117,15 @@ export function getTenantFromHostname() {
     return null;
   }
 
-  if (isPlatformHost(host)) return null;
+  for (const domain of PLATFORM_DOMAINS) {
+    if (host.endsWith(`.${domain}`)) {
+      const prefix = host.slice(0, -(domain.length + 1));
+      if (!prefix.includes(".")) return null;
+      const sub = prefix.split(".")[0];
+      if (sub && !RESERVED.has(sub)) return sub;
+      return null;
+    }
+  }
 
   const parts = host.split(".");
   if (parts.length >= 3) {
@@ -132,14 +140,13 @@ export function isReservedSubdomain(sub) {
 }
 
 /**
- * `path` is built in here rather than appended by the caller: in the query
- * form the workspace is the last thing in the URL, so appending "/login"
- * outside would land it inside the ?tenant= value instead of the path.
+ * `path` is built in here rather than appended by the caller.
  */
 export function buildTenantUrl(subdomain, path = "/") {
   const root = getRootDomain();
   const port = window.location.port;
   const protocol = window.location.protocol;
+  const host = window.location.hostname.toLowerCase();
   const suffix = path.startsWith("/") ? path : `/${path}`;
 
   if (import.meta.env.DEV) {
@@ -152,17 +159,30 @@ export function buildTenantUrl(subdomain, path = "/") {
     return `${withPort}${suffix}`;
   }
 
-  // No root domain configured: there is no *.host to point at, so keep the
-  // current origin and carry the workspace in the query string.
-  const host = window.location.host;
-  return `${protocol}//${host}${suffix}?${TENANT_QUERY_KEY}=${encodeURIComponent(subdomain)}`;
+  for (const domain of PLATFORM_DOMAINS) {
+    if (host.endsWith(`.${domain}`)) {
+      const parts = host.split(".");
+      const baseAppHost = parts.length >= 3 ? parts.slice(-3).join(".") : host;
+      return `${protocol}//${subdomain}.${baseAppHost}${suffix}`;
+    }
+  }
+
+  return `${protocol}//${subdomain}.${host}${suffix}`;
 }
 
 export function getTenantDisplayHost(subdomain) {
   const root = getRootDomain();
   if (root) return `${subdomain}.${root}`;
   if (import.meta.env.DEV) return `${subdomain}.localhost`;
-  return subdomain;
+  const host = window.location.hostname.toLowerCase();
+  for (const domain of PLATFORM_DOMAINS) {
+    if (host.endsWith(`.${domain}`)) {
+      const parts = host.split(".");
+      const baseAppHost = parts.length >= 3 ? parts.slice(-3).join(".") : host;
+      return `${subdomain}.${baseAppHost}`;
+    }
+  }
+  return `${subdomain}.${host}`;
 }
 
 export function buildRootUrl(path = "/") {
