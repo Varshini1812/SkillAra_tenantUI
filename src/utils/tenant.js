@@ -59,6 +59,7 @@ export function getTenantOverride() {
     } catch {
       // private mode — the query param still carries this page load
     }
+    stripTenantParamFromUrl();
     return fromQuery;
   }
   try {
@@ -73,9 +74,53 @@ export function getTenantOverride() {
   }
 }
 
+/**
+ * Remember the workspace without ever putting it in the URL.
+ *
+ * Subdomain routing needs a wildcard domain we do not own yet, so until then
+ * the workspace is discovered from the sign-in email and kept here. The code
+ * that reads a workspace off the hostname is untouched and takes precedence,
+ * so pointing `VITE_ROOT_DOMAIN` at a real wildcard domain switches the app
+ * back to `acme.skillara.com` with no further changes.
+ */
+export function setTenantOverride(sub) {
+  const value = String(sub || "").trim().toLowerCase();
+  if (!isValidSubdomain(value)) return false;
+  try {
+    localStorage.setItem(TENANT_STORAGE_KEY, value);
+  } catch {
+    // private mode — the caller still has the value for this page load
+  }
+  return true;
+}
+
+/**
+ * Drop `?tenant=` from the address bar after it has been stored. Links mailed
+ * out by the server still carry it; the user never has to look at it.
+ */
+function stripTenantParamFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has(TENANT_QUERY_KEY)) return;
+    url.searchParams.delete(TENANT_QUERY_KEY);
+    const search = url.searchParams.toString();
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${url.pathname}${search ? `?${search}` : ""}${url.hash}`
+    );
+  } catch {
+    // history is unavailable — the param is harmless, leave it
+  }
+}
+
 export function clearTenantOverride() {
   try {
+    // Every fallback `getActiveTenantSubdomain` consults, or "switch workspace"
+    // would show the finder while API calls still carried the old workspace.
     localStorage.removeItem(TENANT_STORAGE_KEY);
+    localStorage.removeItem("skillara_admin_tenant");
+    localStorage.removeItem("skillara_dev_tenant");
   } catch {
     // nothing to clear
   }
@@ -146,43 +191,40 @@ export function buildTenantUrl(subdomain, path = "/") {
   const root = getRootDomain();
   const port = window.location.port;
   const protocol = window.location.protocol;
-  const host = window.location.hostname.toLowerCase();
   const suffix = path.startsWith("/") ? path : `/${path}`;
+
+  // No wildcard domain: the workspace travels in storage, not in the host.
+  // `*.vercel.app` covers a single label, so `acme.skillara-tenant-ui.vercel.app`
+  // fails its TLS handshake — building that URL would strand the user.
+  if (!root) {
+    setTenantOverride(subdomain);
+    return suffix;
+  }
 
   if (import.meta.env.DEV) {
     return `${protocol}//${subdomain}.localhost${port ? `:${port}` : ""}${suffix}`;
   }
 
-  if (root) {
-    const base = `${protocol}//${subdomain}.${root}`;
-    const withPort = port && port !== "80" && port !== "443" ? `${base}:${port}` : base;
-    return `${withPort}${suffix}`;
-  }
-
-  for (const domain of PLATFORM_DOMAINS) {
-    if (host.endsWith(`.${domain}`)) {
-      const parts = host.split(".");
-      const baseAppHost = parts.length >= 3 ? parts.slice(-3).join(".") : host;
-      return `${protocol}//${subdomain}.${baseAppHost}${suffix}`;
-    }
-  }
-
-  return `${protocol}//${subdomain}.${host}${suffix}`;
+  const base = `${protocol}//${subdomain}.${root}`;
+  const withPort = port && port !== "80" && port !== "443" ? `${base}:${port}` : base;
+  return `${withPort}${suffix}`;
 }
 
 export function getTenantDisplayHost(subdomain) {
   const root = getRootDomain();
-  if (root) return `${subdomain}.${root}`;
+  // Without a wildcard domain the app's own host says nothing about which
+  // workspace this is, so name the workspace by the slug it will get one day.
+  if (!root) return subdomain;
   if (import.meta.env.DEV) return `${subdomain}.localhost`;
-  const host = window.location.hostname.toLowerCase();
-  for (const domain of PLATFORM_DOMAINS) {
-    if (host.endsWith(`.${domain}`)) {
-      const parts = host.split(".");
-      const baseAppHost = parts.length >= 3 ? parts.slice(-3).join(".") : host;
-      return `${subdomain}.${baseAppHost}`;
-    }
-  }
-  return `${subdomain}.${host}`;
+  return `${subdomain}.${root}`;
+}
+
+/**
+ * True while the workspace has to be discovered from the sign-in email
+ * because there is no wildcard domain to read it off the hostname.
+ */
+export function usesEmailWorkspaceDiscovery() {
+  return !getRootDomain();
 }
 
 export function buildRootUrl(path = "/") {

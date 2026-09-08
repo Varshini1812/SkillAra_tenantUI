@@ -1,6 +1,12 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import { isRootApp } from "../utils/tenant.js";
+import {
+  clearTenantOverride,
+  getTenantFromHostname,
+  getTenantOverride,
+  isRootApp,
+  usesEmailWorkspaceDiscovery,
+} from "../utils/tenant.js";
 import { useDocumentTitle } from "../hooks/useDocumentTitle.js";
 import api from "../api/client.js";
 import Icon from "../admin/components/ui/Icon.jsx";
@@ -39,6 +45,12 @@ function GateMessage({ icon, tone = "warning", title, children }) {
     brand: "bg-brand-subtle text-brand",
   }[tone];
 
+  // Without a way back, these screens are a dead end: the workspace lives in
+  // storage, so reloading lands the user right back here. Offered only when
+  // clearing storage actually changes the outcome — a workspace read off the
+  // hostname survives it, and the button would loop straight back.
+  const canSwitch = usesEmailWorkspaceDiscovery() && !getTenantFromHostname();
+
   return (
     <GateShell>
       <div className="text-center">
@@ -49,6 +61,19 @@ function GateMessage({ icon, tone = "warning", title, children }) {
         </span>
         <h1 className="mt-4 text-lg font-semibold text-ink">{title}</h1>
         <div className="mt-2 text-[0.8125rem] leading-5 text-ink-muted">{children}</div>
+
+        {canSwitch && (
+          <Button
+            variant="secondary"
+            className="mt-5"
+            onClick={() => {
+              clearTenantOverride();
+              window.location.assign("/login");
+            }}
+          >
+            Sign in with a different email
+          </Button>
+        )}
       </div>
     </GateShell>
   );
@@ -192,6 +217,20 @@ function DevDomainGate() {
 export default function TenantGate({ children }) {
   const { tenantSubdomain, tenantInfo, tenantError, loading } = useAuth();
 
+  // A workspace remembered from an earlier sign-in can be renamed or removed
+  // later. That is a stale pointer, not a mistyped address, so drop it and go
+  // back to the finder instead of stranding the user on "Workspace not found".
+  // A workspace read off the hostname is left alone — there the address really
+  // is wrong, and the message is the right answer.
+  const staleRememberedWorkspace =
+    tenantError === "not_found" && !getTenantFromHostname() && Boolean(getTenantOverride());
+
+  useEffect(() => {
+    if (!staleRememberedWorkspace) return;
+    clearTenantOverride();
+    window.location.replace("/login");
+  }, [staleRememberedWorkspace]);
+
   const tenantName = tenantInfo?.tenant_name || tenantSubdomain;
   useDocumentTitle(
     isRootApp()
@@ -201,8 +240,10 @@ export default function TenantGate({ children }) {
         : "SkillAra — Learn Smarter"
   );
 
-  // Dev gate: plain localhost has no subdomain to identify a workspace by.
-  if (import.meta.env.DEV && isRootApp()) {
+  // Dev gate: with a wildcard domain configured, plain localhost has no
+  // subdomain to identify a workspace by. Without one the finder page handles
+  // it in dev and production alike, so this stays out of the way.
+  if (import.meta.env.DEV && isRootApp() && !usesEmailWorkspaceDiscovery()) {
     const host = window.location.hostname;
     if (host === "localhost" || host === "127.0.0.1") {
       return <DevDomainGate />;
@@ -241,6 +282,20 @@ export default function TenantGate({ children }) {
         service isn&apos;t responding. Refresh in a moment — if it keeps happening, tell your
         administrator.
       </GateMessage>
+    );
+  }
+
+  // The effect above is already sending this session back to the finder.
+  if (staleRememberedWorkspace) {
+    return (
+      <div
+        className="flex min-h-dvh items-center justify-center bg-canvas"
+        role="status"
+        aria-label="Loading workspace"
+      >
+        <span className="h-7 w-7 animate-spin rounded-full border-[3px] border-line-strong border-t-brand" />
+        <span className="sr-only">Taking you back to sign in…</span>
+      </div>
     );
   }
 

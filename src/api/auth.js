@@ -54,6 +54,17 @@ export async function resolveTenant(subdomain) {
   return getData(res);
 }
 
+/**
+ * Workspaces the address belongs to. Unauthenticated and rate-limited on the
+ * server; it returns membership only, never anything about the account.
+ */
+export async function findWorkspacesByEmail(email) {
+  const res = await api.post("/api/tenants/workspace/find", {
+    email: String(email || "").trim().toLowerCase(),
+  });
+  return getData(res);
+}
+
 export async function checkWorkspace(subdomain) {
   const res = await api.get(`/api/tenants/check/${encodeURIComponent(subdomain)}`);
   return getData(res);
