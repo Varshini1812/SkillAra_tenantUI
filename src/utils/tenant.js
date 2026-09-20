@@ -201,13 +201,16 @@ export function buildTenantUrl(subdomain, path = "/") {
     return suffix;
   }
 
-  if (import.meta.env.DEV) {
-    return `${protocol}//${subdomain}.localhost${port ? `:${port}` : ""}${suffix}`;
+  if (root) {
+    const base = `${protocol}//${subdomain}.${root}`;
+    const portPart = port ? `:${port}` : "";
+    return `${base}${portPart}${suffix}`;
   }
 
-  const base = `${protocol}//${subdomain}.${root}`;
-  const withPort = port && port !== "80" && port !== "443" ? `${base}:${port}` : base;
-  return `${withPort}${suffix}`;
+  // On Vercel / Netlify platform domains (*.vercel.app), subdomains are blocked by DNS.
+  // Build single-origin URL: https://skillara-tenant-ui.vercel.app/login?tenant=acme-bootcamp
+  const baseHost = window.location.host;
+  return `${protocol}//${baseHost}${suffix}?${TENANT_QUERY_KEY}=${encodeURIComponent(subdomain)}`;
 }
 
 export function getTenantDisplayHost(subdomain) {
