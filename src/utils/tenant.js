@@ -76,6 +76,8 @@ export function getTenantOverride() {
 export function clearTenantOverride() {
   try {
     localStorage.removeItem(TENANT_STORAGE_KEY);
+    localStorage.removeItem("skillara_admin_tenant");
+    localStorage.removeItem("skillara_dev_tenant");
   } catch {
     // nothing to clear
   }
@@ -146,7 +148,6 @@ export function buildTenantUrl(subdomain, path = "/") {
   const root = getRootDomain();
   const port = window.location.port;
   const protocol = window.location.protocol;
-  const host = window.location.hostname.toLowerCase();
   const suffix = path.startsWith("/") ? path : `/${path}`;
 
   if (import.meta.env.DEV) {
@@ -155,8 +156,8 @@ export function buildTenantUrl(subdomain, path = "/") {
 
   if (root) {
     const base = `${protocol}//${subdomain}.${root}`;
-    const withPort = port && String(port) !== "80" && String(port) !== "443" ? `${base}:${port}` : base;
-    return `${withPort}${suffix}`;
+    const portPart = port ? `:${port}` : "";
+    return `${base}${portPart}${suffix}`;
   }
 
   // On Vercel / Netlify platform domains (*.vercel.app), subdomains are blocked by DNS.
