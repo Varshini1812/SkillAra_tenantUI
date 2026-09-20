@@ -155,7 +155,7 @@ export function buildTenantUrl(subdomain, path = "/") {
 
   if (root) {
     const base = `${protocol}//${subdomain}.${root}`;
-    const withPort = port && port !== "80" && port !== "443" ? `${base}:${port}` : base;
+    const withPort = port && String(port) !== "80" && String(port) !== "443" ? `${base}:${port}` : base;
     return `${withPort}${suffix}`;
   }
 
