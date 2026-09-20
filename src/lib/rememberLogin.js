@@ -28,3 +28,27 @@ export function saveRememberedLogin(tenantSubdomain, email, rememberMe) {
   localStorage.removeItem(rememberKey);
   localStorage.removeItem(emailKey);
 }
+
+const PENDING_EMAIL_KEY = "skillara_pending_login_email";
+
+/**
+ * Hands the address typed in the workspace finder to the sign-in form, so the
+ * user types their email once even though the two steps are separate screens.
+ */
+export function setPendingLoginEmail(email) {
+  try {
+    sessionStorage.setItem(PENDING_EMAIL_KEY, String(email || "").trim().toLowerCase());
+  } catch {
+    // private mode — the user retypes their email, nothing breaks
+  }
+}
+
+export function takePendingLoginEmail() {
+  try {
+    const value = sessionStorage.getItem(PENDING_EMAIL_KEY) || "";
+    sessionStorage.removeItem(PENDING_EMAIL_KEY);
+    return value;
+  } catch {
+    return "";
+  }
+}

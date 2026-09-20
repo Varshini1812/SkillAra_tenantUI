@@ -1,11 +1,14 @@
 import { useEffect, useId, useState } from "react";
-import { checkWorkspace } from "../api/auth.js";
+import { checkWorkspace, findWorkspacesByEmail } from "../api/auth.js";
 import {
   buildTenantUrl,
   getRootDomain,
   getTenantDisplayHost,
   setDevTenant,
+  setTenantOverride,
+  usesEmailWorkspaceDiscovery,
 } from "../utils/tenant.js";
+import { setPendingLoginEmail } from "../lib/rememberLogin.js";
 import Icon from "../admin/components/ui/Icon.jsx";
 import { SkillAraMark, SkillAraMarkChip } from "../admin/components/SkillAraBrand.jsx";
 import { Badge, Button, Field, Skeleton } from "../admin/components/ui/primitives.jsx";
@@ -18,6 +21,158 @@ const CAPABILITIES = [
   { icon: "clipboardCheck", title: "Assessments", desc: "Quizzes, mock tests and certificates" },
   { icon: "activity", title: "Progress", desc: "Track completion across your cohort" },
 ];
+
+/**
+ * Email-first entry point, used while there is no wildcard domain to carry the
+ * workspace in the hostname. The address the user already knows identifies
+ * their organization, so nothing about the workspace shows up in the URL.
+ *
+ * The subdomain form below is the same screen for the day `VITE_ROOT_DOMAIN`
+ * points at a real wildcard domain — neither replaces the other.
+ */
+function EmailWorkspaceForm() {
+  const inputId = useId();
+
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [choices, setChoices] = useState([]);
+
+  const enter = (workspace) => {
+    if (!setTenantOverride(workspace.subdomain)) {
+      setError("That workspace could not be opened. Ask your administrator for help.");
+      return;
+    }
+    setPendingLoginEmail(email);
+    // A full load rather than a route change: the app decides between the
+    // finder and the workspace routes at boot, from the stored workspace.
+    window.location.assign("/login");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const value = email.trim().toLowerCase();
+    if (!value) return;
+
+    setLoading(true);
+    setError("");
+    setChoices([]);
+    try {
+      const data = await findWorkspacesByEmail(value);
+      const workspaces = (data?.workspaces || []).filter((w) => w?.subdomain);
+
+      if (workspaces.length === 0) {
+        setError("We could not find a workspace for that email. Check the address, or ask your administrator to invite you.");
+        return;
+      }
+      if (workspaces.length === 1) {
+        enter(workspaces[0]);
+        return;
+      }
+      // The same address can be a member of more than one organization, so the
+      // user picks rather than being sent somewhere arbitrary.
+      setChoices(workspaces);
+    } catch {
+      setError("We could not look that up just now. Try again in a moment.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="mx-auto w-full max-w-sm">
+      <span className="flex h-11 w-11 items-center justify-center rounded-surface bg-brand-subtle text-brand">
+        <Icon name="search" size={22} />
+      </span>
+
+      <h1 className="mt-5 text-2xl font-semibold tracking-tight text-ink">Sign in to SkillAra</h1>
+      <p className="mt-1.5 text-[0.875rem] text-ink-muted">
+        Enter your email and we&apos;ll take you to your organization.
+      </p>
+
+      <form onSubmit={handleSubmit} className="mt-6" noValidate>
+        <Field label="Email address" htmlFor={inputId} required>
+          <input
+            id={inputId}
+            type="email"
+            required
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError("");
+              setChoices([]);
+            }}
+            placeholder="you@your-academy.com"
+            autoFocus
+            autoComplete="email"
+            className="w-full rounded-control border border-line-strong bg-surface px-3 py-2.5 text-base text-ink transition-[border-color,box-shadow] duration-200 ease-standard focus:border-brand focus:outline-none focus:ring-[3px] focus:ring-brand-muted"
+          />
+        </Field>
+
+        <div aria-live="polite" className="mt-2">
+          {loading && (
+            <span className="flex items-center gap-2">
+              <Skeleton className="h-5 w-20" />
+              <span className="text-xs text-ink-subtle">Looking up your organization…</span>
+            </span>
+          )}
+          {error && (
+            <p
+              role="alert"
+              className="flex items-start gap-2 rounded-control border border-danger-border bg-danger-subtle px-3 py-2 text-[0.8125rem] text-danger"
+            >
+              <Icon name="danger" size={15} className="mt-0.5 shrink-0" />
+              <span>{error}</span>
+            </p>
+          )}
+        </div>
+
+        {choices.length > 0 ? (
+          <div className="mt-4">
+            <p className="text-[0.8125rem] font-medium text-ink">
+              You belong to {choices.length} organizations. Choose one:
+            </p>
+            <ul className="mt-2 space-y-2">
+              {choices.map((w) => (
+                <li key={w.subdomain}>
+                  <button
+                    type="button"
+                    onClick={() => enter(w)}
+                    className="flex w-full items-center justify-between gap-3 rounded-control border border-line-strong bg-surface px-3 py-2.5 text-left transition-colors duration-150 ease-standard hover:border-brand hover:bg-brand-subtle"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[0.875rem] font-medium text-ink">
+                        {w.name || w.subdomain}
+                      </span>
+                      <span className="block truncate font-mono text-xs text-ink-subtle">
+                        {w.subdomain}
+                      </span>
+                    </span>
+                    <Icon name="chevronRight" size={16} className="shrink-0 text-ink-muted" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <Button
+            type="submit"
+            size="lg"
+            disabled={loading || !email.trim()}
+            className="mt-4 w-full"
+          >
+            Continue
+            <Icon name="chevronRight" size={16} />
+          </Button>
+        )}
+      </form>
+
+      <p className="mt-6 text-center text-xs text-ink-subtle">
+        Don&apos;t have an account? Ask your instructor or administrator for an invite.
+      </p>
+    </div>
+  );
+}
 
 /**
  * Root-domain entry point: this page is SkillAra's own, not a tenant's, so it
@@ -193,7 +348,7 @@ export default function FindWorkspace() {
               wherever you learn.
             </h2>
             <p className="mt-4 max-w-md text-base leading-relaxed text-white/75">
-              Every organization on SkillAra gets its own workspace. Enter yours to sign in.
+              Every organization on SkillAra gets its own workspace. We&apos;ll find yours from your email.
             </p>
           </div>
 
@@ -224,7 +379,7 @@ export default function FindWorkspace() {
           <span className="text-xl font-bold text-ink">SkillAra</span>
         </div>
 
-        <WorkspaceForm />
+        {usesEmailWorkspaceDiscovery() ? <EmailWorkspaceForm /> : <WorkspaceForm />}
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import DevTenantBanner from "./DevTenantBanner.jsx";
 import NotificationBell from "./NotificationBell.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePermissions } from "../hooks/usePermissions.js";
-import { getTenantFromHostname } from "../utils/tenant.js";
+import { getTenantFromHostname, usesEmailWorkspaceDiscovery } from "../utils/tenant.js";
 
 /**
  * Shell for every signed-in role. The sidebar carries navigation for students,
@@ -19,8 +19,12 @@ export default function Layout() {
   const [collapsed, toggleCollapsed] = useSidebarCollapsed();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Only meaningful in subdomain mode: it exists to stand in for the tenant
+  // subdomain plain localhost cannot have. While the workspace comes from the
+  // sign-in email there is nothing to stand in for, so it stays hidden.
   const isPlainLocalhost =
     import.meta.env.DEV &&
+    !usesEmailWorkspaceDiscovery() &&
     !getTenantFromHostname() &&
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
