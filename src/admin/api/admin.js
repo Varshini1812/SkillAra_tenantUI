@@ -57,8 +57,16 @@ export async function updateMyProfile(payload) {
 }
 
 export async function changePassword(currentPassword, newPassword) {
-  const res = await api.post("/api/auth/legacy/change-password", { currentPassword, newPassword });
-  return getData(res);
+  try {
+    const res = await api.post("/api/auth/change-password", { currentPassword, newPassword });
+    return getData(res);
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      const res = await api.post("/api/auth/legacy/change-password", { currentPassword, newPassword });
+      return getData(res);
+    }
+    throw err;
+  }
 }
 
 export async function inviteUser(payload) {
