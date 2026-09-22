@@ -7,7 +7,11 @@ import { setInitialPassword, workspaceLogin } from "../api/workspaceAuth.js";
 import { getTenantLogoUrl } from "../admin/utils/tenantLogo.js";
 import { useDocumentTitle } from "../admin/hooks/useDocumentTitle.js";
 import { buildRootUrl, clearTenantOverride } from "../utils/tenant.js";
-import { loadRememberedLogin, saveRememberedLogin } from "../lib/rememberLogin.js";
+import {
+  loadRememberedLogin,
+  saveRememberedLogin,
+  takePendingLoginEmail,
+} from "../lib/rememberLogin.js";
 import { readableTextOn } from "../utils/contrastColor.js";
 import { DEFAULT_TENANT_BRAND } from "../admin/constants/branding.js";
 import Icon from "../admin/components/ui/Icon.jsx";
@@ -98,7 +102,10 @@ export default function TenantLogin() {
   // runtime rather than assumed to be white.
   const onBrand = readableTextOn(brand);
 
-  const [email, setEmail] = useState(() => loadRememberedLogin(tenantSubdomain).email);
+  // The finder already asked for an email; carry it over rather than asking twice.
+  const [email, setEmail] = useState(
+    () => takePendingLoginEmail() || loadRememberedLogin(tenantSubdomain).email
+  );
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(
     () => loadRememberedLogin(tenantSubdomain).rememberMe
